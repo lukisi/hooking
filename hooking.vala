@@ -22,7 +22,14 @@ using TaskletSystem;
 
 namespace Netsukuku.Hooking
 {
-    public class HookingClass : Object
+    internal ITasklet tasklet;
+    public class HookingManager : Object //, IHookingManagerSkeleton
     {
+        public static void init(ITasklet _tasklet)
+        {
+            // Register serializable types internal to the module.
+            // ... typeof(NeighborhoodNodeID).class_peek();
+            tasklet = _tasklet;
+        }
     }
 }
