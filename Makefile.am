@@ -8,6 +8,7 @@ noinst_LTLIBRARIES = \
 
 libhooking_la_SOURCES = \
 	hooking.vala \
+	api.vala \
 	serializables.vala \
 	$(NULL)
 

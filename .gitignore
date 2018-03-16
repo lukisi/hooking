@@ -1,4 +1,5 @@
 hooking.c
+api.c
 serializables.c
 hooking.h
 hooking.vapi
