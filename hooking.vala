@@ -35,7 +35,7 @@ namespace Netsukuku.Hooking
         public signal void same_network(IIdentityArc ia);
         public signal void another_network(IIdentityArc ia, int64 network_id);
         public signal void do_prepare_enter(int enter_id);
-        public signal void do_finish_enter(int enter_id, EntryData entry_data);
+        public signal void do_finish_enter(int enter_id, int guest_gnode_level, EntryData entry_data);
         public signal void do_prepare_migration(/* TODO */);
         public signal void do_finish_migration(/* TODO */);
 
