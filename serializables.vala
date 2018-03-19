@@ -137,6 +137,7 @@ namespace Netsukuku.Hooking
     serializable class FinishEnterData:
         int enter_id
         EntryData entry_data
+        int go_connectivity_position
     */
 
     /* TODO
