@@ -27,10 +27,17 @@ namespace Netsukuku.Hooking
     {
         public static void init(ITasklet _tasklet)
         {
-            // Register serializable types internal to the module.
-            // ... typeof(NeighborhoodNodeID).class_peek();
+            // Register serializable types
+            typeof(EntryData).class_peek();
             tasklet = _tasklet;
         }
+
+        public static void init_rngen(IRandomNumberGenerator? rngen=null, uint32? seed=null)
+        {
+            PRNGen.init_rngen(rngen, seed);
+        }
+
+        public Gee.List<IIdentityArc> arc_list;
 
         public signal void same_network(IIdentityArc ia);
         public signal void another_network(IIdentityArc ia, int64 network_id);
@@ -40,9 +47,14 @@ namespace Netsukuku.Hooking
         public signal void do_finish_migration(/* TODO */);
 
         public void add_arc(IIdentityArc ia)
-        {}
+        {
+            // TODO
+            arc_list.add(ia);
+        }
 
         public void remove_arc(IIdentityArc ia)
-        {}
+        {
+            // TODO
+        }
     }
 }
