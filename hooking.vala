@@ -46,6 +46,11 @@ namespace Netsukuku.Hooking
         public signal void do_prepare_migration(/* TODO */);
         public signal void do_finish_migration(/* TODO */);
 
+        public HookingManager()
+        {
+            arc_list = new ArrayList<IIdentityArc>();
+        }
+
         public void add_arc(IIdentityArc ia)
         {
             // TODO
