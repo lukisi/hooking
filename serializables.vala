@@ -26,12 +26,14 @@ namespace Netsukuku.Hooking
         List<int> gsizes
         int neighbor_n_nodes
         List<int> neighbor_pos
+        int neighbor_min_level
     */
 
     /* TODO
     serializable class EvaluateEnterData:
         int64 network_id
         List<int> neighbor_pos
+        int neighbor_min_lvl
         int min_lvl
         int evaluate_enter_id
     */
@@ -68,7 +70,7 @@ namespace Netsukuku.Hooking
     serializable class AbortEnterResult:
     */
 
-    public class EntryData : Object
+    public class EntryData : Object, IEntryData
     {
         public int64 network_id {get; set;}
         public Gee.List<int> pos {get; set;}
@@ -150,6 +152,61 @@ namespace Netsukuku.Hooking
         int migration_id
         ... TODO
     */
+
+    internal class TupleGNode : Object, Json.Serializable
+    {
+        public Gee.List<int> pos {get; set;}
+        public Gee.List<int> eldership {get; set;}
+        public TupleGNode(Gee.List<int> pos, Gee.List<int> eldership)
+        {
+            this.pos = new ArrayList<int>();
+            this.pos.add_all(pos);
+            this.eldership = new ArrayList<int>();
+            this.eldership.add_all(eldership);
+        }
+
+        public bool deserialize_property
+        (string property_name,
+         out GLib.Value @value,
+         GLib.ParamSpec pspec,
+         Json.Node property_node)
+        {
+            @value = 0;
+            switch (property_name) {
+            case "pos":
+            case "eldership":
+                try {
+                    @value = deserialize_list_int(property_node);
+                } catch (HelperDeserializeError e) {
+                    return false;
+                }
+                break;
+            default:
+                return false;
+            }
+            return true;
+        }
+
+        public unowned GLib.ParamSpec? find_property
+        (string name)
+        {
+            return get_class().find_property(name);
+        }
+
+        public Json.Node serialize_property
+        (string property_name,
+         GLib.Value @value,
+         GLib.ParamSpec pspec)
+        {
+            switch (property_name) {
+            case "pos":
+            case "eldership":
+                return serialize_list_int((Gee.List<int>)@value);
+            default:
+                error(@"wrong param $(property_name)");
+            }
+        }
+    }
 
     internal errordomain HelperDeserializeError {
         GENERIC

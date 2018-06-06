@@ -17,21 +17,9 @@
  */
 
 using Gee;
+using TaskletSystem;
+using Netsukuku.Hooking;
 
-namespace Netsukuku.Hooking
+namespace Netsukuku.Hooking.MessageRouting
 {
-    public interface IHookingMapPaths : Object
-    {
-        public abstract int get_levels();
-        public abstract int get_gsize(int level);
-        public abstract int get_my_pos(int level);
-        public abstract int get_my_eldership(int level);
-        public abstract bool exists(int level, int pos);
-        public abstract int get_eldership(int level, int pos);
-        public abstract IHookingManagerStub gateway(int level, int pos);
-    }
-
-    public interface IIdentityArc : Object
-    {
-    }
 }

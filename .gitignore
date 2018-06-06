@@ -2,6 +2,7 @@ hooking.c
 api.c
 rngen.c
 serializables.c
+message_routing.c
 hooking.h
 hooking.vapi
 *.stamp

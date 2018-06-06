@@ -23,7 +23,7 @@ using TaskletSystem;
 namespace Netsukuku.Hooking
 {
     internal ITasklet tasklet;
-    public class HookingManager : Object //, IHookingManagerSkeleton
+    public class HookingManager : Object, IHookingManagerSkeleton
     {
         public static void init(ITasklet _tasklet)
         {
@@ -61,5 +61,81 @@ namespace Netsukuku.Hooking
         {
             // TODO
         }
+
+        /* Remotable methods
+         */
+
+        public INetworkData
+        retrieve_network_data(bool ask_coord,
+                    CallerInfo? _rpc_caller=null)
+        throws HookingNotPrincipalError
+        {
+            error("not implemented yet");
+        }
+
+        public IEntryData
+        search_migration_path(int lvl,
+                    CallerInfo? _rpc_caller=null)
+        throws NoMigrationPathFoundError, MigrationPathExecuteFailureError
+        {
+            error("not implemented yet");
+        }
+
+        public void
+        route_delete_reserve_request (Netsukuku.IDeleteReservationRequest p0,
+                    CallerInfo? _rpc_caller=null)
+        {
+            error("not implemented yet");
+        }
+
+        public void
+        route_explore_request (Netsukuku.IExploreGNodeRequest p0,
+                    CallerInfo? _rpc_caller=null)
+        {
+            error("not implemented yet");
+        }
+
+        public void
+        route_explore_response (Netsukuku.IExploreGNodeResponse p1,
+                    CallerInfo? _rpc_caller=null)
+        {
+            error("not implemented yet");
+        }
+
+        public void
+        route_mig_request (Netsukuku.IRequestPacket p0,
+                    CallerInfo? _rpc_caller=null)
+        {
+            error("not implemented yet");
+        }
+
+        public void
+        route_mig_response (Netsukuku.IResponsePacket p1,
+                    CallerInfo? _rpc_caller=null)
+        {
+            error("not implemented yet");
+        }
+
+        public void
+        route_search_error (Netsukuku.ISearchMigrationPathErrorPkt p2,
+                    CallerInfo? _rpc_caller=null)
+        {
+            error("not implemented yet");
+        }
+
+        public void
+        route_search_request (Netsukuku.ISearchMigrationPathRequest p0,
+                    CallerInfo? _rpc_caller=null)
+        {
+            error("not implemented yet");
+        }
+
+        public void
+        route_search_response (Netsukuku.ISearchMigrationPathResponse p1,
+                    CallerInfo? _rpc_caller=null)
+        {
+            error("not implemented yet");
+        }
+
     }
 }
