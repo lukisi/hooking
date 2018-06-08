@@ -22,4 +22,13 @@ using Netsukuku.Hooking;
 
 namespace Netsukuku.Hooking.MessageRouting
 {
+    internal delegate bool dest_exists(int level, int pos);
+    internal delegate IHookingManagerStub best_gw_to(int level, int pos);
+    internal HashMap<int, IChannel> request_id_map;
+
+    internal class MessageRouting : Object
+    {
+        private int levels;
+        private Gee.List<int> my_pos;
+    }
 }

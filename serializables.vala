@@ -208,6 +208,65 @@ namespace Netsukuku.Hooking
         }
     }
 
+    internal class PathHop : Object
+    {
+        public TupleGNode visiting_gnode {get; set;}
+        public TupleGNode? previous_migrating_gnode {get; set;}
+
+        public bool deserialize_property
+        (string property_name,
+         out GLib.Value @value,
+         GLib.ParamSpec pspec,
+         Json.Node property_node)
+        {
+            @value = 0;
+            switch (property_name) {
+            case "visiting_gnode":
+            case "visiting-gnode":
+                try {
+                    @value = deserialize_tuplegnode(property_node);
+                } catch (HelperDeserializeError e) {
+                    return false;
+                }
+                break;
+            case "previous_migrating_gnode":
+            case "previous-migrating-gnode":
+                try {
+                    @value = deserialize_nullable_tuplegnode(property_node);
+                } catch (HelperDeserializeError e) {
+                    return false;
+                }
+                break;
+            default:
+                return false;
+            }
+            return true;
+        }
+
+        public unowned GLib.ParamSpec? find_property
+        (string name)
+        {
+            return get_class().find_property(name);
+        }
+
+        public Json.Node serialize_property
+        (string property_name,
+         GLib.Value @value,
+         GLib.ParamSpec pspec)
+        {
+            switch (property_name) {
+            case "visiting_gnode":
+            case "visiting-gnode":
+                return serialize_tuplegnode((TupleGNode)@value);
+            case "previous_migrating_gnode":
+            case "previous-migrating-gnode":
+                return serialize_nullable_tuplegnode((TupleGNode?)@value);
+            default:
+                error(@"wrong param $(property_name)");
+            }
+        }
+    }
+
     internal errordomain HelperDeserializeError {
         GENERIC
     }
@@ -374,5 +433,27 @@ namespace Netsukuku.Hooking
         }
         b.end_array();
         return b.get_root();
+    }
+
+    internal TupleGNode? deserialize_nullable_tuplegnode(Json.Node property_node)
+    throws HelperDeserializeError
+    {
+        return (TupleGNode?)deserialize_object(typeof(TupleGNode), true, property_node);
+    }
+
+    internal Json.Node serialize_nullable_tuplegnode(TupleGNode? n)
+    {
+        return serialize_object(n);
+    }
+
+    internal TupleGNode deserialize_tuplegnode(Json.Node property_node)
+    throws HelperDeserializeError
+    {
+        return (TupleGNode)deserialize_object(typeof(TupleGNode), false, property_node);
+    }
+
+    internal Json.Node serialize_tuplegnode(TupleGNode n)
+    {
+        return serialize_object(n);
     }
 }

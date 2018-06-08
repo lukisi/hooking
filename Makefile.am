@@ -12,6 +12,7 @@ libhooking_la_SOURCES = \
 	rngen.vala \
 	serializables.vala \
 	message_routing.vala \
+	structs.vala \
 	$(NULL)
 
 libhooking_la_VALAFLAGS = \
