@@ -70,7 +70,7 @@ namespace Netsukuku.Hooking
     serializable class AbortEnterResult:
     */
 
-    public class EntryData : Object, IEntryData
+    public class EntryData : Object, Json.Serializable, IEntryData
     {
         public int64 network_id {get; set;}
         public Gee.List<int> pos {get; set;}
@@ -95,7 +95,7 @@ namespace Netsukuku.Hooking
             case "network_id":
             case "network-id":
                 try {
-                    @value = deserialize_int(property_node);
+                    @value = deserialize_int64(property_node);
                 } catch (HelperDeserializeError e) {
                     return false;
                 }
@@ -123,7 +123,7 @@ namespace Netsukuku.Hooking
                 return serialize_list_int((Gee.List<int>)@value);
             case "network_id":
             case "network-id":
-                return serialize_int((int)@value);
+                return serialize_int64((int64)@value);
             default:
                 error(@"wrong param $(property_name)");
             }
@@ -520,6 +520,26 @@ namespace Netsukuku.Hooking
     }
 
     internal Json.Node serialize_int(int i)
+    {
+        Json.Node ret = new Json.Node(Json.NodeType.VALUE);
+        ret.set_int(i);
+        return ret;
+    }
+
+    internal int64 deserialize_int64(Json.Node property_node)
+    throws HelperDeserializeError
+    {
+        Json.Reader r = new Json.Reader(property_node.copy());
+        if (r.get_null_value())
+            throw new HelperDeserializeError.GENERIC("element is not nullable");
+        if (!r.is_value())
+            throw new HelperDeserializeError.GENERIC("element must be a int");
+        if (r.get_value().get_value_type() != typeof(int64))
+            throw new HelperDeserializeError.GENERIC("element must be a int");
+        return r.get_int_value();
+    }
+
+    internal Json.Node serialize_int64(int64 i)
     {
         Json.Node ret = new Json.Node(Json.NodeType.VALUE);
         ret.set_int(i);

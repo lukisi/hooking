@@ -50,6 +50,31 @@ class HookingTester : Object
     {
     }
 
+    public void test_entrydata()
+    {
+        EntryData ed0;
+        {
+            Json.Node node;
+            {
+                EntryData ed = new EntryData();
+                ed.network_id = 123;
+                ed.pos = new ArrayList<int>.wrap({1,0,0});
+                ed.elderships = new ArrayList<int>.wrap({2,2,4});
+                node = Json.gobject_serialize(ed);
+            }
+            ed0 = (EntryData)Json.gobject_deserialize(typeof(EntryData), node);
+        }
+        assert(ed0.network_id == 123);
+        assert(ed0.pos.size == 3);
+        assert(ed0.pos[0] == 1);
+        assert(ed0.pos[1] == 0);
+        assert(ed0.pos[2] == 0);
+        assert(ed0.elderships.size == 3);
+        assert(ed0.elderships[0] == 2);
+        assert(ed0.elderships[1] == 2);
+        assert(ed0.elderships[2] == 4);
+    }
+
     public void test_tuple()
     {
         TupleGNode tg0;
@@ -74,6 +99,12 @@ class HookingTester : Object
     public static int main(string[] args)
     {
         GLib.Test.init(ref args);
+        GLib.Test.add_func ("/Serializables/EntryData", () => {
+            var x = new HookingTester();
+            x.set_up();
+            x.test_entrydata();
+            x.tear_down();
+        });
         GLib.Test.add_func ("/Serializables/TupleGNode", () => {
             var x = new HookingTester();
             x.set_up();
