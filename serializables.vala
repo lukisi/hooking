@@ -267,6 +267,137 @@ namespace Netsukuku.Hooking
         }
     }
 
+    internal class SearchMigrationPathRequest : Object
+    {
+        public int pkt_id {get; set;}
+        public TupleGNode origin {get; set;}
+        public TupleGNode caller {get; set;}
+        public Gee.List<PathHop> path_hops {get; set;}
+        public int max_host_lvl {get; set;}
+        public int reserve_request_id {get; set;}
+
+        public bool deserialize_property
+        (string property_name,
+         out GLib.Value @value,
+         GLib.ParamSpec pspec,
+         Json.Node property_node)
+        {
+            @value = 0;
+            switch (property_name) {
+            case "origin":
+            case "caller":
+                try {
+                    @value = deserialize_tuplegnode(property_node);
+                } catch (HelperDeserializeError e) {
+                    return false;
+                }
+                break;
+            case "pkt_id":
+            case "pkt-id":
+            case "max_host_lvl":
+            case "max-host-lvl":
+            case "reserve_request_id":
+            case "reserve-request-id":
+                try {
+                    @value = deserialize_int(property_node);
+                } catch (HelperDeserializeError e) {
+                    return false;
+                }
+                break;
+            case "path_hops":
+            case "path-hops":
+                try {
+                    @value = deserialize_list_pathhop(property_node);
+                } catch (HelperDeserializeError e) {
+                    return false;
+                }
+                break;
+            default:
+                return false;
+            }
+            return true;
+        }
+
+        public unowned GLib.ParamSpec? find_property
+        (string name)
+        {
+            return get_class().find_property(name);
+        }
+
+        public Json.Node serialize_property
+        (string property_name,
+         GLib.Value @value,
+         GLib.ParamSpec pspec)
+        {
+            switch (property_name) {
+            case "origin":
+            case "caller":
+                return serialize_tuplegnode((TupleGNode)@value);
+            case "pkt_id":
+            case "pkt-id":
+            case "max_host_lvl":
+            case "max-host-lvl":
+            case "reserve_request_id":
+            case "reserve-request-id":
+                return serialize_int((int)@value);
+            case "path_hops":
+            case "path-hops":
+                return serialize_list_pathhop((Gee.List<PathHop>)@value);
+            default:
+                error(@"wrong param $(property_name)");
+            }
+        }
+    }
+
+/*
+    internal class Packet : Object
+    {
+        public TupleGNode sample_prop {get; set;}
+
+        public bool deserialize_property
+        (string property_name,
+         out GLib.Value @value,
+         GLib.ParamSpec pspec,
+         Json.Node property_node)
+        {
+            @value = 0;
+            switch (property_name) {
+            case "sample_prop":
+            case "sample-prop":
+                try {
+                    @value = deserialize_tuplegnode(property_node);
+                } catch (HelperDeserializeError e) {
+                    return false;
+                }
+                break;
+            default:
+                return false;
+            }
+            return true;
+        }
+
+        public unowned GLib.ParamSpec? find_property
+        (string name)
+        {
+            return get_class().find_property(name);
+        }
+
+        public Json.Node serialize_property
+        (string property_name,
+         GLib.Value @value,
+         GLib.ParamSpec pspec)
+        {
+            switch (property_name) {
+            case "sample_prop":
+            case "sample-prop":
+                return serialize_tuplegnode((TupleGNode)@value);
+            default:
+                error(@"wrong param $(property_name)");
+            }
+        }
+    }
+*/
+
     internal errordomain HelperDeserializeError {
         GENERIC
     }
@@ -455,5 +586,29 @@ namespace Netsukuku.Hooking
     internal Json.Node serialize_tuplegnode(TupleGNode n)
     {
         return serialize_object(n);
+    }
+
+    internal Gee.List<TupleGNode> deserialize_list_tuplegnode(Json.Node property_node)
+    throws HelperDeserializeError
+    {
+        ListDeserializer<TupleGNode> c = new ListDeserializer<TupleGNode>();
+        return c.deserialize_list_object(property_node);
+    }
+
+    internal Json.Node serialize_list_tuplegnode(Gee.List<TupleGNode> lst)
+    {
+        return serialize_list_object(lst);
+    }
+
+    internal Gee.List<PathHop> deserialize_list_pathhop(Json.Node property_node)
+    throws HelperDeserializeError
+    {
+        ListDeserializer<PathHop> c = new ListDeserializer<PathHop>();
+        return c.deserialize_list_object(property_node);
+    }
+
+    internal Json.Node serialize_list_pathhop(Gee.List<PathHop> lst)
+    {
+        return serialize_list_object(lst);
     }
 }

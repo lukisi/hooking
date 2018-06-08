@@ -6,6 +6,14 @@ noinst_LTLIBRARIES = \
 	libhooking.la \
 	$(NULL)
 
+TESTS = \
+	test_serializables \
+	$(NULL)
+
+check_PROGRAMS = \
+	test_serializables \
+	$(NULL)
+
 libhooking_la_SOURCES = \
 	hooking.vala \
 	api.vala \
@@ -47,6 +55,31 @@ libhooking_la_LIBADD = \
 	$(TASKLETSYSTEM_LIBS) \
 	$(NTKDCOMMON_LIBS) \
 	$(NTKDRPC_LIBS) \
+	$(NULL)
+
+test_serializables_SOURCES =  \
+	testsuites/test_serializables/test_serializables.vala \
+	testsuites/test_serializables/serializables.vala \
+	$(NULL)
+
+test_serializables_VALAFLAGS = \
+	--vapidir $(GEE_PREFIX)/share/vala/vapi \
+	--vapidir $(JSON_PREFIX)/share/vala-0.32/vapi \
+	--pkg gee-0.8 \
+	--pkg json-glib-1.0 \
+	$(NULL)
+
+test_serializables_CPPFLAGS = \
+	-w \
+	$(GOBJECT_CFLAGS) \
+	$(GEE_CFLAGS) \
+	$(JSONGLIB_CFLAGS) \
+	$(NULL)
+
+test_serializables_LDADD = \
+	$(GOBJECT_LIBS) \
+	$(GEE_LIBS) \
+	$(JSONGLIB_LIBS) \
 	$(NULL)
 
 MAINTAINERCLEANFILES = \

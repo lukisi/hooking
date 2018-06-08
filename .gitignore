@@ -4,6 +4,7 @@ rngen.c
 serializables.c
 message_routing.c
 structs.c
+test_serializables.c
 hooking.h
 hooking.vapi
 *.stamp
@@ -19,4 +20,5 @@ depcomp
 install-sh
 ltmain.sh
 missing
+test-driver
 
