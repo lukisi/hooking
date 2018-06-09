@@ -208,7 +208,7 @@ namespace Netsukuku.Hooking
         }
     }
 
-    internal class PathHop : Object
+    internal class PathHop : Object, Json.Serializable
     {
         public TupleGNode visiting_gnode {get; set;}
         public TupleGNode? previous_migrating_gnode {get; set;}
@@ -267,7 +267,7 @@ namespace Netsukuku.Hooking
         }
     }
 
-    internal class SearchMigrationPathRequest : Object
+    internal class SearchMigrationPathRequest : Object, Json.Serializable
     {
         public int pkt_id {get; set;}
         public TupleGNode origin {get; set;}
@@ -275,6 +275,14 @@ namespace Netsukuku.Hooking
         public Gee.List<PathHop> path_hops {get; set;}
         public int max_host_lvl {get; set;}
         public int reserve_request_id {get; set;}
+
+        public SearchMigrationPathRequest(Gee.List<PathHop> path_hops, int max_host_lvl, int reserve_request_id)
+        {
+            this.path_hops = new ArrayList<PathHop>();
+            this.path_hops.add_all(path_hops);
+            this.max_host_lvl = max_host_lvl;
+            this.reserve_request_id = reserve_request_id;
+        }
 
         public bool deserialize_property
         (string property_name,
