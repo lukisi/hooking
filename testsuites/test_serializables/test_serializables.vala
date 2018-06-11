@@ -39,6 +39,9 @@ void print_object(Object obj)
 
 // fake
 public interface Netsukuku.IEntryData : Object {}
+public interface Netsukuku.ISearchMigrationPathRequest : Object {}
+public interface Netsukuku.ISearchMigrationPathErrorPkt : Object {}
+public interface Netsukuku.ISearchMigrationPathResponse : Object {}
 
 class HookingTester : Object
 {

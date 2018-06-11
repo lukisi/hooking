@@ -39,9 +39,86 @@ namespace Netsukuku.Hooking
 
     // TupleGNode is in file serializables
 
-    internal int level(TupleGNode tuple, int levels)
+    internal TupleGNode make_tuple_from_level(int l, IHookingMapPaths map_paths)
     {
+        int levels = map_paths.get_levels();
+        ArrayList<int> pos = new ArrayList<int>();
+        ArrayList<int> eldership = new ArrayList<int>();
+        for (int i = l; i < levels; i++)
+        {
+            pos.add(map_paths.get_my_pos(i));
+            eldership.add(map_paths.get_my_eldership(i));
+        }
+        return new TupleGNode(pos, eldership);
+    }
+
+    internal TupleGNode make_tuple_from_hc(HCoord hc, IHookingMapPaths map_paths)
+    {
+        int levels = map_paths.get_levels();
+        ArrayList<int> pos = new ArrayList<int>();
+        ArrayList<int> eldership = new ArrayList<int>();
+        pos.add(hc.pos);
+        eldership.add(map_paths.get_eldership(hc.lvl, hc.pos));
+        for (int i = hc.lvl+1; i < levels; i++)
+        {
+            pos.add(map_paths.get_my_pos(i));
+            eldership.add(map_paths.get_my_eldership(i));
+        }
+        return new TupleGNode(pos, eldership);
+    }
+
+    internal TupleGNode make_tuple_up_to_level(TupleGNode tuple, int l, IHookingMapPaths map_paths)
+    {
+        int levels = map_paths.get_levels();
+        TupleGNode ret = (TupleGNode)dup_object(tuple);
+        assert(levels > l);
+        int posnum = levels - l;
+        assert(ret.pos.size >= posnum);
+        int todel = ret.pos.size - posnum;
+        for (int i = 0; i < todel; i++)
+        {
+            ret.pos.remove_at(0);
+            ret.eldership.remove_at(0);
+        }
+        return ret;
+    }
+
+    internal int level(TupleGNode tuple, IHookingMapPaths map_paths)
+    {
+        int levels = map_paths.get_levels();
         return levels - tuple.pos.size;
+    }
+
+    internal bool positions_equal(TupleGNode a, TupleGNode b)
+    {
+        if (a.pos.size != b.pos.size) return false;
+        for (int i = 0; i < a.pos.size; i++)
+            if (a.pos[i] != b.pos[i]) return false;
+        return true;
+    }
+
+    internal HCoord tuple_to_hc(TupleGNode a, IHookingMapPaths map_paths)
+    {
+        int levels = map_paths.get_levels();
+        int i = levels;
+        int j = a.pos.size;
+        assert(i >= j);
+        while (true)
+        {
+            i--;
+            j--;
+            assert(i >= 0);
+            assert(j >= 0);
+            int my_pos = map_paths.get_my_pos(i);
+            int a_pos = a.pos[j];
+            if (my_pos != a_pos) return new HCoord(i, a_pos);
+        }
+    }
+
+    internal IHookingManagerStub best_gw_to(TupleGNode a, IHookingMapPaths map_paths)
+    {
+        HCoord hc = tuple_to_hc(a, map_paths);
+        return map_paths.gateway(hc.lvl, hc.pos);
     }
 
     // PathHop is in file serializables

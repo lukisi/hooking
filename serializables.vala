@@ -267,7 +267,7 @@ namespace Netsukuku.Hooking
         }
     }
 
-    internal class SearchMigrationPathRequest : Object, Json.Serializable
+    internal class SearchMigrationPathRequest : Object, Json.Serializable, ISearchMigrationPathRequest
     {
         public int pkt_id {get; set;}
         public TupleGNode origin {get; set;}
@@ -357,7 +357,7 @@ namespace Netsukuku.Hooking
         }
     }
 
-    internal class SearchMigrationPathErrorPkt : Object
+    internal class SearchMigrationPathErrorPkt : Object, ISearchMigrationPathErrorPkt
     {
         public int pkt_id {get; set;}
         public TupleGNode origin {get; set;}
@@ -375,7 +375,7 @@ namespace Netsukuku.Hooking
         public int i {get; set;}
     }
 
-    internal class SearchMigrationPathResponse : Object, Json.Serializable
+    internal class SearchMigrationPathResponse : Object, Json.Serializable, ISearchMigrationPathResponse
     {
         public int pkt_id {get; set;}
         public TupleGNode origin {get; set;}
