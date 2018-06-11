@@ -8,6 +8,7 @@ test_serializables.c
 hooking.h
 hooking.vapi
 *.stamp
+*.stamp-*
 Makefile.in
 aclocal.m4
 autom4te.cache

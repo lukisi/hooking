@@ -211,6 +211,71 @@ class HookingTester : Object
         assert(pk1.pkt_id == 567);
     }
 
+    public void test_SearchMigrationPathErrorPkt()
+    {
+        SearchMigrationPathErrorPkt pk0;
+        {
+            Json.Node node;
+            {
+                SearchMigrationPathErrorPkt pk = new SearchMigrationPathErrorPkt();
+                pk.origin = make_tuplegnode();
+                pk.pkt_id = 567;
+                node = Json.gobject_serialize(pk);
+            }
+            pk0 = (SearchMigrationPathErrorPkt)Json.gobject_deserialize(typeof(SearchMigrationPathErrorPkt), node);
+        }
+        assert_tuplegnode(pk0.origin);
+        assert(pk0.pkt_id == 567);
+    }
+
+    public void test_SearchMigrationPathResponse()
+    {
+        SearchMigrationPathResponse pk0;
+        {
+            Json.Node node;
+            {
+                SearchMigrationPathResponse pk = new SearchMigrationPathResponse();
+                pk.pkt_id = 567;
+                pk.origin = make_tuplegnode();
+                pk.min_host_lvl = 2;
+                pk.new_conn_vir_pos = 34534;
+                pk.new_eldership = 3;
+                pk.final_host_lvl = 5;
+                pk.set_adjacent.add(new PairTupleGNodeInt(make_tuplegnode(), 1));
+                pk.set_adjacent.add(new PairTupleGNodeInt(make_tuplegnode2(), 2));
+                node = Json.gobject_serialize(pk);
+            }
+            pk0 = (SearchMigrationPathResponse)Json.gobject_deserialize(typeof(SearchMigrationPathResponse), node);
+        }
+        assert(pk0.set_adjacent.size == 2);
+        assert_tuplegnode(pk0.set_adjacent[0].t);
+        assert(pk0.set_adjacent[0].i == 1);
+        assert_tuplegnode2(pk0.set_adjacent[1].t);
+        assert(pk0.set_adjacent[1].i == 2);
+        assert(pk0.pkt_id == 567);
+        assert_tuplegnode(pk0.origin);
+        assert(pk0.min_host_lvl == 2);
+        assert(pk0.new_conn_vir_pos == 34534);
+        assert(pk0.new_eldership == 3);
+        assert(pk0.final_host_lvl == 5);
+        assert(pk0.real_new_pos == null);
+        assert(pk0.real_new_eldership == null);
+
+        SearchMigrationPathResponse pk1;
+        {
+            Json.Node node;
+            {
+                SearchMigrationPathResponse pk = new SearchMigrationPathResponse();
+                pk.pkt_id = 567;
+                pk.origin = make_tuplegnode();
+                pk.min_host_lvl = 2;
+                node = Json.gobject_serialize(pk);
+            }
+            pk1 = (SearchMigrationPathResponse)Json.gobject_deserialize(typeof(SearchMigrationPathResponse), node);
+        }
+        assert(pk1.set_adjacent.size == 0);
+    }
+
     public static int main(string[] args)
     {
         GLib.Test.init(ref args);
@@ -236,6 +301,18 @@ class HookingTester : Object
             var x = new HookingTester();
             x.set_up();
             x.test_SearchMigrationPathRequest();
+            x.tear_down();
+        });
+        GLib.Test.add_func ("/Serializables/SearchMigrationPathErrorPkt", () => {
+            var x = new HookingTester();
+            x.set_up();
+            x.test_SearchMigrationPathErrorPkt();
+            x.tear_down();
+        });
+        GLib.Test.add_func ("/Serializables/SearchMigrationPathResponse", () => {
+            var x = new HookingTester();
+            x.set_up();
+            x.test_SearchMigrationPathResponse();
             x.tear_down();
         });
         GLib.Test.run();

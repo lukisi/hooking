@@ -357,6 +357,189 @@ namespace Netsukuku.Hooking
         }
     }
 
+    internal class SearchMigrationPathErrorPkt : Object
+    {
+        public int pkt_id {get; set;}
+        public TupleGNode origin {get; set;}
+    }
+
+    internal class PairTupleGNodeInt : Object
+    {
+        public PairTupleGNodeInt(TupleGNode t, int i)
+        {
+            this.t = t;
+            this.i = i;
+        }
+
+        public TupleGNode t {get; set;}
+        public int i {get; set;}
+    }
+
+    internal class SearchMigrationPathResponse : Object, Json.Serializable
+    {
+        public int pkt_id {get; set;}
+        public TupleGNode origin {get; set;}
+        public int min_host_lvl {get; set;}
+        public Gee.List<PairTupleGNodeInt> set_adjacent {get; set;}
+
+        public int? final_host_lvl {
+            get {
+                if (internser_final_host_lvl == -1) return null;
+                else return internser_final_host_lvl;
+            }
+            set {
+                if (value == null) internser_final_host_lvl = -1;
+                else internser_final_host_lvl = value;
+            }
+        }
+
+        public int? real_new_pos {
+            get {
+                if (internser_real_new_pos == -1) return null;
+                else return internser_real_new_pos;
+            }
+            set {
+                if (value == null) internser_real_new_pos = -1;
+                else internser_real_new_pos = value;
+            }
+        }
+
+        public int? real_new_eldership {
+            get {
+                if (internser_real_new_eldership == -1) return null;
+                else return internser_real_new_eldership;
+            }
+            set {
+                if (value == null) internser_real_new_eldership = -1;
+                else internser_real_new_eldership = value;
+            }
+        }
+
+        public int? new_conn_vir_pos {
+            get {
+                if (internser_new_conn_vir_pos == -1) return null;
+                else return internser_new_conn_vir_pos;
+            }
+            set {
+                if (value == null) internser_new_conn_vir_pos = -1;
+                else internser_new_conn_vir_pos = value;
+            }
+        }
+
+        public int? new_eldership {
+            get {
+                if (internser_new_eldership == -1) return null;
+                else return internser_new_eldership;
+            }
+            set {
+                if (value == null) internser_new_eldership = -1;
+                else internser_new_eldership = value;
+            }
+        }
+
+        public int internser_final_host_lvl {get; set;}
+        public int internser_real_new_pos {get; set;}
+        public int internser_real_new_eldership {get; set;}
+        public int internser_new_conn_vir_pos {get; set;}
+        public int internser_new_eldership {get; set;}
+
+        public SearchMigrationPathResponse()
+        {
+            set_adjacent = new ArrayList<PairTupleGNodeInt>();
+            final_host_lvl = null;
+            real_new_pos = null;
+            real_new_eldership = null;
+            new_conn_vir_pos = null;
+            new_eldership = null;
+        }
+
+        public bool deserialize_property
+        (string property_name,
+         out GLib.Value @value,
+         GLib.ParamSpec pspec,
+         Json.Node property_node)
+        {
+            @value = 0;
+            switch (property_name) {
+            case "origin":
+                try {
+                    @value = deserialize_tuplegnode(property_node);
+                } catch (HelperDeserializeError e) {
+                    return false;
+                }
+                break;
+            case "pkt_id":
+            case "pkt-id":
+            case "min_host_lvl":
+            case "min-host-lvl":
+            case "internser_final_host_lvl":
+            case "internser-final-host-lvl":
+            case "internser_real_new_pos":
+            case "internser-real-new-pos":
+            case "internser_real_new_eldership":
+            case "internser-real-new-eldership":
+            case "internser_new_conn_vir_pos":
+            case "internser-new-conn-vir-pos":
+            case "internser_new_eldership":
+            case "internser-new-eldership":
+                try {
+                    @value = deserialize_int(property_node);
+                } catch (HelperDeserializeError e) {
+                    return false;
+                }
+                break;
+            case "set_adjacent":
+            case "set-adjacent":
+                try {
+                    @value = deserialize_list_pairtupleint(property_node);
+                } catch (HelperDeserializeError e) {
+                    return false;
+                }
+                break;
+            default:
+                return false;
+            }
+            return true;
+        }
+
+        public unowned GLib.ParamSpec? find_property
+        (string name)
+        {
+            return get_class().find_property(name);
+        }
+
+        public Json.Node serialize_property
+        (string property_name,
+         GLib.Value @value,
+         GLib.ParamSpec pspec)
+        {
+            switch (property_name) {
+            case "origin":
+                return serialize_tuplegnode((TupleGNode)@value);
+            case "pkt_id":
+            case "pkt-id":
+            case "min_host_lvl":
+            case "min-host-lvl":
+            case "internser_final_host_lvl":
+            case "internser-final-host-lvl":
+            case "internser_real_new_pos":
+            case "internser-real-new-pos":
+            case "internser_real_new_eldership":
+            case "internser-real-new-eldership":
+            case "internser_new_conn_vir_pos":
+            case "internser-new-conn-vir-pos":
+            case "internser_new_eldership":
+            case "internser-new-eldership":
+                return serialize_int((int)@value);
+            case "set_adjacent":
+            case "set-adjacent":
+                return serialize_list_pairtupleint((Gee.List<PairTupleGNodeInt>)@value);
+            default:
+                error(@"wrong param $(property_name)");
+            }
+        }
+    }
+
 /*
     internal class Packet : Object
     {
@@ -636,6 +819,18 @@ namespace Netsukuku.Hooking
     }
 
     internal Json.Node serialize_list_pathhop(Gee.List<PathHop> lst)
+    {
+        return serialize_list_object(lst);
+    }
+
+    internal Gee.List<PairTupleGNodeInt> deserialize_list_pairtupleint(Json.Node property_node)
+    throws HelperDeserializeError
+    {
+        ListDeserializer<PairTupleGNodeInt> c = new ListDeserializer<PairTupleGNodeInt>();
+        return c.deserialize_list_object(property_node);
+    }
+
+    internal Json.Node serialize_list_pairtupleint(Gee.List<PairTupleGNodeInt> lst)
     {
         return serialize_list_object(lst);
     }
