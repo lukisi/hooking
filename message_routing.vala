@@ -26,6 +26,12 @@ namespace Netsukuku.Hooking.MessageRouting
         GENERIC
     }
 
+    internal delegate void ExecuteSearchDelegate
+        (TupleGNode visiting_gnode,
+        int max_host_lvl, int reserve_request_id,
+        out int min_host_lvl, out int? final_host_lvl, out int? real_new_pos, out int? real_new_eldership,
+        out Gee.List<PairTupleGNodeInt>? set_adjacent, out int? new_conn_vir_pos, out int? new_eldership);
+
     internal class MessageRouting : Object
     {
         private IHookingMapPaths map_paths;
@@ -33,8 +39,9 @@ namespace Netsukuku.Hooking.MessageRouting
         private Gee.List<int> gsizes;
         private Gee.List<int> my_pos;
         private HashMap<int, IChannel> request_id_map;
+        private ExecuteSearchDelegate execute_search;
 
-        public MessageRouting(IHookingMapPaths map_paths)
+        public MessageRouting(IHookingMapPaths map_paths, ExecuteSearchDelegate execute_search)
         {
             this.map_paths = map_paths;
             levels = map_paths.get_levels();
@@ -45,6 +52,7 @@ namespace Netsukuku.Hooking.MessageRouting
                 my_pos.add(map_paths.get_my_pos(i));
                 gsizes.add(map_paths.get_gsize(i));
             }
+            this.execute_search = execute_search;
             request_id_map = new HashMap<int, IChannel>();
         }
 
@@ -103,14 +111,9 @@ namespace Netsukuku.Hooking.MessageRouting
             new_eldership = response.new_eldership;
         }
 
-        public void execute_search
-        (TupleGNode visiting_gnode,
-        int max_host_lvl, int reserve_request_id,
-        out int min_host_lvl, out int? final_host_lvl, out int? real_new_pos, out int? real_new_eldership,
-        out Gee.List<PairTupleGNodeInt>? set_adjacent, out int? new_conn_vir_pos, out int? new_eldership)
+        public void route_search_request(SearchMigrationPathRequest p0)
         {
             error("not implemented yet");
         }
-
     }
 }

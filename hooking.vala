@@ -58,7 +58,9 @@ namespace Netsukuku.Hooking
             PRNGen.init_rngen(rngen, seed);
         }
 
-        public Gee.List<IIdentityArc> arc_list;
+        private Gee.List<IIdentityArc> arc_list;
+        private IHookingMapPaths map_paths;
+        private MessageRouting.MessageRouting message_routing;
 
         public signal void same_network(IIdentityArc ia);
         public signal void another_network(IIdentityArc ia, int64 network_id);
@@ -67,9 +69,20 @@ namespace Netsukuku.Hooking
         public signal void do_prepare_migration(/* TODO */);
         public signal void do_finish_migration(/* TODO */);
 
-        public HookingManager()
+        public HookingManager(IHookingMapPaths map_paths)
         {
             arc_list = new ArrayList<IIdentityArc>();
+            this.map_paths = map_paths;
+            message_routing = new MessageRouting.MessageRouting(map_paths, execute_search);
+        }
+
+        private void execute_search
+        (TupleGNode visiting_gnode,
+        int max_host_lvl, int reserve_request_id,
+        out int min_host_lvl, out int? final_host_lvl, out int? real_new_pos, out int? real_new_eldership,
+        out Gee.List<PairTupleGNodeInt>? set_adjacent, out int? new_conn_vir_pos, out int? new_eldership)
+        {
+            error("not implemented yet");
         }
 
         public void add_arc(IIdentityArc ia)
@@ -103,56 +116,57 @@ namespace Netsukuku.Hooking
         }
 
         public void
-        route_delete_reserve_request (Netsukuku.IDeleteReservationRequest p0,
+        route_search_request (ISearchMigrationPathRequest p0,
+                    CallerInfo? _rpc_caller=null)
+        {
+            if (! (p0 is SearchMigrationPathRequest)) return; // ignore bad pkt.
+            message_routing.route_search_request((SearchMigrationPathRequest)p0);
+        }
+
+        public void
+        route_search_error (ISearchMigrationPathErrorPkt p2,
                     CallerInfo? _rpc_caller=null)
         {
             error("not implemented yet");
         }
 
         public void
-        route_explore_request (Netsukuku.IExploreGNodeRequest p0,
+        route_search_response (ISearchMigrationPathResponse p1,
                     CallerInfo? _rpc_caller=null)
         {
             error("not implemented yet");
         }
 
         public void
-        route_explore_response (Netsukuku.IExploreGNodeResponse p1,
+        route_explore_request (IExploreGNodeRequest p0,
                     CallerInfo? _rpc_caller=null)
         {
             error("not implemented yet");
         }
 
         public void
-        route_mig_request (Netsukuku.IRequestPacket p0,
+        route_explore_response (IExploreGNodeResponse p1,
                     CallerInfo? _rpc_caller=null)
         {
             error("not implemented yet");
         }
 
         public void
-        route_mig_response (Netsukuku.IResponsePacket p1,
+        route_mig_request (IRequestPacket p0,
                     CallerInfo? _rpc_caller=null)
         {
             error("not implemented yet");
         }
 
         public void
-        route_search_error (Netsukuku.ISearchMigrationPathErrorPkt p2,
+        route_mig_response (IResponsePacket p1,
                     CallerInfo? _rpc_caller=null)
         {
             error("not implemented yet");
         }
 
         public void
-        route_search_request (Netsukuku.ISearchMigrationPathRequest p0,
-                    CallerInfo? _rpc_caller=null)
-        {
-            error("not implemented yet");
-        }
-
-        public void
-        route_search_response (Netsukuku.ISearchMigrationPathResponse p1,
+        route_delete_reserve_request (IDeleteReservationRequest p0,
                     CallerInfo? _rpc_caller=null)
         {
             error("not implemented yet");
