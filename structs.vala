@@ -89,11 +89,25 @@ namespace Netsukuku.Hooking
         return levels - tuple.pos.size;
     }
 
+    internal bool i_am_inside(TupleGNode tuple, IHookingMapPaths map_paths)
+    {
+        return tuple_contains(make_tuple_from_level(0, map_paths), tuple);
+    }
+
     internal bool positions_equal(TupleGNode a, TupleGNode b)
     {
         if (a.pos.size != b.pos.size) return false;
         for (int i = 0; i < a.pos.size; i++)
             if (a.pos[i] != b.pos[i]) return false;
+        return true;
+    }
+
+    internal bool tuple_contains(TupleGNode inside, TupleGNode outside)
+    {
+        if (inside.pos.size < outside.pos.size) return false;
+        int d = inside.pos.size - outside.pos.size;
+        for (int i = 0; i < outside.pos.size; i++)
+            if (outside.pos[i] != inside.pos[i+d]) return false;
         return true;
     }
 

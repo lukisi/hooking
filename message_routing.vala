@@ -41,7 +41,7 @@ namespace Netsukuku.Hooking.MessageRouting
         private HashMap<int, IChannel> request_id_map;
         private ExecuteSearchDelegate execute_search;
 
-        public MessageRouting(IHookingMapPaths map_paths, ExecuteSearchDelegate execute_search)
+        public MessageRouting(IHookingMapPaths map_paths, owned ExecuteSearchDelegate execute_search)
         {
             this.map_paths = map_paths;
             levels = map_paths.get_levels();
@@ -52,8 +52,16 @@ namespace Netsukuku.Hooking.MessageRouting
                 my_pos.add(map_paths.get_my_pos(i));
                 gsizes.add(map_paths.get_gsize(i));
             }
-            this.execute_search = execute_search;
+            this.execute_search = (owned) execute_search;
             request_id_map = new HashMap<int, IChannel>();
+        }
+
+        private int my_pos_highest_virtual_level()
+        {
+            for (int i = levels - 1; i >= 0; i--)
+                if (my_pos[i] >= gsizes[i])
+                    return i;
+            return -1;
         }
 
         public void send_search_request
@@ -113,7 +121,136 @@ namespace Netsukuku.Hooking.MessageRouting
 
         public void route_search_request(SearchMigrationPathRequest p0)
         {
-            error("not implemented yet");
+            // check pkt
+            if (p0.path_hops.size < 2) return; // ignore bad pkt
+            if (i_am_inside(p0.path_hops[1].visiting_gnode, map_paths))
+            {
+                // check adjacency
+                bool adjacency = tuple_contains(p0.caller, p0.path_hops[1].previous_migrating_gnode);
+                adjacency = adjacency && tuple_contains(p0.path_hops[1].previous_migrating_gnode, p0.path_hops[0].visiting_gnode);
+                adjacency = adjacency && level(p0.path_hops[1].previous_migrating_gnode, map_paths) + 1
+                                         == level(p0.path_hops[0].visiting_gnode, map_paths);
+                if (! adjacency)
+                {
+                    // send error in routing
+                    SearchMigrationPathErrorPkt p1 = new SearchMigrationPathErrorPkt();
+                    p1.origin = p0.origin;
+                    p1.pkt_id = p0.pkt_id;
+                    IHookingManagerStub st = best_gw_to(p1.origin, map_paths);
+                    try {
+                        st.route_search_error(p1);
+                    } catch (StubError e) {
+                        // nop.
+                    } catch (DeserializeError e) {
+                        // nop.
+                    }
+                    return;
+                }
+                if (p0.path_hops.size > 2)
+                {
+                    p0.caller = make_tuple_from_level(0, map_paths);
+                    p0.path_hops.remove_at(0);
+                    // route request
+                    IHookingManagerStub st = best_gw_to(p0.path_hops[1].visiting_gnode, map_paths);
+                    try {
+                        st.route_search_request(p0);
+                    } catch (StubError e) {
+                        // nop.
+                    } catch (DeserializeError e) {
+                        // nop.
+                    }
+                    return;
+                }
+                // check I am real
+                int lvl_next = my_pos_highest_virtual_level();
+                if (lvl_next == -1)
+                {
+                    // I am real
+                    p0.path_hops.remove_at(0);
+                    SearchMigrationPathResponse p1 = new SearchMigrationPathResponse();
+                    p1.origin = p0.origin;
+                    p1.pkt_id = p0.pkt_id;
+                    int? p1_min_host_lvl;
+                    int? p1_final_host_lvl;
+                    int? p1_real_new_pos;
+                    int? p1_real_new_eldership;
+                    Gee.List<PairTupleGNodeInt> p1_set_adjacent;
+                    int? p1_new_conn_vir_pos;
+                    int? p1_new_eldership;
+                    execute_search(p0.path_hops[0].visiting_gnode, p0.max_host_lvl, p0.reserve_request_id,
+                        out p1_min_host_lvl, out p1_final_host_lvl, out p1_real_new_pos, out p1_real_new_eldership,
+                        out p1_set_adjacent, out p1_new_conn_vir_pos, out p1_new_eldership);
+                    p1.min_host_lvl = p1_min_host_lvl;
+                    p1.final_host_lvl = p1_final_host_lvl;
+                    p1.real_new_pos = p1_real_new_pos;
+                    p1.real_new_eldership = p1_real_new_eldership;
+                    p1.set_adjacent = p1_set_adjacent;
+                    p1.new_conn_vir_pos = p1_new_conn_vir_pos;
+                    p1.new_eldership = p1_new_eldership;
+                    // send response
+                    IHookingManagerStub st = best_gw_to(p1.origin, map_paths);
+                    try {
+                        st.route_search_response(p1);
+                    } catch (StubError e) {
+                        // nop.
+                    } catch (DeserializeError e) {
+                        // nop.
+                    }
+                    return;
+                }
+                else
+                {
+                    // Must find a real node
+                    for (int pos_next = 0; pos_next < gsizes[lvl_next]; pos_next++)
+                    {
+                        if (map_paths.exists(lvl_next, pos_next))
+                        {
+                            // route request
+                            IHookingManagerStub st = map_paths.gateway(lvl_next, pos_next);
+                            try {
+                                st.route_search_request(p0);
+                            } catch (StubError e) {
+                                // nop.
+                            } catch (DeserializeError e) {
+                                // nop.
+                            }
+                            return;
+                        }
+                    }
+                    // If I am virtual at lvl_next there must be a real one at that level.
+                    assert_not_reached();
+                }
+            }
+            else
+            {
+                if (! i_am_inside(p0.path_hops[0].visiting_gnode, map_paths))
+                {
+                    // send error in routing
+                    SearchMigrationPathErrorPkt p1 = new SearchMigrationPathErrorPkt();
+                    p1.origin = p0.origin;
+                    p1.pkt_id = p0.pkt_id;
+                    IHookingManagerStub st = best_gw_to(p1.origin, map_paths);
+                    try {
+                        st.route_search_error(p1);
+                    } catch (StubError e) {
+                        // nop.
+                    } catch (DeserializeError e) {
+                        // nop.
+                    }
+                    return;
+                }
+                p0.caller = make_tuple_from_level(0, map_paths);
+                // route request
+                IHookingManagerStub st = best_gw_to(p0.path_hops[1].visiting_gnode, map_paths);
+                try {
+                    st.route_search_request(p0);
+                } catch (StubError e) {
+                    // nop.
+                } catch (DeserializeError e) {
+                    // nop.
+                }
+                return;
+            }
         }
     }
 }
