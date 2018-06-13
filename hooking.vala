@@ -74,7 +74,7 @@ namespace Netsukuku.Hooking
             arc_list = new ArrayList<IIdentityArc>();
             this.map_paths = map_paths;
             message_routing = new MessageRouting.MessageRouting
-                (map_paths, execute_search, execute_explore);
+                (map_paths, execute_search, execute_explore, execute_delete_reserve);
         }
 
         private void execute_search
@@ -88,6 +88,12 @@ namespace Netsukuku.Hooking
 
         private void execute_explore
         (int requested_lvl, out TupleGNode result)
+        {
+            error("not implemented yet");
+        }
+
+        private void execute_delete_reserve
+        (TupleGNode dest_gnode, int reserve_request_id)
         {
             error("not implemented yet");
         }
@@ -180,7 +186,8 @@ namespace Netsukuku.Hooking
         route_delete_reserve_request (IDeleteReservationRequest p0,
                     CallerInfo? _rpc_caller=null)
         {
-            error("not implemented yet");
+            if (! (p0 is DeleteReservationRequest)) return; // ignore bad pkt.
+            message_routing.route_delete_reserve_request((DeleteReservationRequest)p0);
         }
 
     }

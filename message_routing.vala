@@ -40,6 +40,10 @@ namespace Netsukuku.Hooking.MessageRouting
         (int requested_lvl,
         out TupleGNode result);
 
+    internal delegate void ExecuteDeleteReserveDelegate
+        (TupleGNode dest_gnode,
+        int reserve_request_id);
+
     internal class MessageRouting : Object
     {
         private IHookingMapPaths map_paths;
@@ -49,11 +53,13 @@ namespace Netsukuku.Hooking.MessageRouting
         private HashMap<int, IChannel> request_id_map;
         private ExecuteSearchDelegate execute_search;
         private ExecuteExploreDelegate execute_explore;
+        private ExecuteDeleteReserveDelegate execute_delete_reserve;
 
         public MessageRouting
         (IHookingMapPaths map_paths,
         owned ExecuteSearchDelegate execute_search,
-        owned ExecuteExploreDelegate execute_explore)
+        owned ExecuteExploreDelegate execute_explore,
+        owned ExecuteDeleteReserveDelegate execute_delete_reserve)
         {
             this.map_paths = map_paths;
             levels = map_paths.get_levels();
@@ -66,6 +72,7 @@ namespace Netsukuku.Hooking.MessageRouting
             }
             this.execute_search = (owned) execute_search;
             this.execute_explore = (owned) execute_explore;
+            this.execute_delete_reserve = (owned) execute_delete_reserve;
             request_id_map = new HashMap<int, IChannel>();
         }
 
@@ -453,6 +460,75 @@ namespace Netsukuku.Hooking.MessageRouting
                 // nop.
             }
             return;
+        }
+
+        public void send_delete_reserve_request
+        (TupleGNode dest_gnode,
+        int reserve_request_id)
+        {
+            if (i_am_inside(dest_gnode, map_paths))
+            {
+                // spawn tasklet
+                CallDeleteReserveTasklet ts = new CallDeleteReserveTasklet();
+                ts.t = this;
+                ts.dest_gnode = (TupleGNode)dup_object(dest_gnode);
+                ts.reserve_request_id = reserve_request_id;
+                tasklet.spawn(ts);
+                return;
+            }
+            // prepare packet to send
+            DeleteReservationRequest p0 = new DeleteReservationRequest();
+            p0.dest_gnode = dest_gnode;
+            p0.reserve_request_id = reserve_request_id;
+            // send request
+            IHookingManagerStub st = best_gw_to(p0.dest_gnode, map_paths);
+            try {
+                st.route_delete_reserve_request(p0);
+            } catch (StubError e) {
+                // nop.
+            } catch (DeserializeError e) {
+                // nop.
+            }
+            // no response needed
+        }
+
+        private class CallDeleteReserveTasklet : Object, ITaskletSpawnable
+        {
+            public MessageRouting t;
+            public TupleGNode dest_gnode;
+            public int reserve_request_id;
+            public void * func()
+            {
+                t.call_delete_reserve(dest_gnode, reserve_request_id);
+                return null;
+            }
+        }
+        private void call_delete_reserve(TupleGNode dest_gnode, int reserve_request_id)
+        {
+            execute_delete_reserve(dest_gnode, reserve_request_id);
+        }
+
+        public void route_delete_reserve_request(DeleteReservationRequest p0)
+        {
+            if (i_am_inside(p0.dest_gnode, map_paths))
+            {
+                execute_delete_reserve(p0.dest_gnode, p0.reserve_request_id);
+                // no response
+                return;
+            }
+            else
+            {
+                // route request
+                IHookingManagerStub st = best_gw_to(p0.dest_gnode, map_paths);
+                try {
+                    st.route_delete_reserve_request(p0);
+                } catch (StubError e) {
+                    // nop.
+                } catch (DeserializeError e) {
+                    // nop.
+                }
+                return;
+            }
         }
     }
 }
