@@ -127,14 +127,16 @@ namespace Netsukuku.Hooking
         route_search_error (ISearchMigrationPathErrorPkt p2,
                     CallerInfo? _rpc_caller=null)
         {
-            error("not implemented yet");
+            if (! (p2 is SearchMigrationPathErrorPkt)) return; // ignore bad pkt.
+            message_routing.route_search_error((SearchMigrationPathErrorPkt)p2);
         }
 
         public void
         route_search_response (ISearchMigrationPathResponse p1,
                     CallerInfo? _rpc_caller=null)
         {
-            error("not implemented yet");
+            if (! (p1 is SearchMigrationPathResponse)) return; // ignore bad pkt.
+            message_routing.route_search_response((SearchMigrationPathResponse)p1);
         }
 
         public void

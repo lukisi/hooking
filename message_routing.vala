@@ -252,5 +252,49 @@ namespace Netsukuku.Hooking.MessageRouting
                 return;
             }
         }
+
+        public void route_search_error(SearchMigrationPathErrorPkt p)
+        {
+            if (positions_equal(make_tuple_from_level(0, map_paths), p.origin))
+            {
+                // deliver
+                if (! request_id_map.has_key(p.pkt_id)) return;
+                IChannel ch = request_id_map[p.pkt_id];
+                ch.send(p);
+                return;
+            }
+            // route error
+            IHookingManagerStub st = best_gw_to(p.origin, map_paths);
+            try {
+                st.route_search_error(p);
+            } catch (StubError e) {
+                // nop.
+            } catch (DeserializeError e) {
+                // nop.
+            }
+            return;
+        }
+
+        public void route_search_response(SearchMigrationPathResponse p)
+        {
+            if (positions_equal(make_tuple_from_level(0, map_paths), p.origin))
+            {
+                // deliver
+                if (! request_id_map.has_key(p.pkt_id)) return;
+                IChannel ch = request_id_map[p.pkt_id];
+                ch.send(p);
+                return;
+            }
+            // route error
+            IHookingManagerStub st = best_gw_to(p.origin, map_paths);
+            try {
+                st.route_search_response(p);
+            } catch (StubError e) {
+                // nop.
+            } catch (DeserializeError e) {
+                // nop.
+            }
+            return;
+        }
     }
 }
