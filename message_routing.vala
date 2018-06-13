@@ -26,11 +26,19 @@ namespace Netsukuku.Hooking.MessageRouting
         GENERIC
     }
 
+    internal errordomain ExploreGNodeError {
+        GENERIC
+    }
+
     internal delegate void ExecuteSearchDelegate
         (TupleGNode visiting_gnode,
         int max_host_lvl, int reserve_request_id,
         out int min_host_lvl, out int? final_host_lvl, out int? real_new_pos, out int? real_new_eldership,
         out Gee.List<PairTupleGNodeInt>? set_adjacent, out int? new_conn_vir_pos, out int? new_eldership);
+
+    internal delegate void ExecuteExploreDelegate
+        (int requested_lvl,
+        out TupleGNode result);
 
     internal class MessageRouting : Object
     {
@@ -40,8 +48,12 @@ namespace Netsukuku.Hooking.MessageRouting
         private Gee.List<int> my_pos;
         private HashMap<int, IChannel> request_id_map;
         private ExecuteSearchDelegate execute_search;
+        private ExecuteExploreDelegate execute_explore;
 
-        public MessageRouting(IHookingMapPaths map_paths, owned ExecuteSearchDelegate execute_search)
+        public MessageRouting
+        (IHookingMapPaths map_paths,
+        owned ExecuteSearchDelegate execute_search,
+        owned ExecuteExploreDelegate execute_explore)
         {
             this.map_paths = map_paths;
             levels = map_paths.get_levels();
@@ -53,6 +65,7 @@ namespace Netsukuku.Hooking.MessageRouting
                 gsizes.add(map_paths.get_gsize(i));
             }
             this.execute_search = (owned) execute_search;
+            this.execute_explore = (owned) execute_explore;
             request_id_map = new HashMap<int, IChannel>();
         }
 
@@ -89,7 +102,6 @@ namespace Netsukuku.Hooking.MessageRouting
             IChannel ch = tasklet.get_channel();
             request_id_map[p0.pkt_id] = ch;
             // send request
-            make_tuple_from_level(1,map_paths);
             IHookingManagerStub st = best_gw_to(p0.path_hops[1].visiting_gnode, map_paths);
             try {
                 st.route_search_request(p0);
@@ -103,8 +115,10 @@ namespace Netsukuku.Hooking.MessageRouting
             int timeout = 100000; // TODO
             try {
                 resp = (Object)ch.recv_with_timeout(timeout);
-                if (! (resp is SearchMigrationPathResponse))
+                if (resp is SearchMigrationPathErrorPkt)
                     throw new SearchMigrationPathError.GENERIC("Got error packet.");
+                if (! (resp is SearchMigrationPathResponse))
+                    throw new SearchMigrationPathError.GENERIC("Got unknown packet.");
             } catch (ChannelError e) {
                 // TIMEOUT_EXPIRED
                 throw new SearchMigrationPathError.GENERIC("Timeout.");
@@ -289,6 +303,150 @@ namespace Netsukuku.Hooking.MessageRouting
             IHookingManagerStub st = best_gw_to(p.origin, map_paths);
             try {
                 st.route_search_response(p);
+            } catch (StubError e) {
+                // nop.
+            } catch (DeserializeError e) {
+                // nop.
+            }
+            return;
+        }
+
+        public void send_explore_request
+        (SolutionStep current,
+        TupleGNode adjacent,
+        int requested_lvl,
+        out TupleGNode result)
+        throws ExploreGNodeError
+        {
+            Gee.List<PathHop> path_hops = get_path_hops(current);
+            PathHop path_hop = new PathHop();
+            path_hop.visiting_gnode = adjacent;
+            path_hop.previous_migrating_gnode = null;
+            path_hops.add(path_hop);
+            // prepare packet to send
+            ExploreGNodeRequest p0 = new ExploreGNodeRequest(path_hops, requested_lvl);
+            // prepare to receive response
+            p0.origin = make_tuple_from_level(0, map_paths);
+            p0.pkt_id = PRNGen.int_range(0, int.MAX);
+            IChannel ch = tasklet.get_channel();
+            request_id_map[p0.pkt_id] = ch;
+            // send request
+            IHookingManagerStub st = best_gw_to(p0.path_hops[1].visiting_gnode, map_paths);
+            try {
+                st.route_explore_request(p0);
+            } catch (StubError e) {
+                // nop.
+            } catch (DeserializeError e) {
+                // nop.
+            }
+            // wait response with timeout
+            Object resp;
+            int timeout = 100000; // TODO
+            try {
+                resp = (Object)ch.recv_with_timeout(timeout);
+                if (! (resp is ExploreGNodeResponse))
+                    throw new ExploreGNodeError.GENERIC("Got unknown packet.");
+            } catch (ChannelError e) {
+                // TIMEOUT_EXPIRED
+                throw new ExploreGNodeError.GENERIC("Timeout.");
+            }
+            ExploreGNodeResponse response = (ExploreGNodeResponse)resp;
+            result = response.result;
+        }
+
+        public void route_explore_request(ExploreGNodeRequest p0)
+        {
+            if (i_am_inside(p0.path_hops[1].visiting_gnode, map_paths))
+            {
+                if (p0.path_hops.size > 2)
+                {
+                    p0.path_hops.remove_at(0);
+                    // route request
+                    IHookingManagerStub st = best_gw_to(p0.path_hops[1].visiting_gnode, map_paths);
+                    try {
+                        st.route_explore_request(p0);
+                    } catch (StubError e) {
+                        // nop.
+                    } catch (DeserializeError e) {
+                        // nop.
+                    }
+                    return;
+                }
+                // check I am real
+                int lvl_next = my_pos_highest_virtual_level();
+                if (lvl_next < p0.requested_lvl)
+                {
+                    // I am real at least the requested gnode
+                    p0.path_hops.remove_at(0);
+                    ExploreGNodeResponse p1 = new ExploreGNodeResponse();
+                    p1.origin = p0.origin;
+                    p1.pkt_id = p0.pkt_id;
+                    TupleGNode p1_result;
+                    execute_explore(p0.requested_lvl, out p1_result);
+                    p1.result = p1_result;
+                    // send response
+                    IHookingManagerStub st = best_gw_to(p1.origin, map_paths);
+                    try {
+                        st.route_explore_response(p1);
+                    } catch (StubError e) {
+                        // nop.
+                    } catch (DeserializeError e) {
+                        // nop.
+                    }
+                    return;
+                }
+                else
+                {
+                    // Must find a real node
+                    for (int pos_next = 0; pos_next < gsizes[lvl_next]; pos_next++)
+                    {
+                        if (map_paths.exists(lvl_next, pos_next))
+                        {
+                            // route request
+                            IHookingManagerStub st = map_paths.gateway(lvl_next, pos_next);
+                            try {
+                                st.route_explore_request(p0);
+                            } catch (StubError e) {
+                                // nop.
+                            } catch (DeserializeError e) {
+                                // nop.
+                            }
+                            return;
+                        }
+                    }
+                    // If I am virtual at lvl_next there must be a real one at that level.
+                    assert_not_reached();
+                }
+            }
+            else
+            {
+                    // route request
+                    IHookingManagerStub st = best_gw_to(p0.path_hops[1].visiting_gnode, map_paths);
+                    try {
+                        st.route_explore_request(p0);
+                    } catch (StubError e) {
+                        // nop.
+                    } catch (DeserializeError e) {
+                        // nop.
+                    }
+                    return;
+            }
+        }
+
+        public void route_explore_response(ExploreGNodeResponse p)
+        {
+            if (positions_equal(make_tuple_from_level(0, map_paths), p.origin))
+            {
+                // deliver
+                if (! request_id_map.has_key(p.pkt_id)) return;
+                IChannel ch = request_id_map[p.pkt_id];
+                ch.send(p);
+                return;
+            }
+            // route response
+            IHookingManagerStub st = best_gw_to(p.origin, map_paths);
+            try {
+                st.route_explore_response(p);
             } catch (StubError e) {
                 // nop.
             } catch (DeserializeError e) {

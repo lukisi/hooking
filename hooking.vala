@@ -73,7 +73,8 @@ namespace Netsukuku.Hooking
         {
             arc_list = new ArrayList<IIdentityArc>();
             this.map_paths = map_paths;
-            message_routing = new MessageRouting.MessageRouting(map_paths, execute_search);
+            message_routing = new MessageRouting.MessageRouting
+                (map_paths, execute_search, execute_explore);
         }
 
         private void execute_search
@@ -81,6 +82,12 @@ namespace Netsukuku.Hooking
         int max_host_lvl, int reserve_request_id,
         out int min_host_lvl, out int? final_host_lvl, out int? real_new_pos, out int? real_new_eldership,
         out Gee.List<PairTupleGNodeInt>? set_adjacent, out int? new_conn_vir_pos, out int? new_eldership)
+        {
+            error("not implemented yet");
+        }
+
+        private void execute_explore
+        (int requested_lvl, out TupleGNode result)
         {
             error("not implemented yet");
         }
@@ -143,14 +150,16 @@ namespace Netsukuku.Hooking
         route_explore_request (IExploreGNodeRequest p0,
                     CallerInfo? _rpc_caller=null)
         {
-            error("not implemented yet");
+            if (! (p0 is ExploreGNodeRequest)) return; // ignore bad pkt.
+            message_routing.route_explore_request((ExploreGNodeRequest)p0);
         }
 
         public void
         route_explore_response (IExploreGNodeResponse p1,
                     CallerInfo? _rpc_caller=null)
         {
-            error("not implemented yet");
+            if (! (p1 is ExploreGNodeResponse)) return; // ignore bad pkt.
+            message_routing.route_explore_response((ExploreGNodeResponse)p1);
         }
 
         public void
