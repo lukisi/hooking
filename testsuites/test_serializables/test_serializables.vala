@@ -42,6 +42,8 @@ public interface Netsukuku.IEntryData : Object {}
 public interface Netsukuku.ISearchMigrationPathRequest : Object {}
 public interface Netsukuku.ISearchMigrationPathErrorPkt : Object {}
 public interface Netsukuku.ISearchMigrationPathResponse : Object {}
+public interface Netsukuku.IExploreGNodeRequest : Object {}
+public interface Netsukuku.IExploreGNodeResponse : Object {}
 
 class HookingTester : Object
 {
@@ -279,6 +281,73 @@ class HookingTester : Object
         assert(pk1.set_adjacent.size == 0);
     }
 
+    public void test_ExploreGNodeRequest()
+    {
+        ExploreGNodeRequest pk0;
+        {
+            Json.Node node;
+            {
+                PathHop ph0 = new PathHop();
+                ph0.visiting_gnode = make_tuplegnode();
+                ph0.previous_migrating_gnode = null;
+                PathHop ph1 = new PathHop();
+                ph1.visiting_gnode = make_tuplegnode();
+                ph1.previous_migrating_gnode = make_tuplegnode2();
+                Gee.List<PathHop> path_hops = new ArrayList<PathHop>.wrap({ph0, ph1});
+                int requested_lvl = 4;
+                ExploreGNodeRequest pk = new ExploreGNodeRequest(path_hops, requested_lvl);
+                pk.origin = make_tuplegnode();
+                pk.pkt_id = 567;
+                node = Json.gobject_serialize(pk);
+            }
+            pk0 = (ExploreGNodeRequest)Json.gobject_deserialize(typeof(ExploreGNodeRequest), node);
+        }
+        assert(pk0.path_hops.size == 2);
+        assert_tuplegnode(pk0.path_hops[0].visiting_gnode);
+        assert(pk0.path_hops[0].previous_migrating_gnode == null);
+        assert_tuplegnode(pk0.path_hops[1].visiting_gnode);
+        assert_tuplegnode2(pk0.path_hops[1].previous_migrating_gnode);
+        assert(pk0.requested_lvl == 4);
+        assert_tuplegnode(pk0.origin);
+        assert(pk0.pkt_id == 567);
+
+        ExploreGNodeRequest pk1;
+        {
+            Json.Node node;
+            {
+                ExploreGNodeRequest pk = pk0;
+                pk.path_hops.remove_at(0);
+                node = Json.gobject_serialize(pk);
+            }
+            pk1 = (ExploreGNodeRequest)Json.gobject_deserialize(typeof(ExploreGNodeRequest), node);
+        }
+        assert(pk1.path_hops.size == 1);
+        assert_tuplegnode(pk1.path_hops[0].visiting_gnode);
+        assert_tuplegnode2(pk1.path_hops[0].previous_migrating_gnode);
+        assert(pk1.requested_lvl == 4);
+        assert_tuplegnode(pk1.origin);
+        assert(pk1.pkt_id == 567);
+    }
+
+    public void test_ExploreGNodeResponse()
+    {
+        ExploreGNodeResponse pk0;
+        {
+            Json.Node node;
+            {
+                ExploreGNodeResponse pk = new ExploreGNodeResponse();
+                pk.pkt_id = 567;
+                pk.origin = make_tuplegnode();
+                pk.result = make_tuplegnode2();
+                node = Json.gobject_serialize(pk);
+            }
+            pk0 = (ExploreGNodeResponse)Json.gobject_deserialize(typeof(ExploreGNodeResponse), node);
+        }
+        assert(pk0.pkt_id == 567);
+        assert_tuplegnode(pk0.origin);
+        assert_tuplegnode2(pk0.result);
+    }
+
     public static int main(string[] args)
     {
         GLib.Test.init(ref args);
@@ -316,6 +385,18 @@ class HookingTester : Object
             var x = new HookingTester();
             x.set_up();
             x.test_SearchMigrationPathResponse();
+            x.tear_down();
+        });
+        GLib.Test.add_func ("/Serializables/ExploreGNodeRequest", () => {
+            var x = new HookingTester();
+            x.set_up();
+            x.test_ExploreGNodeRequest();
+            x.tear_down();
+        });
+        GLib.Test.add_func ("/Serializables/ExploreGNodeResponse", () => {
+            var x = new HookingTester();
+            x.set_up();
+            x.test_ExploreGNodeResponse();
             x.tear_down();
         });
         GLib.Test.run();

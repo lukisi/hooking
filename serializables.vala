@@ -540,10 +540,19 @@ namespace Netsukuku.Hooking
         }
     }
 
-/*
-    internal class Packet : Object
+    internal class ExploreGNodeRequest : Object, Json.Serializable, IExploreGNodeRequest
     {
-        public TupleGNode sample_prop {get; set;}
+        public int pkt_id {get; set;}
+        public TupleGNode origin {get; set;}
+        public Gee.List<PathHop> path_hops {get; set;}
+        public int requested_lvl {get; set;}
+
+        public ExploreGNodeRequest(Gee.List<PathHop> path_hops, int requested_lvl)
+        {
+            this.path_hops = new ArrayList<PathHop>();
+            this.path_hops.add_all(path_hops);
+            this.requested_lvl = requested_lvl;
+        }
 
         public bool deserialize_property
         (string property_name,
@@ -553,10 +562,27 @@ namespace Netsukuku.Hooking
         {
             @value = 0;
             switch (property_name) {
-            case "sample_prop":
-            case "sample-prop":
+            case "origin":
                 try {
                     @value = deserialize_tuplegnode(property_node);
+                } catch (HelperDeserializeError e) {
+                    return false;
+                }
+                break;
+            case "pkt_id":
+            case "pkt-id":
+            case "requested_lvl":
+            case "requested-lvl":
+                try {
+                    @value = deserialize_int(property_node);
+                } catch (HelperDeserializeError e) {
+                    return false;
+                }
+                break;
+            case "path_hops":
+            case "path-hops":
+                try {
+                    @value = deserialize_list_pathhop(property_node);
                 } catch (HelperDeserializeError e) {
                     return false;
                 }
@@ -579,15 +605,81 @@ namespace Netsukuku.Hooking
          GLib.ParamSpec pspec)
         {
             switch (property_name) {
-            case "sample_prop":
-            case "sample-prop":
+            case "origin":
                 return serialize_tuplegnode((TupleGNode)@value);
+            case "pkt_id":
+            case "pkt-id":
+            case "requested_lvl":
+            case "requested-lvl":
+                return serialize_int((int)@value);
+            case "path_hops":
+            case "path-hops":
+                return serialize_list_pathhop((Gee.List<PathHop>)@value);
             default:
                 error(@"wrong param $(property_name)");
             }
         }
     }
-*/
+
+    internal class ExploreGNodeResponse : Object, Json.Serializable, IExploreGNodeResponse
+    {
+        public int pkt_id {get; set;}
+        public TupleGNode origin {get; set;}
+        public TupleGNode result {get; set;}
+
+        public bool deserialize_property
+        (string property_name,
+         out GLib.Value @value,
+         GLib.ParamSpec pspec,
+         Json.Node property_node)
+        {
+            @value = 0;
+            switch (property_name) {
+            case "origin":
+            case "result":
+                try {
+                    @value = deserialize_tuplegnode(property_node);
+                } catch (HelperDeserializeError e) {
+                    return false;
+                }
+                break;
+            case "pkt_id":
+            case "pkt-id":
+                try {
+                    @value = deserialize_int(property_node);
+                } catch (HelperDeserializeError e) {
+                    return false;
+                }
+                break;
+            default:
+                return false;
+            }
+            return true;
+        }
+
+        public unowned GLib.ParamSpec? find_property
+        (string name)
+        {
+            return get_class().find_property(name);
+        }
+
+        public Json.Node serialize_property
+        (string property_name,
+         GLib.Value @value,
+         GLib.ParamSpec pspec)
+        {
+            switch (property_name) {
+            case "origin":
+            case "result":
+                return serialize_tuplegnode((TupleGNode)@value);
+            case "pkt_id":
+            case "pkt-id":
+                return serialize_int((int)@value);
+            default:
+                error(@"wrong param $(property_name)");
+            }
+        }
+    }
 
     internal errordomain HelperDeserializeError {
         GENERIC
