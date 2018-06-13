@@ -44,6 +44,7 @@ public interface Netsukuku.ISearchMigrationPathErrorPkt : Object {}
 public interface Netsukuku.ISearchMigrationPathResponse : Object {}
 public interface Netsukuku.IExploreGNodeRequest : Object {}
 public interface Netsukuku.IExploreGNodeResponse : Object {}
+public interface Netsukuku.IDeleteReservationRequest : Object {}
 
 class HookingTester : Object
 {
@@ -348,6 +349,23 @@ class HookingTester : Object
         assert_tuplegnode2(pk0.result);
     }
 
+    public void test_DeleteReservationRequest()
+    {
+        DeleteReservationRequest pk0;
+        {
+            Json.Node node;
+            {
+                DeleteReservationRequest pk = new DeleteReservationRequest();
+                pk.reserve_request_id = 567;
+                pk.dest_gnode = make_tuplegnode();
+                node = Json.gobject_serialize(pk);
+            }
+            pk0 = (DeleteReservationRequest)Json.gobject_deserialize(typeof(DeleteReservationRequest), node);
+        }
+        assert(pk0.reserve_request_id == 567);
+        assert_tuplegnode(pk0.dest_gnode);
+    }
+
     public static int main(string[] args)
     {
         GLib.Test.init(ref args);
@@ -397,6 +415,12 @@ class HookingTester : Object
             var x = new HookingTester();
             x.set_up();
             x.test_ExploreGNodeResponse();
+            x.tear_down();
+        });
+        GLib.Test.add_func ("/Serializables/DeleteReservationRequest", () => {
+            var x = new HookingTester();
+            x.set_up();
+            x.test_DeleteReservationRequest();
             x.tear_down();
         });
         GLib.Test.run();

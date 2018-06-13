@@ -621,64 +621,17 @@ namespace Netsukuku.Hooking
         }
     }
 
-    internal class ExploreGNodeResponse : Object, Json.Serializable, IExploreGNodeResponse
+    internal class ExploreGNodeResponse : Object, IExploreGNodeResponse
     {
         public int pkt_id {get; set;}
         public TupleGNode origin {get; set;}
         public TupleGNode result {get; set;}
+    }
 
-        public bool deserialize_property
-        (string property_name,
-         out GLib.Value @value,
-         GLib.ParamSpec pspec,
-         Json.Node property_node)
-        {
-            @value = 0;
-            switch (property_name) {
-            case "origin":
-            case "result":
-                try {
-                    @value = deserialize_tuplegnode(property_node);
-                } catch (HelperDeserializeError e) {
-                    return false;
-                }
-                break;
-            case "pkt_id":
-            case "pkt-id":
-                try {
-                    @value = deserialize_int(property_node);
-                } catch (HelperDeserializeError e) {
-                    return false;
-                }
-                break;
-            default:
-                return false;
-            }
-            return true;
-        }
-
-        public unowned GLib.ParamSpec? find_property
-        (string name)
-        {
-            return get_class().find_property(name);
-        }
-
-        public Json.Node serialize_property
-        (string property_name,
-         GLib.Value @value,
-         GLib.ParamSpec pspec)
-        {
-            switch (property_name) {
-            case "origin":
-            case "result":
-                return serialize_tuplegnode((TupleGNode)@value);
-            case "pkt_id":
-            case "pkt-id":
-                return serialize_int((int)@value);
-            default:
-                error(@"wrong param $(property_name)");
-            }
-        }
+    internal class DeleteReservationRequest : Object, IDeleteReservationRequest
+    {
+        public TupleGNode dest_gnode {get; set;}
+        public int reserve_request_id {get; set;}
     }
 
     internal errordomain HelperDeserializeError {
