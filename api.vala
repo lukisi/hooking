@@ -34,4 +34,16 @@ namespace Netsukuku.Hooking
     public interface IIdentityArc : Object
     {
     }
+
+    // TODO delegates or a interface?
+    public errordomain CoordReserveError {GENERIC}
+    public delegate void CoordReserve(int host_lvl, int reserve_request_id, out int new_pos, out int new_eldership) throws CoordReserveError;
+
+    public class PairHCoordInt : Object
+    {
+        public int level_my_gnode;
+        public int pos_my_border_gnode;
+        public HCoord hc_adjacent;
+    }
+    public delegate Gee.List<PairHCoordInt> AdjacentToMyGnode(int level_adjacent_gnodes, int level_my_gnode);
 }

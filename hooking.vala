@@ -65,6 +65,8 @@ namespace Netsukuku.Hooking
         private Gee.List<int> my_pos;
         private int subnetlevel;
         private MessageRouting.MessageRouting message_routing;
+        private CoordReserve coord_reserve;
+        private AdjacentToMyGnode adjacent_to_my_gnode;
 
         public signal void same_network(IIdentityArc ia);
         public signal void another_network(IIdentityArc ia, int64 network_id);
@@ -88,6 +90,8 @@ namespace Netsukuku.Hooking
             this.subnetlevel = subnetlevel;
             message_routing = new MessageRouting.MessageRouting
                 (map_paths, execute_search, execute_explore, execute_delete_reserve);
+            // TODO how do we pass coord_reserve ?
+            // TODO how do we pass adjacent_to_my_gnode ?
         }
 
         private bool tuple_has_virtual_pos(TupleGNode t)
@@ -105,7 +109,71 @@ namespace Netsukuku.Hooking
         out int min_host_lvl, out int? final_host_lvl, out int? real_new_pos, out int? real_new_eldership,
         out Gee.List<PairTupleGNodeInt>? set_adjacent, out int? new_conn_vir_pos, out int? new_eldership)
         {
-            error("not implemented yet");
+            // Assert (I am in visiting_gnode) AND (I am real). Else, ignore message.
+            if (! i_am_inside(visiting_gnode, map_paths)) tasklet.exit_tasklet(null);
+            if (tuple_has_virtual_pos(make_tuple_from_level(0, map_paths))) tasklet.exit_tasklet(null);
+            min_host_lvl = level(visiting_gnode, map_paths);
+            final_host_lvl = null;
+            real_new_pos = null;
+            real_new_eldership = null;
+            set_adjacent = null;
+            new_conn_vir_pos = null;
+            new_eldership = null;
+            int pos = -1;
+            int eldership = -1;
+            while (min_host_lvl <= max_host_lvl)
+            {
+                try {
+                    coord_reserve(min_host_lvl, reserve_request_id, out pos, out eldership);
+                } catch (CoordReserveError e) {
+                    min_host_lvl++;
+                    continue;
+                }
+                break;
+            }
+            if (min_host_lvl > max_host_lvl)
+            {
+                // this g-node cannot reserve a place inside max_host_lvl
+                return;
+            }
+            final_host_lvl = min_host_lvl;
+            if (pos < gsizes[final_host_lvl - 1])
+            {
+                real_new_pos = pos;
+                real_new_eldership = eldership;
+                return;
+            }
+            new_conn_vir_pos = pos;
+            new_eldership = eldership;
+            final_host_lvl++;
+            while (final_host_lvl <= max_host_lvl)
+            {
+                try {
+                    coord_reserve(final_host_lvl, reserve_request_id, out pos, out eldership);
+                } catch (CoordReserveError e) {
+                    assert_not_reached();
+                }
+                if (pos < gsizes[final_host_lvl - 1])
+                {
+                    real_new_pos = pos;
+                    real_new_eldership = eldership;
+                    break;
+                }
+                final_host_lvl++;
+            }
+            set_adjacent = new ArrayList<PairTupleGNodeInt>();
+            for (int i = min_host_lvl; i < levels; i++)
+            {
+                Gee.List<PairHCoordInt> adjacent_hc_set = adjacent_to_my_gnode(i, min_host_lvl);
+                foreach (PairHCoordInt adjacent_hc in adjacent_hc_set)
+                {
+                    HCoord hc = adjacent_hc.hc_adjacent;
+                    int border_real_pos = adjacent_hc.pos_my_border_gnode;
+                    TupleGNode adj = make_tuple_from_hc(hc, map_paths);
+                    set_adjacent.add(new PairTupleGNodeInt(adj, border_real_pos));
+                }
+            }
+            return;
         }
 
         private void execute_explore
