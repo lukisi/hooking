@@ -22,15 +22,49 @@ namespace Netsukuku.Hooking
 {
     internal class SolutionStep : Object
     {
+        public SolutionStep
+        (TupleGNode visiting_gnode,
+        TupleGNode? previous_migrating_gnode=null,
+        int? previous_gnode_new_conn_vir_pos=null,
+        int? previous_gnode_new_eldership=null,
+        SolutionStep? parent=null)
+        {
+            this.visiting_gnode = visiting_gnode;
+            this.previous_migrating_gnode = previous_migrating_gnode;
+            this.previous_gnode_new_conn_vir_pos = previous_gnode_new_conn_vir_pos;
+            this.previous_gnode_new_eldership = previous_gnode_new_eldership;
+            this.parent = parent;
+        }
+
         public TupleGNode visiting_gnode;
         public TupleGNode? previous_migrating_gnode;
         public int? previous_gnode_new_conn_vir_pos;
         public int? previous_gnode_new_eldership;
         public SolutionStep? parent;
+
+        public int get_distance()
+        {
+            int ret = 0;
+            SolutionStep v = this;
+            while (v.parent != null)
+            {
+                ret++;
+                v = v.parent;
+            }
+            return ret;
+        }
     }
 
     internal class Solution : Object
     {
+        public Solution(SolutionStep leaf, int final_host_lvl, int real_new_pos, int real_new_eldership)
+        {
+            this.leaf = leaf;
+            this.final_host_lvl = final_host_lvl;
+            this.real_new_pos = real_new_pos;
+            this.real_new_eldership = real_new_eldership;
+        }
+
         public SolutionStep leaf;
         public int final_host_lvl;
         public int real_new_pos;
