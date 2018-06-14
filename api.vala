@@ -29,21 +29,26 @@ namespace Netsukuku.Hooking
         public abstract bool exists(int level, int pos);
         public abstract int get_eldership(int level, int pos);
         public abstract IHookingManagerStub gateway(int level, int pos);
+        public abstract Gee.List<IPairHCoordInt> adjacent_to_my_gnode(int level_adjacent_gnodes, int level_my_gnode);
     }
+
+    public interface IPairHCoordInt : Object
+    {
+        public abstract int get_level_my_gnode();
+        public abstract int get_pos_my_border_gnode();
+        public abstract HCoord get_hc_adjacent();
+    }
+
+    public interface ICoordinator : Object
+    {
+        public abstract int get_n_nodes();
+        public abstract void reserve(int host_lvl, int reserve_request_id, out int new_pos, out int new_eldership) throws CoordReserveError;
+        public abstract void delete_reserve(int host_lvl, int reserve_request_id);
+    }
+
+    public errordomain CoordReserveError {GENERIC}
 
     public interface IIdentityArc : Object
     {
     }
-
-    // TODO delegates or a interface?
-    public errordomain CoordReserveError {GENERIC}
-    public delegate void CoordReserve(int host_lvl, int reserve_request_id, out int new_pos, out int new_eldership) throws CoordReserveError;
-
-    public class PairHCoordInt : Object
-    {
-        public int level_my_gnode;
-        public int pos_my_border_gnode;
-        public HCoord hc_adjacent;
-    }
-    public delegate Gee.List<PairHCoordInt> AdjacentToMyGnode(int level_adjacent_gnodes, int level_my_gnode);
 }

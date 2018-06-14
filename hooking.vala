@@ -60,13 +60,12 @@ namespace Netsukuku.Hooking
 
         private Gee.List<IIdentityArc> arc_list;
         private IHookingMapPaths map_paths;
+        private ICoordinator coord;
         private int levels;
         private Gee.List<int> gsizes;
         private Gee.List<int> my_pos;
         private int subnetlevel;
         private MessageRouting.MessageRouting message_routing;
-        private CoordReserve coord_reserve;
-        private AdjacentToMyGnode adjacent_to_my_gnode;
 
         public signal void same_network(IIdentityArc ia);
         public signal void another_network(IIdentityArc ia, int64 network_id);
@@ -75,7 +74,7 @@ namespace Netsukuku.Hooking
         public signal void do_prepare_migration(/* TODO */);
         public signal void do_finish_migration(/* TODO */);
 
-        public HookingManager(IHookingMapPaths map_paths, int subnetlevel)
+        public HookingManager(IHookingMapPaths map_paths, ICoordinator coord, int subnetlevel)
         {
             arc_list = new ArrayList<IIdentityArc>();
             this.map_paths = map_paths;
@@ -87,11 +86,10 @@ namespace Netsukuku.Hooking
                 my_pos.add(map_paths.get_my_pos(i));
                 gsizes.add(map_paths.get_gsize(i));
             }
+            this.coord = coord;
             this.subnetlevel = subnetlevel;
             message_routing = new MessageRouting.MessageRouting
                 (map_paths, execute_search, execute_explore, execute_delete_reserve);
-            // TODO how do we pass coord_reserve ?
-            // TODO how do we pass adjacent_to_my_gnode ?
         }
 
         private bool tuple_has_virtual_pos(TupleGNode t)
@@ -124,7 +122,7 @@ namespace Netsukuku.Hooking
             while (min_host_lvl <= max_host_lvl)
             {
                 try {
-                    coord_reserve(min_host_lvl, reserve_request_id, out pos, out eldership);
+                    coord.reserve(min_host_lvl, reserve_request_id, out pos, out eldership);
                 } catch (CoordReserveError e) {
                     min_host_lvl++;
                     continue;
@@ -149,7 +147,7 @@ namespace Netsukuku.Hooking
             while (final_host_lvl <= max_host_lvl)
             {
                 try {
-                    coord_reserve(final_host_lvl, reserve_request_id, out pos, out eldership);
+                    coord.reserve(final_host_lvl, reserve_request_id, out pos, out eldership);
                 } catch (CoordReserveError e) {
                     assert_not_reached();
                 }
@@ -164,11 +162,11 @@ namespace Netsukuku.Hooking
             set_adjacent = new ArrayList<PairTupleGNodeInt>();
             for (int i = min_host_lvl; i < levels; i++)
             {
-                Gee.List<PairHCoordInt> adjacent_hc_set = adjacent_to_my_gnode(i, min_host_lvl);
-                foreach (PairHCoordInt adjacent_hc in adjacent_hc_set)
+                Gee.List<IPairHCoordInt> adjacent_hc_set = map_paths.adjacent_to_my_gnode(i, min_host_lvl);
+                foreach (IPairHCoordInt adjacent_hc in adjacent_hc_set)
                 {
-                    HCoord hc = adjacent_hc.hc_adjacent;
-                    int border_real_pos = adjacent_hc.pos_my_border_gnode;
+                    HCoord hc = adjacent_hc.get_hc_adjacent();
+                    int border_real_pos = adjacent_hc.get_pos_my_border_gnode();
                     TupleGNode adj = make_tuple_from_hc(hc, map_paths);
                     set_adjacent.add(new PairTupleGNodeInt(adj, border_real_pos));
                 }
@@ -179,13 +177,15 @@ namespace Netsukuku.Hooking
         private void execute_explore
         (int requested_lvl, out TupleGNode result)
         {
-            error("not implemented yet");
+            result = make_tuple_from_level(requested_lvl, map_paths);
+            return;
         }
 
         private void execute_delete_reserve
         (TupleGNode dest_gnode, int reserve_request_id)
         {
-            error("not implemented yet");
+            coord.delete_reserve(level(dest_gnode, map_paths), reserve_request_id);
+            return;
         }
 
         public void add_arc(IIdentityArc ia)

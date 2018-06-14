@@ -711,13 +711,6 @@ namespace Netsukuku.Hooking
         }
     }
 
-    internal Gee.List<Object> deserialize_list_object(Json.Node property_node)
-    throws HelperDeserializeError
-    {
-        ListDeserializer<Object> c = new ListDeserializer<Object>();
-        return c.deserialize_list_object(property_node);
-    }
-
     internal Json.Node serialize_list_object(Gee.List<Object> lst)
     {
         Json.Builder b = new Json.Builder();
@@ -842,18 +835,6 @@ namespace Netsukuku.Hooking
     internal Json.Node serialize_tuplegnode(TupleGNode n)
     {
         return serialize_object(n);
-    }
-
-    internal Gee.List<TupleGNode> deserialize_list_tuplegnode(Json.Node property_node)
-    throws HelperDeserializeError
-    {
-        ListDeserializer<TupleGNode> c = new ListDeserializer<TupleGNode>();
-        return c.deserialize_list_object(property_node);
-    }
-
-    internal Json.Node serialize_list_tuplegnode(Gee.List<TupleGNode> lst)
-    {
-        return serialize_list_object(lst);
     }
 
     internal Gee.List<PathHop> deserialize_list_pathhop(Json.Node property_node)
