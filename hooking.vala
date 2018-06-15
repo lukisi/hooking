@@ -89,7 +89,7 @@ namespace Netsukuku.Hooking
             this.coord = coord;
             this.subnetlevel = subnetlevel;
             message_routing = new MessageRouting.MessageRouting
-                (map_paths, execute_search, execute_explore, execute_delete_reserve);
+                (map_paths, execute_search, execute_explore, execute_delete_reserve, execute_mig);
         }
 
         private bool tuple_has_virtual_pos(TupleGNode t)
@@ -186,6 +186,37 @@ namespace Netsukuku.Hooking
         {
             coord.delete_reserve(level(dest_gnode, map_paths), reserve_request_id);
             return;
+        }
+
+        private void execute_mig
+        (RequestPacket p)
+        {
+            if (p.operation == RequestPacketType.PREPARE_MIGRATION)
+            {
+                int lvl = level(p.dest, map_paths);
+                /* TODO
+                Object prepare_migration_data = new PrepareMigrationData(p.migration_id);
+                coord.prepare_migration(lvl, prepare_migration_data);
+                */
+            }
+            else if (p.operation == RequestPacketType.FINISH_MIGRATION)
+            {
+                int lvl = level(p.dest, map_paths);
+                /* TODO
+                Object finish_migration_data = new FinishMigrationData
+                    (p.migration_id,
+                    p.conn_gnode_pos,
+                    p.host_gnode,
+                    p.real_new_pos,
+                    p.real_new_eldership);
+                coord.finish_migration(lvl, finish_migration_data);
+                */
+            }
+            else
+            {
+                // ignore pkt
+                tasklet.exit_tasklet(null);
+            }
         }
 
         public void add_arc(IIdentityArc ia)
@@ -335,6 +366,32 @@ namespace Netsukuku.Hooking
             return solutions;
         }
 
+        private void execute_shortest_mig(Solution sol)
+        throws MigrationPathExecuteFailureError
+        {
+            Gee.List<MigData> migs = get_migs(sol, map_paths);
+            for (int i = migs.size - 1; i >= 0; i--)
+            {
+                MigData mig = migs[i];
+                RequestPacket p0 = build_request_packet_prepare(mig);
+                message_routing.send_mig_request(mig.mig_gnode, p0);
+            }
+            // just for farthest step
+            {
+                int i = migs.size - 1;
+                MigData mig = migs[i];
+                RequestPacket p0 = build_request_packet_finish(mig);
+                message_routing.send_mig_request(mig.mig_gnode, p0);
+            }
+            for (int i = migs.size - 2; i >= 0; i--)
+            {
+                MigData mig = migs[i];
+                MigData mig_next = migs[i+1];
+                RequestPacket p0 = build_request_packet_finish(mig, mig_next);
+                message_routing.send_mig_request(mig.mig_gnode, p0);
+            }
+        }
+
         /* Remotable methods
          */
 
@@ -351,7 +408,25 @@ namespace Netsukuku.Hooking
                     CallerInfo? _rpc_caller=null)
         throws NoMigrationPathFoundError, MigrationPathExecuteFailureError
         {
-            error("not implemented yet");
+            int epsilon = 3;
+            int first_host_lvl = lvl + 1;
+            int ok_host_lvl = lvl + epsilon;
+            int reserve_request_id = PRNGen.int_range(0, int.MAX);
+            Gee.List<Solution> solutions = find_shortest_mig(reserve_request_id, first_host_lvl, ok_host_lvl);
+            if (solutions.is_empty) throw new NoMigrationPathFoundError.GENERIC("");
+            Solution sol = solutions.last();
+            if (sol.leaf.get_distance() == 1)
+            {
+                // direct access, no migrations needed
+                // TODO
+                error("not implemented yet");
+            }
+            else
+            {
+                execute_shortest_mig(sol);
+                // if it succeeds TODO
+                error("not implemented yet");
+            }
         }
 
         public void
@@ -398,14 +473,16 @@ namespace Netsukuku.Hooking
         route_mig_request (IRequestPacket p0,
                     CallerInfo? _rpc_caller=null)
         {
-            error("not implemented yet");
+            if (! (p0 is RequestPacket)) return; // ignore bad pkt.
+            message_routing.route_mig_request((RequestPacket)p0);
         }
 
         public void
         route_mig_response (IResponsePacket p1,
                     CallerInfo? _rpc_caller=null)
         {
-            error("not implemented yet");
+            if (! (p1 is ResponsePacket)) return; // ignore bad pkt.
+            message_routing.route_mig_response((ResponsePacket)p1);
         }
 
         public void

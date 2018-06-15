@@ -44,6 +44,9 @@ namespace Netsukuku.Hooking.MessageRouting
         (TupleGNode dest_gnode,
         int reserve_request_id);
 
+    internal delegate void ExecuteMig
+        (RequestPacket p);
+
     internal class MessageRouting : Object
     {
         private IHookingMapPaths map_paths;
@@ -54,12 +57,14 @@ namespace Netsukuku.Hooking.MessageRouting
         private ExecuteSearchDelegate execute_search;
         private ExecuteExploreDelegate execute_explore;
         private ExecuteDeleteReserveDelegate execute_delete_reserve;
+        private ExecuteMig execute_mig;
 
         public MessageRouting
         (IHookingMapPaths map_paths,
         owned ExecuteSearchDelegate execute_search,
         owned ExecuteExploreDelegate execute_explore,
-        owned ExecuteDeleteReserveDelegate execute_delete_reserve)
+        owned ExecuteDeleteReserveDelegate execute_delete_reserve,
+        owned ExecuteMig execute_mig)
         {
             this.map_paths = map_paths;
             levels = map_paths.get_levels();
@@ -73,6 +78,7 @@ namespace Netsukuku.Hooking.MessageRouting
             this.execute_search = (owned) execute_search;
             this.execute_explore = (owned) execute_explore;
             this.execute_delete_reserve = (owned) execute_delete_reserve;
+            this.execute_mig = (owned) execute_mig;
             request_id_map = new HashMap<int, IChannel>();
         }
 
@@ -528,6 +534,94 @@ namespace Netsukuku.Hooking.MessageRouting
                     // nop.
                 }
                 return;
+            }
+        }
+
+        public void send_mig_request
+        (TupleGNode dest, RequestPacket p0)
+        throws MigrationPathExecuteFailureError
+        {
+            if (i_am_inside(dest, map_paths))
+            {
+                execute_mig(p0);
+                return;
+            }
+            p0.dest = dest;
+            // prepare to receive response
+            p0.src = make_tuple_from_level(0, map_paths);
+            p0.pkt_id = PRNGen.int_range(0, int.MAX);
+            IChannel ch = tasklet.get_channel();
+            request_id_map[p0.pkt_id] = ch;
+            // send request
+            IHookingManagerStub st = best_gw_to(p0.dest, map_paths);
+            try {
+                st.route_mig_request(p0);
+            } catch (StubError e) {
+                // nop.
+            } catch (DeserializeError e) {
+                // nop.
+            }
+            // wait response with timeout
+            int timeout = 100000; // TODO
+            try {
+                ch.recv_with_timeout(timeout);
+            } catch (ChannelError e) {
+                // TIMEOUT_EXPIRED
+                throw new MigrationPathExecuteFailureError.GENERIC("Timeout.");
+            }
+            return;
+        }
+
+        public void route_mig_request(RequestPacket p0)
+        {
+            if (i_am_inside(p0.dest, map_paths))
+            {
+                execute_mig(p0);
+                // send response
+                ResponsePacket p1 = new ResponsePacket();
+                p1.pkt_id = p0.pkt_id;
+                p1.dest = p0.src;
+                IHookingManagerStub st = best_gw_to(p1.dest, map_paths);
+                try {
+                    st.route_mig_response(p1);
+                } catch (StubError e) {
+                    // nop.
+                } catch (DeserializeError e) {
+                    // nop.
+                }
+            }
+            else
+            {
+                // route request
+                IHookingManagerStub st = best_gw_to(p0.dest, map_paths);
+                try {
+                    st.route_mig_request(p0);
+                } catch (StubError e) {
+                    // nop.
+                } catch (DeserializeError e) {
+                    // nop.
+                }
+            }
+        }
+
+        public void route_mig_response(ResponsePacket p)
+        {
+            if (i_am_inside(p.dest, map_paths))
+            {
+                if (! request_id_map.has_key(p.pkt_id)) return;
+                IChannel ch = request_id_map[p.pkt_id];
+                ch.send(p);
+            }
+            else
+            {
+                IHookingManagerStub st = best_gw_to(p.dest, map_paths);
+                try {
+                    st.route_mig_response(p);
+                } catch (StubError e) {
+                    // nop.
+                } catch (DeserializeError e) {
+                    // nop.
+                }
             }
         }
     }
