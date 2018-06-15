@@ -45,6 +45,13 @@ public interface Netsukuku.ISearchMigrationPathResponse : Object {}
 public interface Netsukuku.IExploreGNodeRequest : Object {}
 public interface Netsukuku.IExploreGNodeResponse : Object {}
 public interface Netsukuku.IDeleteReservationRequest : Object {}
+public interface Netsukuku.IRequestPacket : Object {}
+public interface Netsukuku.IResponsePacket : Object {}
+public enum RequestPacketType
+{
+    PREPARE_MIGRATION=0,
+    FINISH_MIGRATION
+}
 
 class HookingTester : Object
 {
@@ -366,6 +373,77 @@ class HookingTester : Object
         assert_tuplegnode(pk0.dest_gnode);
     }
 
+    public void test_RequestPacket_prepare()
+    {
+        RequestPacket pk0;
+        {
+            Json.Node node;
+            {
+                RequestPacket pk = new RequestPacket();
+                pk.pkt_id = 567;
+                pk.dest = make_tuplegnode();
+                pk.src = make_tuplegnode2();
+                pk.operation = RequestPacketType.PREPARE_MIGRATION;
+                pk.migration_id = 890;
+                node = Json.gobject_serialize(pk);
+            }
+            pk0 = (RequestPacket)Json.gobject_deserialize(typeof(RequestPacket), node);
+        }
+        assert(pk0.pkt_id == 567);
+        assert_tuplegnode(pk0.dest);
+        assert_tuplegnode2(pk0.src);
+        assert(pk0.operation == RequestPacketType.PREPARE_MIGRATION);
+        assert(pk0.migration_id == 890);
+    }
+
+    public void test_RequestPacket_finish()
+    {
+        RequestPacket pk0;
+        {
+            Json.Node node;
+            {
+                RequestPacket pk = new RequestPacket();
+                pk.pkt_id = 567;
+                pk.dest = make_tuplegnode();
+                pk.src = make_tuplegnode2();
+                pk.operation = RequestPacketType.FINISH_MIGRATION;
+                pk.migration_id = 890;
+                pk.conn_gnode_pos = 5;
+                pk.host_gnode = make_tuplegnode();
+                pk.real_new_pos = 1;
+                pk.real_new_eldership = 3;
+                node = Json.gobject_serialize(pk);
+            }
+            pk0 = (RequestPacket)Json.gobject_deserialize(typeof(RequestPacket), node);
+        }
+        assert(pk0.pkt_id == 567);
+        assert_tuplegnode(pk0.dest);
+        assert_tuplegnode2(pk0.src);
+        assert(pk0.operation == RequestPacketType.FINISH_MIGRATION);
+        assert(pk0.migration_id == 890);
+        assert(pk0.conn_gnode_pos == 5);
+        assert_tuplegnode(pk0.host_gnode);
+        assert(pk0.real_new_pos == 1);
+        assert(pk0.real_new_eldership == 3);
+    }
+
+    public void test_ResponsePacket()
+    {
+        ResponsePacket pk0;
+        {
+            Json.Node node;
+            {
+                ResponsePacket pk = new ResponsePacket();
+                pk.pkt_id = 567;
+                pk.dest = make_tuplegnode();
+                node = Json.gobject_serialize(pk);
+            }
+            pk0 = (ResponsePacket)Json.gobject_deserialize(typeof(ResponsePacket), node);
+        }
+        assert(pk0.pkt_id == 567);
+        assert_tuplegnode(pk0.dest);
+    }
+
     public static int main(string[] args)
     {
         GLib.Test.init(ref args);
@@ -421,6 +499,24 @@ class HookingTester : Object
             var x = new HookingTester();
             x.set_up();
             x.test_DeleteReservationRequest();
+            x.tear_down();
+        });
+        GLib.Test.add_func ("/Serializables/RequestPacket:PREPARE_MIGRATION", () => {
+            var x = new HookingTester();
+            x.set_up();
+            x.test_RequestPacket_prepare();
+            x.tear_down();
+        });
+        GLib.Test.add_func ("/Serializables/RequestPacket:FINISH_MIGRATION", () => {
+            var x = new HookingTester();
+            x.set_up();
+            x.test_RequestPacket_finish();
+            x.tear_down();
+        });
+        GLib.Test.add_func ("/Serializables/ResponsePacket", () => {
+            var x = new HookingTester();
+            x.set_up();
+            x.test_ResponsePacket();
             x.tear_down();
         });
         GLib.Test.run();

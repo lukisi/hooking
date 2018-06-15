@@ -189,5 +189,93 @@ namespace Netsukuku.Hooking
         }
         return path_hops;
     }
+
+    internal class MigData : Object
+    {
+        public int migration_id;
+        public TupleGNode mig_gnode;
+        public int conn_gnode_pos;
+        public int prev_mig_gnode_new_eldership;
+        public TupleGNode host_gnode;
+        public int? mig_gnode_new_pos;
+        public int? final_mig_gnode_new_pos;
+        public int? final_mig_gnode_new_eldership;
+    }
+
+    internal Gee.List<MigData> get_migs(Solution sol, IHookingMapPaths map_paths)
+    {
+        int levels = map_paths.get_levels();
+        Gee.List<MigData> migs = new ArrayList<MigData>();
+        assert(sol.leaf.parent != null);
+        bool last = true;
+        SolutionStep? ss_prev = null;
+        SolutionStep ss = sol.leaf;
+        while (ss.parent != null)
+        {
+            MigData mig = new MigData();
+            mig.migration_id = PRNGen.int_range(0, int.MAX);
+            mig.mig_gnode = (TupleGNode)dup_object(ss.previous_migrating_gnode);
+            mig.conn_gnode_pos = ss.previous_gnode_new_conn_vir_pos;
+            mig.prev_mig_gnode_new_eldership = ss.previous_gnode_new_eldership;
+            mig.host_gnode = (TupleGNode)dup_object(ss.visiting_gnode);
+            if (last)
+            {
+                int toremove = mig.host_gnode.pos.size - (levels - sol.final_host_lvl);
+                for (int i = 0; i < toremove; i++)
+                {
+                    mig.host_gnode.pos.remove_at(0);
+                    mig.host_gnode.eldership.remove_at(0);
+                }
+            }
+            mig.mig_gnode_new_pos = null;
+            if (ss_prev != null) mig.mig_gnode_new_pos = ss_prev.previous_migrating_gnode.pos[0];
+            if (last)
+            {
+                mig.final_mig_gnode_new_pos = sol.real_new_pos;
+                mig.final_mig_gnode_new_eldership = sol.real_new_eldership;
+            }
+            migs.insert(0, mig);
+            last = false;
+            ss_prev = ss;
+            ss = ss.parent;
+        }
+        return migs;
+    }
+
+    // RequestPacket in in file serializables
+
+    internal enum RequestPacketType
+    {
+        PREPARE_MIGRATION=0,
+        FINISH_MIGRATION
+    }
+
+    internal RequestPacket build_request_packet_prepare(MigData mig)
+    {
+        RequestPacket ret = new RequestPacket();
+        ret.operation = RequestPacketType.PREPARE_MIGRATION;
+        ret.migration_id = mig.migration_id;
+        return ret;
+    }
+
+    internal RequestPacket build_request_packet_finish(MigData mig, MigData? mig_next=null)
+    {
+        RequestPacket ret = new RequestPacket();
+        ret.operation = RequestPacketType.FINISH_MIGRATION;
+        ret.migration_id = mig.migration_id;
+        ret.conn_gnode_pos = mig.conn_gnode_pos;
+        ret.host_gnode = mig.host_gnode;
+        if (mig_next == null)
+        {
+            ret.real_new_pos = mig.final_mig_gnode_new_pos;
+            ret.real_new_eldership = mig.final_mig_gnode_new_eldership;
+        }
+        else
+        {
+            ret.real_new_pos = mig.mig_gnode_new_pos;
+            ret.real_new_eldership = mig_next.prev_mig_gnode_new_eldership;
+        }
+        return ret;
+    }
 }
 

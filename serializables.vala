@@ -634,6 +634,25 @@ namespace Netsukuku.Hooking
         public int reserve_request_id {get; set;}
     }
 
+    internal class RequestPacket : Object, IRequestPacket
+    {
+        public int pkt_id {get; set;}
+        public TupleGNode dest {get; set;}
+        public TupleGNode src {get; set;}
+        public RequestPacketType operation {get; set;}
+        public int migration_id {get; set;}
+        public int conn_gnode_pos {get; set;}
+        public TupleGNode host_gnode {get; set;}
+        public int real_new_pos {get; set;}
+        public int real_new_eldership {get; set;}
+    }
+
+    internal class ResponsePacket : Object, IResponsePacket
+    {
+        public int pkt_id {get; set;}
+        public TupleGNode dest {get; set;}
+    }
+
     internal errordomain HelperDeserializeError {
         GENERIC
     }
