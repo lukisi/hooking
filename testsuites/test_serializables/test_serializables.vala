@@ -47,6 +47,7 @@ public interface Netsukuku.IExploreGNodeResponse : Object {}
 public interface Netsukuku.IDeleteReservationRequest : Object {}
 public interface Netsukuku.IRequestPacket : Object {}
 public interface Netsukuku.IResponsePacket : Object {}
+public interface Netsukuku.INetworkData : Object {}
 public enum RequestPacketType
 {
     PREPARE_MIGRATION=0,
@@ -61,6 +62,35 @@ class HookingTester : Object
 
     public void tear_down ()
     {
+    }
+
+    public void test_NetworkData()
+    {
+        NetworkData nd0;
+        {
+            Json.Node node;
+            {
+                NetworkData nd = new NetworkData();
+                nd.neighbor_pos = new ArrayList<int>.wrap({1,0,0});
+                nd.gsizes = new ArrayList<int>.wrap({2,2,4});
+                nd.network_id = 482374327583758;
+                nd.neighbor_min_level = 1;
+                nd.neighbor_n_nodes = 1234;
+                node = Json.gobject_serialize(nd);
+            }
+            nd0 = (NetworkData)Json.gobject_deserialize(typeof(NetworkData), node);
+        }
+        assert(nd0.neighbor_pos.size == 3);
+        assert(nd0.neighbor_pos[0] == 1);
+        assert(nd0.neighbor_pos[1] == 0);
+        assert(nd0.neighbor_pos[2] == 0);
+        assert(nd0.gsizes.size == 3);
+        assert(nd0.gsizes[0] == 2);
+        assert(nd0.gsizes[1] == 2);
+        assert(nd0.gsizes[2] == 4);
+        assert(nd0.network_id == 482374327583758);
+        assert(nd0.neighbor_min_level == 1);
+        assert(nd0.neighbor_n_nodes == 1234);
     }
 
     public void test_entrydata()
@@ -447,6 +477,12 @@ class HookingTester : Object
     public static int main(string[] args)
     {
         GLib.Test.init(ref args);
+        GLib.Test.add_func ("/Serializables/NetworkData", () => {
+            var x = new HookingTester();
+            x.set_up();
+            x.test_NetworkData();
+            x.tear_down();
+        });
         GLib.Test.add_func ("/Serializables/EntryData", () => {
             var x = new HookingTester();
             x.set_up();

@@ -399,7 +399,18 @@ namespace Netsukuku.Hooking
                     CallerInfo? _rpc_caller=null)
         throws HookingNotPrincipalError
         {
-            error("not implemented yet");
+            TupleGNode me = make_tuple_from_level(0, map_paths);
+            if (tuple_has_virtual_pos(me)) throw new HookingNotPrincipalError.GENERIC("Not main.");
+            NetworkData ret = new NetworkData();
+            ret.neighbor_pos = new ArrayList<int>();
+            ret.neighbor_pos.add_all(my_pos);
+            ret.gsizes = new ArrayList<int>();
+            ret.gsizes.add_all(gsizes);
+            ret.network_id = map_paths.get_network_id();
+            ret.neighbor_min_level = map_paths.get_subnetlevel();;
+            ret.neighbor_n_nodes = map_paths.get_n_nodes();
+            if (ask_coord) ret.neighbor_n_nodes = coord.get_n_nodes();
+            return ret;
         }
 
         public IEntryData
@@ -407,7 +418,7 @@ namespace Netsukuku.Hooking
                     CallerInfo? _rpc_caller=null)
         throws NoMigrationPathFoundError, MigrationPathExecuteFailureError
         {
-            int epsilon = 3; // TODO It should be a parameter of the network topology, maybe based on lvl.
+            int epsilon = map_paths.get_epsilon(lvl);
             int first_host_lvl = lvl + 1;
             int ok_host_lvl = lvl + epsilon;
             int reserve_request_id = PRNGen.int_range(0, int.MAX);

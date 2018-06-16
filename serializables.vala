@@ -20,14 +20,84 @@ using Gee;
 
 namespace Netsukuku.Hooking
 {
-    /* TODO
-    serializable class NetworkData:
-        int64 network_id
-        List<int> gsizes
-        int neighbor_n_nodes
-        List<int> neighbor_pos
-        int neighbor_min_level
-    */
+    public class NetworkData : Object, Json.Serializable, INetworkData
+    {
+        public int64 network_id {get; set;}
+        public int neighbor_n_nodes {get; set;}
+        public int neighbor_min_level {get; set;}
+        public Gee.List<int> gsizes {get; set;}
+        public Gee.List<int> neighbor_pos {get; set;}
+
+        public bool deserialize_property
+        (string property_name,
+         out GLib.Value @value,
+         GLib.ParamSpec pspec,
+         Json.Node property_node)
+        {
+            @value = 0;
+            switch (property_name) {
+            case "gsizes":
+            case "neighbor_pos":
+            case "neighbor-pos":
+                try {
+                    @value = deserialize_list_int(property_node);
+                } catch (HelperDeserializeError e) {
+                    return false;
+                }
+                break;
+            case "network_id":
+            case "network-id":
+                try {
+                    @value = deserialize_int64(property_node);
+                } catch (HelperDeserializeError e) {
+                    return false;
+                }
+                break;
+            case "neighbor_n_nodes":
+            case "neighbor-n-nodes":
+            case "neighbor_min_level":
+            case "neighbor-min-level":
+                try {
+                    @value = deserialize_int(property_node);
+                } catch (HelperDeserializeError e) {
+                    return false;
+                }
+                break;
+            default:
+                return false;
+            }
+            return true;
+        }
+
+        public unowned GLib.ParamSpec? find_property
+        (string name)
+        {
+            return get_class().find_property(name);
+        }
+
+        public Json.Node serialize_property
+        (string property_name,
+         GLib.Value @value,
+         GLib.ParamSpec pspec)
+        {
+            switch (property_name) {
+            case "gsizes":
+            case "neighbor_pos":
+            case "neighbor-pos":
+                return serialize_list_int((Gee.List<int>)@value);
+            case "network_id":
+            case "network-id":
+                return serialize_int64((int64)@value);
+            case "neighbor_n_nodes":
+            case "neighbor-n-nodes":
+            case "neighbor_min_level":
+            case "neighbor-min-level":
+                return serialize_int((int)@value);
+            default:
+                error(@"wrong param $(property_name)");
+            }
+        }
+    }
 
     /* TODO
     serializable class EvaluateEnterData:
