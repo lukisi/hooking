@@ -20,6 +20,7 @@ libhooking_la_SOURCES = \
 	rngen.vala \
 	serializables.vala \
 	message_routing.vala \
+	arc_handler.vala \
 	structs.vala \
 	$(NULL)
 

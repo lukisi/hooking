@@ -62,5 +62,6 @@ namespace Netsukuku.Hooking
 
     public interface IIdentityArc : Object
     {
+        public abstract IHookingManagerStub get_stub();
     }
 }

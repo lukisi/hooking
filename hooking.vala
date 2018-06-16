@@ -58,7 +58,6 @@ namespace Netsukuku.Hooking
             PRNGen.init_rngen(rngen, seed);
         }
 
-        private Gee.List<IIdentityArc> arc_list;
         private IHookingMapPaths map_paths;
         private ICoordinator coord;
         private int levels;
@@ -66,6 +65,7 @@ namespace Netsukuku.Hooking
         private Gee.List<int> my_pos;
         private int subnetlevel;
         private MessageRouting.MessageRouting message_routing;
+        private ArcHandler.ArcHandler arc_handler;
 
         public signal void same_network(IIdentityArc ia);
         public signal void another_network(IIdentityArc ia, int64 network_id);
@@ -76,7 +76,6 @@ namespace Netsukuku.Hooking
 
         public HookingManager(IHookingMapPaths map_paths, ICoordinator coord, int subnetlevel)
         {
-            arc_list = new ArrayList<IIdentityArc>();
             this.map_paths = map_paths;
             levels = map_paths.get_levels();
             my_pos = new ArrayList<int>();
@@ -90,6 +89,7 @@ namespace Netsukuku.Hooking
             this.subnetlevel = subnetlevel;
             message_routing = new MessageRouting.MessageRouting
                 (map_paths, execute_search, execute_explore, execute_delete_reserve, execute_mig);
+            arc_handler = new ArcHandler.ArcHandler(this);
         }
 
         private bool tuple_has_virtual_pos(TupleGNode t)
@@ -221,13 +221,12 @@ namespace Netsukuku.Hooking
 
         public void add_arc(IIdentityArc ia)
         {
-            // TODO
-            arc_list.add(ia);
+            arc_handler.add_arc(ia);
         }
 
         public void remove_arc(IIdentityArc ia)
         {
-            // TODO
+            arc_handler.remove_arc(ia);
         }
 
         private Gee.List<Solution> find_shortest_mig(int reserve_request_id, int first_host_lvl, int ok_host_lvl)
