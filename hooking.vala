@@ -62,8 +62,6 @@ namespace Netsukuku.Hooking
         private ICoordinator coord;
         private int levels;
         private Gee.List<int> gsizes;
-        private Gee.List<int> my_pos;
-        private int subnetlevel;
         private MessageRouting.MessageRouting message_routing;
         private ArcHandler.ArcHandler arc_handler;
 
@@ -74,22 +72,17 @@ namespace Netsukuku.Hooking
         public signal void do_prepare_migration(/* TODO */);
         public signal void do_finish_migration(/* TODO */);
 
-        public HookingManager(IHookingMapPaths map_paths, ICoordinator coord, int subnetlevel)
+        public HookingManager(IHookingMapPaths map_paths, ICoordinator coord)
         {
             this.map_paths = map_paths;
             levels = map_paths.get_levels();
-            my_pos = new ArrayList<int>();
             gsizes = new ArrayList<int>();
             for (int i = 0; i < levels; i++)
-            {
-                my_pos.add(map_paths.get_my_pos(i));
                 gsizes.add(map_paths.get_gsize(i));
-            }
             this.coord = coord;
-            this.subnetlevel = subnetlevel;
             message_routing = new MessageRouting.MessageRouting
                 (map_paths, execute_search, execute_explore, execute_delete_reserve, execute_mig);
-            arc_handler = new ArcHandler.ArcHandler(this);
+            arc_handler = new ArcHandler.ArcHandler(this, map_paths);
         }
 
         private bool tuple_has_virtual_pos(TupleGNode t)
@@ -231,6 +224,7 @@ namespace Netsukuku.Hooking
 
         private Gee.List<Solution> find_shortest_mig(int reserve_request_id, int first_host_lvl, int ok_host_lvl)
         {
+            int subnetlevel = map_paths.get_subnetlevel();
             if (first_host_lvl <= subnetlevel) first_host_lvl = subnetlevel + 1;
             if (ok_host_lvl < first_host_lvl) ok_host_lvl = first_host_lvl;
             TupleGNode v = make_tuple_from_level(first_host_lvl, map_paths);
@@ -402,11 +396,12 @@ namespace Netsukuku.Hooking
             if (tuple_has_virtual_pos(me)) throw new HookingNotPrincipalError.GENERIC("Not main.");
             NetworkData ret = new NetworkData();
             ret.neighbor_pos = new ArrayList<int>();
-            ret.neighbor_pos.add_all(my_pos);
+            for (int i = 0; i < levels; i++)
+                ret.neighbor_pos.add(map_paths.get_my_pos(i));
             ret.gsizes = new ArrayList<int>();
             ret.gsizes.add_all(gsizes);
             ret.network_id = map_paths.get_network_id();
-            ret.neighbor_min_level = map_paths.get_subnetlevel();;
+            ret.neighbor_min_level = map_paths.get_subnetlevel();
             ret.neighbor_n_nodes = map_paths.get_n_nodes();
             if (ask_coord) ret.neighbor_n_nodes = coord.get_n_nodes();
             return ret;
