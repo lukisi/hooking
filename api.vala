@@ -22,6 +22,7 @@ namespace Netsukuku.Hooking
 {
     public interface IHookingMapPaths : Object
     {
+        public abstract int64 get_network_id();
         public abstract int get_levels();
         public abstract int get_gsize(int level);
         public abstract int get_my_pos(int level);

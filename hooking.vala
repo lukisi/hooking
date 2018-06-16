@@ -347,7 +347,6 @@ namespace Netsukuku.Hooking
                         }
                         if (! in_prev_step)
                         {
-                            // TODO
                             S.add(n);
                             TupleGNode previous_migrating_gnode = (TupleGNode)dup_object(current.visiting_gnode);
                             previous_migrating_gnode.pos.insert(0,border_real_pos);
@@ -408,24 +407,48 @@ namespace Netsukuku.Hooking
                     CallerInfo? _rpc_caller=null)
         throws NoMigrationPathFoundError, MigrationPathExecuteFailureError
         {
-            int epsilon = 3;
+            int epsilon = 3; // TODO It should be a parameter of the network topology, maybe based on lvl.
             int first_host_lvl = lvl + 1;
             int ok_host_lvl = lvl + epsilon;
             int reserve_request_id = PRNGen.int_range(0, int.MAX);
             Gee.List<Solution> solutions = find_shortest_mig(reserve_request_id, first_host_lvl, ok_host_lvl);
-            if (solutions.is_empty) throw new NoMigrationPathFoundError.GENERIC("");
+            if (solutions.is_empty) throw new NoMigrationPathFoundError.GENERIC("You might try at lower level.");
             Solution sol = solutions.last();
-            if (sol.leaf.get_distance() == 1)
+            if (sol.leaf.get_distance() == 0)
             {
                 // direct access, no migrations needed
-                // TODO
-                error("not implemented yet");
+                TupleGNode host_gnode = make_tuple_from_level(sol.final_host_lvl, map_paths);
+                EntryData ret = new EntryData();
+                ret.network_id = map_paths.get_network_id();
+                ret.pos = new ArrayList<int>();
+                ret.elderships = new ArrayList<int>();
+                ret.pos.add_all(host_gnode.pos);
+                ret.elderships.add_all(host_gnode.eldership);
+                ret.pos.insert(0, sol.real_new_pos);
+                ret.elderships.insert(0, sol.real_new_eldership);
+                return ret;
             }
             else
             {
-                execute_shortest_mig(sol);
-                // if it succeeds TODO
-                error("not implemented yet");
+                execute_shortest_mig(sol); // may throw MigrationPathExecuteFailureError
+                // if it succeeds
+                SolutionStep root = sol.leaf.parent;
+                SolutionStep second = sol.leaf;
+                while (root.parent != null)
+                {
+                    root = root.parent;
+                    second = second.parent;
+                }
+                TupleGNode host_gnode = root.visiting_gnode;
+                EntryData ret = new EntryData();
+                ret.network_id = map_paths.get_network_id();
+                ret.pos = new ArrayList<int>();
+                ret.elderships = new ArrayList<int>();
+                ret.pos.add_all(host_gnode.pos);
+                ret.elderships.add_all(host_gnode.eldership);
+                ret.pos.insert(0, second.previous_migrating_gnode.pos[0]);
+                ret.elderships.insert(0, second.previous_gnode_new_eldership);
+                return ret;
             }
         }
 
