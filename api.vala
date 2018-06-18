@@ -51,6 +51,7 @@ namespace Netsukuku.Hooking
 
     public interface ICoordinator : Object
     {
+        public abstract Object evaluate_enter(Object evaluate_enter_data);
         public abstract int get_n_nodes();
         public abstract void reserve(int host_lvl, int reserve_request_id, out int new_pos, out int new_eldership) throws CoordReserveError;
         public abstract void delete_reserve(int host_lvl, int reserve_request_id);

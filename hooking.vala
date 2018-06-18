@@ -82,7 +82,7 @@ namespace Netsukuku.Hooking
             this.coord = coord;
             message_routing = new MessageRouting.MessageRouting
                 (map_paths, execute_search, execute_explore, execute_delete_reserve, execute_mig);
-            arc_handler = new ArcHandler.ArcHandler(this, map_paths);
+            arc_handler = new ArcHandler.ArcHandler(this, map_paths, coord);
         }
 
         private bool tuple_has_virtual_pos(TupleGNode t)

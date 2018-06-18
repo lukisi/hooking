@@ -93,6 +93,51 @@ class HookingTester : Object
         assert(nd0.neighbor_n_nodes == 1234);
     }
 
+    public void test_EvaluateEnterData()
+    {
+        EvaluateEnterData eed0;
+        {
+            Json.Node node;
+            {
+                EvaluateEnterData eed = new EvaluateEnterData();
+                eed.network_id = 482374327583758;
+                eed.neighbor_pos = new ArrayList<int>.wrap({1,0,0});
+                eed.neighbor_min_lvl = 1;
+                eed.min_lvl = 0;
+                eed.evaluate_enter_id = 1234;
+                node = Json.gobject_serialize(eed);
+            }
+            eed0 = (EvaluateEnterData)Json.gobject_deserialize(typeof(EvaluateEnterData), node);
+        }
+        assert(eed0.network_id == 482374327583758);
+        assert(eed0.neighbor_pos.size == 3);
+        assert(eed0.neighbor_pos[0] == 1);
+        assert(eed0.neighbor_pos[1] == 0);
+        assert(eed0.neighbor_pos[2] == 0);
+        assert(eed0.neighbor_min_lvl == 1);
+        assert(eed0.min_lvl == 0);
+        assert(eed0.evaluate_enter_id == 1234);
+    }
+
+    public void test_EvaluateEnterResult()
+    {
+        EvaluateEnterResult eer0;
+        {
+            Json.Node node;
+            {
+                EvaluateEnterResult eer = new EvaluateEnterResult();
+                eer.first_ask_lvl = 2;
+                eer.ask_again_error = true;
+                eer.ignore_network_error = false;
+                node = Json.gobject_serialize(eer);
+            }
+            eer0 = (EvaluateEnterResult)Json.gobject_deserialize(typeof(EvaluateEnterResult), node);
+        }
+        assert(eer0.first_ask_lvl == 2);
+        assert(eer0.ask_again_error == true);
+        assert(eer0.ignore_network_error == false);
+    }
+
     public void test_entrydata()
     {
         EntryData ed0;
@@ -481,6 +526,18 @@ class HookingTester : Object
             var x = new HookingTester();
             x.set_up();
             x.test_NetworkData();
+            x.tear_down();
+        });
+        GLib.Test.add_func ("/Serializables/EvaluateEnterData", () => {
+            var x = new HookingTester();
+            x.set_up();
+            x.test_EvaluateEnterData();
+            x.tear_down();
+        });
+        GLib.Test.add_func ("/Serializables/EvaluateEnterResult", () => {
+            var x = new HookingTester();
+            x.set_up();
+            x.test_EvaluateEnterResult();
             x.tear_down();
         });
         GLib.Test.add_func ("/Serializables/EntryData", () => {

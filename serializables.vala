@@ -99,21 +99,93 @@ namespace Netsukuku.Hooking
         }
     }
 
-    /* TODO
-    serializable class EvaluateEnterData:
-        int64 network_id
-        List<int> neighbor_pos
-        int neighbor_min_lvl
-        int min_lvl
-        int evaluate_enter_id
-    */
+    internal class EvaluateEnterData : Object, Json.Serializable
+    {
+        public int64 network_id {get; set;}
+        public Gee.List<int> neighbor_pos {get; set;}
+        public int neighbor_min_lvl {get; set;}
+        public int min_lvl {get; set;}
+        public int evaluate_enter_id {get; set;}
 
-    /* TODO
-    serializable class EvaluateEnterResult:
-        int first_ask_lvl
-        bool ask_again_error
-        bool ignore_network_error
-    */
+        public bool deserialize_property
+        (string property_name,
+         out GLib.Value @value,
+         GLib.ParamSpec pspec,
+         Json.Node property_node)
+        {
+            @value = 0;
+            switch (property_name) {
+            case "neighbor_pos":
+            case "neighbor-pos":
+                try {
+                    @value = deserialize_list_int(property_node);
+                } catch (HelperDeserializeError e) {
+                    return false;
+                }
+                break;
+            case "network_id":
+            case "network-id":
+                try {
+                    @value = deserialize_int64(property_node);
+                } catch (HelperDeserializeError e) {
+                    return false;
+                }
+                break;
+            case "neighbor_min_lvl":
+            case "neighbor-min-lvl":
+            case "min_lvl":
+            case "min-lvl":
+            case "evaluate_enter_id":
+            case "evaluate-enter-id":
+                try {
+                    @value = deserialize_int(property_node);
+                } catch (HelperDeserializeError e) {
+                    return false;
+                }
+                break;
+            default:
+                return false;
+            }
+            return true;
+        }
+
+        public unowned GLib.ParamSpec? find_property
+        (string name)
+        {
+            return get_class().find_property(name);
+        }
+
+        public Json.Node serialize_property
+        (string property_name,
+         GLib.Value @value,
+         GLib.ParamSpec pspec)
+        {
+            switch (property_name) {
+            case "neighbor_pos":
+            case "neighbor-pos":
+                return serialize_list_int((Gee.List<int>)@value);
+            case "network_id":
+            case "network-id":
+                return serialize_int64((int64)@value);
+            case "neighbor_min_lvl":
+            case "neighbor-min-lvl":
+            case "min_lvl":
+            case "min-lvl":
+            case "evaluate_enter_id":
+            case "evaluate-enter-id":
+                return serialize_int((int)@value);
+            default:
+                error(@"wrong param $(property_name)");
+            }
+        }
+    }
+
+    internal class EvaluateEnterResult : Object
+    {
+        public int first_ask_lvl {get; set;}
+        public bool ask_again_error {get; set;}
+        public bool ignore_network_error {get; set;}
+    }
 
     /* TODO
     serializable class BeginEnterData:
