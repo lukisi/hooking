@@ -206,7 +206,13 @@ namespace Netsukuku.Hooking.ArcHandler
                 while (true)
                 {
                     try {
-                        ret = ProxyCoord.evaluate_enter(coord.evaluate_enter, evaluate_enter_data);
+                        ret = ProxyCoord.evaluate_enter(coord.evaluate_enter, levels, evaluate_enter_data);
+                    } catch (CoordProxyError e) {
+                        warning("CoordProxyError in ProxyCoord.evaluate_enter. Abort arc_handler.");
+                        return;
+                    } catch (ProxyCoord.UnknownResultError e) {
+                        warning("ProxyCoord.UnknownResultError in ProxyCoord.evaluate_enter. Abort arc_handler.");
+                        return;
                     } catch (ProxyCoord.AskAgainError e) {
                         // Wait a little, then redo evaluate.
                         tasklet.ms_wait(get_global_timeout() / 4);

@@ -25,11 +25,16 @@ namespace Netsukuku.Hooking.ProxyCoord
     internal errordomain AskAgainError {GENERIC}
     internal errordomain IgnoreNetworkError {GENERIC}
 
-    internal delegate Object ProxyEvaluateEnter(Object evaluate_enter_data);
+    internal delegate Object ProxyEvaluateEnter(int lvl, Object evaluate_enter_data) throws CoordProxyError;
 
-    internal int evaluate_enter(ProxyEvaluateEnter proxy_evaluate_enter, EvaluateEnterData evaluate_enter_data) throws AskAgainError, IgnoreNetworkError
+    internal errordomain UnknownResultError {GENERIC}
+    internal int evaluate_enter(ProxyEvaluateEnter proxy_evaluate_enter, int levels, EvaluateEnterData evaluate_enter_data)
+    throws AskAgainError, IgnoreNetworkError, CoordProxyError, UnknownResultError
     {
-        EvaluateEnterResult ret = (EvaluateEnterResult)proxy_evaluate_enter(evaluate_enter_data);
+        int lvl = levels;
+        Object _ret = proxy_evaluate_enter(lvl, evaluate_enter_data);
+        if (! (_ret is EvaluateEnterResult)) throw new UnknownResultError.GENERIC("");
+        EvaluateEnterResult ret = (EvaluateEnterResult)_ret;
         if (ret.ask_again_error) throw new AskAgainError.GENERIC("");
         if (ret.ignore_network_error) throw new IgnoreNetworkError.GENERIC("");
         return ret.first_ask_lvl;
