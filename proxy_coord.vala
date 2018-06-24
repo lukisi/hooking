@@ -39,4 +39,29 @@ namespace Netsukuku.Hooking.ProxyCoord
         if (ret.ignore_network_error) throw new IgnoreNetworkError.GENERIC("");
         return ret.first_ask_lvl;
     }
+
+    internal Object execute_proxy_evaluate_enter(Object evaluate_enter_data, Gee.List<int> client_address)
+    {
+        try {
+            if (! (evaluate_enter_data is EvaluateEnterData)) tasklet.exit_tasklet(null);
+            int retval = execute_evaluate_enter((EvaluateEnterData)evaluate_enter_data, client_address);
+            var ret = new EvaluateEnterResult();
+            ret.first_ask_lvl = retval;
+            return ret;
+        } catch (AskAgainError e) {
+            var ret = new EvaluateEnterResult();
+            ret.ask_again_error = true;
+            return ret;
+        } catch (IgnoreNetworkError e) {
+            var ret = new EvaluateEnterResult();
+            ret.ignore_network_error = true;
+            return ret;
+        }
+    }
+
+    internal int execute_evaluate_enter(EvaluateEnterData evaluate_enter_data, Gee.List<int> client_address)
+    throws AskAgainError, IgnoreNetworkError
+    {
+        error("not implemented yet");
+    }
 }

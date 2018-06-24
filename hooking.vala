@@ -224,7 +224,7 @@ namespace Netsukuku.Hooking
 
         public Object evaluate_enter(Object evaluate_enter_data, Gee.List<int> client_address)
         {
-            error("not implemented yet");
+            return ProxyCoord.execute_proxy_evaluate_enter(evaluate_enter_data, client_address);
         }
 
         private Gee.List<Solution> find_shortest_mig(int reserve_request_id, int first_host_lvl, int ok_host_lvl)
