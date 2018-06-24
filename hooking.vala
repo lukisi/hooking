@@ -222,6 +222,11 @@ namespace Netsukuku.Hooking
             arc_handler.remove_arc(ia);
         }
 
+        public Object evaluate_enter(Object evaluate_enter_data, Gee.List<int> client_address)
+        {
+            error("not implemented yet");
+        }
+
         private Gee.List<Solution> find_shortest_mig(int reserve_request_id, int first_host_lvl, int ok_host_lvl)
         {
             int subnetlevel = map_paths.get_subnetlevel();
