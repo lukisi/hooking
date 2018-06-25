@@ -242,7 +242,7 @@ namespace Netsukuku.Hooking
         return migs;
     }
 
-    // RequestPacket in in file serializables
+    // RequestPacket is in file serializables
 
     internal enum RequestPacketType
     {
@@ -276,6 +276,15 @@ namespace Netsukuku.Hooking
             ret.real_new_eldership = mig_next.prev_mig_gnode_new_eldership;
         }
         return ret;
+    }
+
+    // HookingMemory is in file serializables
+
+    internal enum EvaluationStatus
+    {
+        PENDING=0,
+        TO_BE_NOTIFIED,
+        NOTIFIED
     }
 }
 

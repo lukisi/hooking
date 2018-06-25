@@ -107,6 +107,11 @@ namespace Netsukuku.Hooking
         public int min_lvl {get; set;}
         public int evaluate_enter_id {get; set;}
 
+        public EvaluateEnterData()
+        {
+            neighbor_pos = new ArrayList<int>();
+        }
+
         public bool deserialize_property
         (string property_name,
          out GLib.Value @value,
@@ -185,6 +190,248 @@ namespace Netsukuku.Hooking
         public int first_ask_lvl {get; set;}
         public bool ask_again_error {get; set;}
         public bool ignore_network_error {get; set;}
+    }
+
+    internal class EvaluateEnterEvaluation : Object, Json.Serializable
+    {
+        public Gee.List<int> client_address {get; set;}
+        public EvaluateEnterData evaluate_enter_data {get; set;}
+
+        public EvaluateEnterEvaluation()
+        {
+            client_address = new ArrayList<int>();
+            evaluate_enter_data = new EvaluateEnterData();
+        }
+
+        public bool deserialize_property
+        (string property_name,
+         out GLib.Value @value,
+         GLib.ParamSpec pspec,
+         Json.Node property_node)
+        {
+            @value = 0;
+            switch (property_name) {
+            case "client_address":
+            case "client-address":
+                try {
+                    @value = deserialize_list_int(property_node);
+                } catch (HelperDeserializeError e) {
+                    return false;
+                }
+                break;
+            case "evaluate_enter_data":
+            case "evaluate-enter-data":
+                try {
+                    @value = deserialize_evaluateenterdata(property_node);
+                } catch (HelperDeserializeError e) {
+                    return false;
+                }
+                break;
+            default:
+                return false;
+            }
+            return true;
+        }
+
+        public unowned GLib.ParamSpec? find_property
+        (string name)
+        {
+            return get_class().find_property(name);
+        }
+
+        public Json.Node serialize_property
+        (string property_name,
+         GLib.Value @value,
+         GLib.ParamSpec pspec)
+        {
+            switch (property_name) {
+            case "client_address":
+            case "client-address":
+                return serialize_list_int((Gee.List<int>)@value);
+            case "evaluate_enter_data":
+            case "evaluate-enter-data":
+                return serialize_evaluateenterdata((EvaluateEnterData)@value);
+            default:
+                error(@"wrong param $(property_name)");
+            }
+        }
+    }
+
+    internal class SerTimer : Object
+    {
+        public SerTimer(int msec_ttl)
+        {
+            this.msec_ttl = msec_ttl;
+        }
+
+        public int msec_ttl {
+            get {
+                TimeVal lap = TimeVal();
+                lap.get_current_time();
+                long sec = lap.tv_sec - start.tv_sec;
+                long usec = lap.tv_usec - start.tv_usec;
+                if (usec < 0)
+                {
+                    usec += 1000000;
+                    sec--;
+                }
+                long usec_lap = sec*1000000 + usec;
+                long usec_ttl_now = _msec_ttl*1000 - usec_lap;
+                return (int)(usec_ttl_now / 1000);
+            }
+            set {
+                start = TimeVal();
+                start.get_current_time();
+                this._msec_ttl = value;
+            }
+        }
+
+        private TimeVal start;
+        private int _msec_ttl;
+
+        public bool is_expired()
+        {
+            return msec_ttl < 0;
+        }
+    }
+
+    internal class HookingMemory : Object, Json.Serializable
+    {
+        public Gee.List<EvaluateEnterEvaluation> evaluate_enter_evaluation_list {get; set;}
+        public SerTimer? evaluate_enter_timeout {get; set;}
+        public EvaluateEnterEvaluation? evaluate_enter_elected {get; set;}
+        public SerTimer? begin_enter_timeout {get; set;}
+
+        public int? evaluate_enter_first_ask_lvl {
+            get {
+                if (internser_evaluate_enter_first_ask_lvl == -1) return null;
+                else return internser_evaluate_enter_first_ask_lvl;
+            }
+            set {
+                if (value == null) internser_evaluate_enter_first_ask_lvl = -1;
+                else internser_evaluate_enter_first_ask_lvl = value;
+            }
+        }
+
+        public EvaluationStatus? evaluate_enter_status {
+            get {
+                if (internser_evaluate_enter_status == -1) return null;
+                else if (internser_evaluate_enter_status == 0) return EvaluationStatus.PENDING;
+                else if (internser_evaluate_enter_status == 1) return EvaluationStatus.TO_BE_NOTIFIED;
+                else if (internser_evaluate_enter_status == 2) return EvaluationStatus.NOTIFIED;
+                else return null;
+            }
+            set {
+                if (value == null) internser_evaluate_enter_status = -1;
+                else if (value == EvaluationStatus.PENDING) internser_evaluate_enter_status = 0;
+                else if (value == EvaluationStatus.TO_BE_NOTIFIED) internser_evaluate_enter_status = 1;
+                else if (value == EvaluationStatus.NOTIFIED) internser_evaluate_enter_status = 2;
+                else internser_evaluate_enter_status = -1;
+            }
+        }
+
+        public int internser_evaluate_enter_first_ask_lvl {get; set;}
+        public int internser_evaluate_enter_status {get; set;}
+
+        public HookingMemory()
+        {
+            evaluate_enter_evaluation_list = new ArrayList<EvaluateEnterEvaluation>();
+            evaluate_enter_first_ask_lvl = null;
+            evaluate_enter_timeout = null;
+            evaluate_enter_status = null;
+            evaluate_enter_elected = null;
+            begin_enter_timeout = null;
+        }
+
+        public bool deserialize_property
+        (string property_name,
+         out GLib.Value @value,
+         GLib.ParamSpec pspec,
+         Json.Node property_node)
+        {
+            @value = 0;
+            switch (property_name) {
+            case "evaluate_enter_evaluation_list":
+            case "evaluate-enter-evaluation-list":
+                try {
+                    @value = deserialize_list_evaluateenterevaluation(property_node);
+                } catch (HelperDeserializeError e) {
+                    return false;
+                }
+                break;
+            case "internser_evaluate_enter_first_ask_lvl":
+            case "internser-evaluate-enter-first-ask-lvl":
+            case "internser_evaluate_enter_status":
+            case "internser-evaluate-enter-status":
+                try {
+                    @value = deserialize_int(property_node);
+                } catch (HelperDeserializeError e) {
+                    return false;
+                }
+                break;
+            case "evaluate_enter_status":
+            case "evaluate-enter-status":
+                // dynamic property
+                return false;
+            case "evaluate_enter_timeout":
+            case "evaluate-enter-timeout":
+            case "begin_enter_timeout":
+            case "begin-enter-timeout":
+                try {
+                    @value = deserialize_nullable_sertimer(property_node);
+                } catch (HelperDeserializeError e) {
+                    return false;
+                }
+                break;
+            case "evaluate_enter_elected":
+            case "evaluate-enter-elected":
+                try {
+                    @value = deserialize_nullable_evaluateenterevaluation(property_node);
+                } catch (HelperDeserializeError e) {
+                    return false;
+                }
+                break;
+            default:
+                return false;
+            }
+            return true;
+        }
+
+        public unowned GLib.ParamSpec? find_property
+        (string name)
+        {
+            return get_class().find_property(name);
+        }
+
+        public Json.Node serialize_property
+        (string property_name,
+         GLib.Value @value,
+         GLib.ParamSpec pspec)
+        {
+            switch (property_name) {
+            case "evaluate_enter_evaluation_list":
+            case "evaluate-enter-evaluation-list":
+                return serialize_list_evaluateenterevaluation((Gee.List<EvaluateEnterEvaluation>)@value);
+            case "internser_evaluate_enter_first_ask_lvl":
+            case "internser-evaluate-enter-first-ask-lvl":
+            case "internser_evaluate_enter_status":
+            case "internser-evaluate-enter-status":
+                return serialize_int((int)@value);
+            case "evaluate_enter_status":
+            case "evaluate-enter-status":
+                return serialize_int(0); // dynamic property
+            case "evaluate_enter_timeout":
+            case "evaluate-enter-timeout":
+            case "begin_enter_timeout":
+            case "begin-enter-timeout":
+                return serialize_nullable_sertimer((SerTimer?)@value);
+            case "evaluate_enter_elected":
+            case "evaluate-enter-elected":
+                return serialize_nullable_evaluateenterevaluation((EvaluateEnterEvaluation?)@value);
+            default:
+                error(@"wrong param $(property_name)");
+            }
+        }
     }
 
     /* TODO
@@ -987,6 +1234,50 @@ namespace Netsukuku.Hooking
         return serialize_object(n);
     }
 
+    internal EvaluateEnterEvaluation? deserialize_nullable_evaluateenterevaluation(Json.Node property_node)
+    throws HelperDeserializeError
+    {
+        return (EvaluateEnterEvaluation?)deserialize_object(typeof(EvaluateEnterEvaluation), true, property_node);
+    }
+
+    internal Json.Node serialize_nullable_evaluateenterevaluation(EvaluateEnterEvaluation? n)
+    {
+        return serialize_object(n);
+    }
+
+    internal EvaluateEnterData deserialize_evaluateenterdata(Json.Node property_node)
+    throws HelperDeserializeError
+    {
+        return (EvaluateEnterData)deserialize_object(typeof(EvaluateEnterData), false, property_node);
+    }
+
+    internal Json.Node serialize_evaluateenterdata(EvaluateEnterData n)
+    {
+        return serialize_object(n);
+    }
+
+    internal SerTimer deserialize_sertimer(Json.Node property_node)
+    throws HelperDeserializeError
+    {
+        return (SerTimer)deserialize_object(typeof(SerTimer), false, property_node);
+    }
+
+    internal Json.Node serialize_sertimer(SerTimer n)
+    {
+        return serialize_object(n);
+    }
+
+    internal SerTimer? deserialize_nullable_sertimer(Json.Node property_node)
+    throws HelperDeserializeError
+    {
+        return (SerTimer?)deserialize_object(typeof(SerTimer), true, property_node);
+    }
+
+    internal Json.Node serialize_nullable_sertimer(SerTimer? n)
+    {
+        return serialize_object(n);
+    }
+
     internal TupleGNode deserialize_tuplegnode(Json.Node property_node)
     throws HelperDeserializeError
     {
@@ -1018,6 +1309,18 @@ namespace Netsukuku.Hooking
     }
 
     internal Json.Node serialize_list_pairtupleint(Gee.List<PairTupleGNodeInt> lst)
+    {
+        return serialize_list_object(lst);
+    }
+
+    internal Gee.List<EvaluateEnterEvaluation> deserialize_list_evaluateenterevaluation(Json.Node property_node)
+    throws HelperDeserializeError
+    {
+        ListDeserializer<EvaluateEnterEvaluation> c = new ListDeserializer<EvaluateEnterEvaluation>();
+        return c.deserialize_list_object(property_node);
+    }
+
+    internal Json.Node serialize_list_evaluateenterevaluation(Gee.List<EvaluateEnterEvaluation> lst)
     {
         return serialize_list_object(lst);
     }

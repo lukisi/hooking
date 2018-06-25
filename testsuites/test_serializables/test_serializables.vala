@@ -53,6 +53,12 @@ public enum RequestPacketType
     PREPARE_MIGRATION=0,
     FINISH_MIGRATION
 }
+public enum EvaluationStatus
+{
+    PENDING=0,
+    TO_BE_NOTIFIED,
+    NOTIFIED
+}
 
 class HookingTester : Object
 {
@@ -136,6 +142,157 @@ class HookingTester : Object
         assert(eer0.first_ask_lvl == 2);
         assert(eer0.ask_again_error == true);
         assert(eer0.ignore_network_error == false);
+    }
+
+    public void test_EvaluateEnterEvaluation()
+    {
+        EvaluateEnterEvaluation eee0;
+        {
+            Json.Node node;
+            {
+                EvaluateEnterEvaluation eee = new EvaluateEnterEvaluation();
+                eee.client_address = new ArrayList<int>.wrap({1,0,0});
+                eee.evaluate_enter_data = new EvaluateEnterData();
+                eee.evaluate_enter_data.network_id = 482374327583758;
+                eee.evaluate_enter_data.neighbor_pos = new ArrayList<int>.wrap({1,0,0});
+                eee.evaluate_enter_data.neighbor_min_lvl = 1;
+                eee.evaluate_enter_data.min_lvl = 0;
+                eee.evaluate_enter_data.evaluate_enter_id = 1234;
+                node = Json.gobject_serialize(eee);
+            }
+            eee0 = (EvaluateEnterEvaluation)Json.gobject_deserialize(typeof(EvaluateEnterEvaluation), node);
+        }
+        assert(eee0.client_address.size == 3);
+        assert(eee0.client_address[0] == 1);
+        assert(eee0.client_address[1] == 0);
+        assert(eee0.client_address[2] == 0);
+        assert(eee0.evaluate_enter_data.network_id == 482374327583758);
+    }
+
+    public void test_HookingMemory()
+    {
+        HookingMemory mm0;
+        {
+            Json.Node node;
+            {
+                HookingMemory mm = new HookingMemory();
+                node = Json.gobject_serialize(mm);
+            }
+            mm0 = (HookingMemory)Json.gobject_deserialize(typeof(HookingMemory), node);
+        }
+        assert(mm0.evaluate_enter_evaluation_list.size == 0);
+        assert(mm0.evaluate_enter_first_ask_lvl == null);
+        assert(mm0.evaluate_enter_timeout == null);
+        assert(mm0.evaluate_enter_status == null);
+        assert(mm0.evaluate_enter_elected == null);
+        assert(mm0.begin_enter_timeout == null);
+
+        HookingMemory mm1;
+        {
+            Json.Node node;
+            {
+                HookingMemory mm = new HookingMemory();
+                mm.evaluate_enter_evaluation_list.add(new EvaluateEnterEvaluation());
+                mm.evaluate_enter_evaluation_list[0].client_address = new ArrayList<int>.wrap({1,0,0});
+                mm.evaluate_enter_evaluation_list[0].evaluate_enter_data = new EvaluateEnterData();
+                mm.evaluate_enter_evaluation_list[0].evaluate_enter_data.network_id = 482374327583758;
+                mm.evaluate_enter_evaluation_list[0].evaluate_enter_data.neighbor_pos = new ArrayList<int>.wrap({1,0,0});
+                mm.evaluate_enter_evaluation_list[0].evaluate_enter_data.neighbor_min_lvl = 1;
+                mm.evaluate_enter_evaluation_list[0].evaluate_enter_data.min_lvl = 0;
+                mm.evaluate_enter_evaluation_list[0].evaluate_enter_data.evaluate_enter_id = 1234;
+                mm.evaluate_enter_first_ask_lvl = 2;
+                node = Json.gobject_serialize(mm);
+            }
+            mm1 = (HookingMemory)Json.gobject_deserialize(typeof(HookingMemory), node);
+        }
+        assert(mm1.evaluate_enter_evaluation_list.size == 1);
+        assert(mm1.evaluate_enter_evaluation_list[0].client_address.size == 3);
+        assert(mm1.evaluate_enter_evaluation_list[0].client_address[0] == 1);
+        assert(mm1.evaluate_enter_evaluation_list[0].client_address[1] == 0);
+        assert(mm1.evaluate_enter_evaluation_list[0].client_address[2] == 0);
+        assert(mm1.evaluate_enter_evaluation_list[0].evaluate_enter_data.network_id == 482374327583758);
+        assert(mm1.evaluate_enter_evaluation_list[0].evaluate_enter_data.neighbor_pos.size == 3);
+        assert(mm1.evaluate_enter_evaluation_list[0].evaluate_enter_data.neighbor_pos[0] == 1);
+        assert(mm1.evaluate_enter_evaluation_list[0].evaluate_enter_data.neighbor_pos[1] == 0);
+        assert(mm1.evaluate_enter_evaluation_list[0].evaluate_enter_data.neighbor_pos[2] == 0);
+        assert(mm1.evaluate_enter_evaluation_list[0].evaluate_enter_data.neighbor_min_lvl == 1);
+        assert(mm1.evaluate_enter_evaluation_list[0].evaluate_enter_data.min_lvl == 0);
+        assert(mm1.evaluate_enter_evaluation_list[0].evaluate_enter_data.evaluate_enter_id == 1234);
+        assert(mm1.evaluate_enter_first_ask_lvl == 2);
+
+        HookingMemory mm2;
+        {
+            Json.Node node;
+            {
+                HookingMemory mm = new HookingMemory();
+                mm.evaluate_enter_timeout = new SerTimer(20);
+                node = Json.gobject_serialize(mm);
+            }
+            mm2 = (HookingMemory)Json.gobject_deserialize(typeof(HookingMemory), node);
+        }
+        assert(! mm2.evaluate_enter_timeout.is_expired());
+        assert(mm2.begin_enter_timeout == null);
+
+        HookingMemory mm3;
+        {
+            Json.Node node;
+            {
+                HookingMemory mm = new HookingMemory();
+                mm.evaluate_enter_timeout = new SerTimer(20);
+                node = Json.gobject_serialize(mm);
+            }
+            mm3 = (HookingMemory)Json.gobject_deserialize(typeof(HookingMemory), node);
+        }
+        Thread.usleep(30000);
+        assert(mm3.evaluate_enter_timeout.is_expired());
+
+        HookingMemory mm4;
+        {
+            Json.Node node;
+            {
+                HookingMemory mm = new HookingMemory();
+                mm.evaluate_enter_status = EvaluationStatus.PENDING;
+                node = Json.gobject_serialize(mm);
+            }
+            mm4 = (HookingMemory)Json.gobject_deserialize(typeof(HookingMemory), node);
+        }
+        assert(mm4.evaluate_enter_status == EvaluationStatus.PENDING);
+
+        HookingMemory mm5;
+        {
+            Json.Node node;
+            {
+                HookingMemory mm = new HookingMemory();
+                mm.evaluate_enter_status = EvaluationStatus.TO_BE_NOTIFIED;
+                node = Json.gobject_serialize(mm);
+            }
+            mm5 = (HookingMemory)Json.gobject_deserialize(typeof(HookingMemory), node);
+        }
+        assert(mm5.evaluate_enter_status == EvaluationStatus.TO_BE_NOTIFIED);
+
+        HookingMemory mm6;
+        {
+            Json.Node node;
+            {
+                HookingMemory mm = new HookingMemory();
+                mm.evaluate_enter_status = EvaluationStatus.NOTIFIED;
+                node = Json.gobject_serialize(mm);
+            }
+            mm6 = (HookingMemory)Json.gobject_deserialize(typeof(HookingMemory), node);
+        }
+        assert(mm6.evaluate_enter_status == EvaluationStatus.NOTIFIED);
+
+        HookingMemory mm7;
+        {
+            Json.Node node;
+            {
+                HookingMemory mm = new HookingMemory();
+                mm.evaluate_enter_elected = new EvaluateEnterEvaluation();
+                node = Json.gobject_serialize(mm);
+            }
+            mm7 = (HookingMemory)Json.gobject_deserialize(typeof(HookingMemory), node);
+        }
+        assert(mm7.evaluate_enter_elected != null);
     }
 
     public void test_entrydata()
@@ -538,6 +695,18 @@ class HookingTester : Object
             var x = new HookingTester();
             x.set_up();
             x.test_EvaluateEnterResult();
+            x.tear_down();
+        });
+        GLib.Test.add_func ("/Serializables/EvaluateEnterEvaluation", () => {
+            var x = new HookingTester();
+            x.set_up();
+            x.test_EvaluateEnterEvaluation();
+            x.tear_down();
+        });
+        GLib.Test.add_func ("/Serializables/HookingMemory", () => {
+            var x = new HookingTester();
+            x.set_up();
+            x.test_HookingMemory();
             x.tear_down();
         });
         GLib.Test.add_func ("/Serializables/EntryData", () => {
