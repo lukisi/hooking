@@ -200,13 +200,17 @@ namespace Netsukuku.Hooking.ArcHandler
                 EvaluateEnterData evaluate_enter_data = new EvaluateEnterData();
                 evaluate_enter_data.min_lvl = map_paths.get_subnetlevel();
                 evaluate_enter_data.evaluate_enter_id = PRNGen.int_range(0, int.MAX);
+                evaluate_enter_data.network_id = network_data.network_id;
+                evaluate_enter_data.neighbor_min_lvl = network_data.neighbor_min_level;
+                evaluate_enter_data.neighbor_pos = new ArrayList<int>();
+                evaluate_enter_data.neighbor_pos.add_all(network_data.neighbor_pos);
                 // call evaluate_enter iteratively
-                int ret = 0;
+                int ask_lvl = 0;
                 bool redo_from_start  = false;
                 while (true)
                 {
                     try {
-                        ret = ProxyCoord.evaluate_enter(coord.evaluate_enter, levels, evaluate_enter_data);
+                        ask_lvl = ProxyCoord.evaluate_enter(coord.evaluate_enter, evaluate_enter_data);
                     } catch (CoordProxyError e) {
                         warning("CoordProxyError in ProxyCoord.evaluate_enter. Abort arc_handler.");
                         return;
@@ -226,7 +230,7 @@ namespace Netsukuku.Hooking.ArcHandler
                     break;
                 }
                 if (redo_from_start) continue;
-                // ret has been computed.
+                // ask_lvl has been computed.
                 // TODO begin_enter
             }
         }
