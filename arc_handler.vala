@@ -235,7 +235,7 @@ namespace Netsukuku.Hooking.ArcHandler
                 BeginEnterData begin_enter_data = new BeginEnterData();
                 // call begin_enter
                 try {
-                    ProxyCoord.begin_enter(coord.begin_enter, begin_enter_data);
+                    ProxyCoord.begin_enter(coord.begin_enter, ask_lvl, begin_enter_data);
                 } catch (CoordProxyError e) {
                     warning("CoordProxyError in ProxyCoord.begin_enter. Abort arc_handler.");
                     return;

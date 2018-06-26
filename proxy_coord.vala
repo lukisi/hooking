@@ -67,22 +67,22 @@ namespace Netsukuku.Hooking.ProxyCoord
 
     internal errordomain AlreadyEnteringError {GENERIC}
 
-    internal delegate Object ProxyBeginEnter(Object begin_enter_data) throws CoordProxyError;
+    internal delegate Object ProxyBeginEnter(int lvl, Object begin_enter_data) throws CoordProxyError;
 
-    internal void begin_enter(ProxyBeginEnter proxy_begin_enter, BeginEnterData begin_enter_data)
+    internal void begin_enter(ProxyBeginEnter proxy_begin_enter, int lvl, BeginEnterData begin_enter_data)
     throws AlreadyEnteringError, CoordProxyError, UnknownResultError
     {
-        Object _ret = proxy_begin_enter(begin_enter_data);
+        Object _ret = proxy_begin_enter(lvl, begin_enter_data);
         if (! (_ret is BeginEnterResult)) throw new UnknownResultError.GENERIC("");
         BeginEnterResult ret = (BeginEnterResult)_ret;
         if (ret.already_entering_error) throw new AlreadyEnteringError.GENERIC("");
     }
 
-    internal Object execute_proxy_begin_enter(Object begin_enter_data, Gee.List<int> client_address)
+    internal Object execute_proxy_begin_enter(int lvl, Object begin_enter_data, Gee.List<int> client_address)
     {
         try {
             if (! (begin_enter_data is BeginEnterData)) tasklet.exit_tasklet(null);
-            execute_begin_enter((BeginEnterData)begin_enter_data, client_address);
+            execute_begin_enter(lvl, (BeginEnterData)begin_enter_data, client_address);
             var ret = new BeginEnterResult();
             return ret;
         } catch (AlreadyEnteringError e) {
@@ -92,7 +92,7 @@ namespace Netsukuku.Hooking.ProxyCoord
         }
     }
 
-    internal void execute_begin_enter(BeginEnterData begin_enter_data, Gee.List<int> client_address)
+    internal void execute_begin_enter(int lvl, BeginEnterData begin_enter_data, Gee.List<int> client_address)
     throws AlreadyEnteringError
     {
         error("not implemented yet");
