@@ -223,7 +223,7 @@ namespace Netsukuku.Hooking.ArcHandler
                         continue;
                     } catch (ProxyCoord.IgnoreNetworkError e) {
                         // Wait long time, the redo from start.
-                        tasklet.ms_wait(get_global_timeout() / 4);
+                        tasklet.ms_wait(get_global_timeout() * 20);
                         redo_from_start  = true;
                         break;
                     }
@@ -231,6 +231,23 @@ namespace Netsukuku.Hooking.ArcHandler
                 }
                 if (redo_from_start) continue;
                 // ask_lvl has been computed.
+                // ask to coordinator of g-node of level ask_lvl to begin enter
+                BeginEnterData begin_enter_data = new BeginEnterData();
+                // call begin_enter
+                try {
+                    ProxyCoord.begin_enter(coord.begin_enter, begin_enter_data);
+                } catch (CoordProxyError e) {
+                    warning("CoordProxyError in ProxyCoord.begin_enter. Abort arc_handler.");
+                    return;
+                } catch (ProxyCoord.UnknownResultError e) {
+                    warning("ProxyCoord.UnknownResultError in ProxyCoord.begin_enter. Abort arc_handler.");
+                    return;
+                } catch (ProxyCoord.AlreadyEnteringError e) {
+                    // Wait long time, the redo from start.
+                    tasklet.ms_wait(get_global_timeout() * 20);
+                    continue;
+                }
+                
                 // TODO begin_enter
             }
         }

@@ -434,14 +434,14 @@ namespace Netsukuku.Hooking
         }
     }
 
-    /* TODO
-    serializable class BeginEnterData:
-    */
+    internal class BeginEnterData : Object
+    {
+    }
 
-    /* TODO
-    serializable class BeginEnterResult:
-        bool already_entering_error
-    */
+    internal class BeginEnterResult : Object
+    {
+        public bool already_entering_error {get; set;}
+    }
 
     /* TODO
     serializable class CompletedEnterData:

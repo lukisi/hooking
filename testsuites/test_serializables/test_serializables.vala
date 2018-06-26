@@ -295,6 +295,45 @@ class HookingTester : Object
         assert(mm7.evaluate_enter_elected != null);
     }
 
+    public void test_BeginEnterData()
+    {
+        BeginEnterData bed0;
+        {
+            Json.Node node;
+            {
+                BeginEnterData bed = new BeginEnterData();
+                node = Json.gobject_serialize(bed);
+            }
+            bed0 = (BeginEnterData)Json.gobject_deserialize(typeof(BeginEnterData), node);
+        }
+    }
+
+    public void test_BeginEnterResult()
+    {
+        BeginEnterResult ber0;
+        {
+            Json.Node node;
+            {
+                BeginEnterResult ber = new BeginEnterResult();
+                ber.already_entering_error = true;
+                node = Json.gobject_serialize(ber);
+            }
+            ber0 = (BeginEnterResult)Json.gobject_deserialize(typeof(BeginEnterResult), node);
+        }
+        assert(ber0.already_entering_error == true);
+
+        BeginEnterResult ber1;
+        {
+            Json.Node node;
+            {
+                BeginEnterResult ber = new BeginEnterResult();
+                node = Json.gobject_serialize(ber);
+            }
+            ber1 = (BeginEnterResult)Json.gobject_deserialize(typeof(BeginEnterResult), node);
+        }
+        assert(ber1.already_entering_error == false);
+    }
+
     public void test_entrydata()
     {
         EntryData ed0;
@@ -707,6 +746,18 @@ class HookingTester : Object
             var x = new HookingTester();
             x.set_up();
             x.test_HookingMemory();
+            x.tear_down();
+        });
+        GLib.Test.add_func ("/Serializables/BeginEnterData", () => {
+            var x = new HookingTester();
+            x.set_up();
+            x.test_BeginEnterData();
+            x.tear_down();
+        });
+        GLib.Test.add_func ("/Serializables/BeginEnterResult", () => {
+            var x = new HookingTester();
+            x.set_up();
+            x.test_BeginEnterResult();
             x.tear_down();
         });
         GLib.Test.add_func ("/Serializables/EntryData", () => {

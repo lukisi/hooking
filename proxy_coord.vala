@@ -22,12 +22,13 @@ using Netsukuku.Hooking;
 
 namespace Netsukuku.Hooking.ProxyCoord
 {
+    internal errordomain UnknownResultError {GENERIC}
+
     internal errordomain AskAgainError {GENERIC}
     internal errordomain IgnoreNetworkError {GENERIC}
 
     internal delegate Object ProxyEvaluateEnter(Object evaluate_enter_data) throws CoordProxyError;
 
-    internal errordomain UnknownResultError {GENERIC}
     internal int evaluate_enter(ProxyEvaluateEnter proxy_evaluate_enter, EvaluateEnterData evaluate_enter_data)
     throws AskAgainError, IgnoreNetworkError, CoordProxyError, UnknownResultError
     {
@@ -60,6 +61,39 @@ namespace Netsukuku.Hooking.ProxyCoord
 
     internal int execute_evaluate_enter(EvaluateEnterData evaluate_enter_data, Gee.List<int> client_address)
     throws AskAgainError, IgnoreNetworkError
+    {
+        error("not implemented yet");
+    }
+
+    internal errordomain AlreadyEnteringError {GENERIC}
+
+    internal delegate Object ProxyBeginEnter(Object begin_enter_data) throws CoordProxyError;
+
+    internal void begin_enter(ProxyBeginEnter proxy_begin_enter, BeginEnterData begin_enter_data)
+    throws AlreadyEnteringError, CoordProxyError, UnknownResultError
+    {
+        Object _ret = proxy_begin_enter(begin_enter_data);
+        if (! (_ret is BeginEnterResult)) throw new UnknownResultError.GENERIC("");
+        BeginEnterResult ret = (BeginEnterResult)_ret;
+        if (ret.already_entering_error) throw new AlreadyEnteringError.GENERIC("");
+    }
+
+    internal Object execute_proxy_begin_enter(Object begin_enter_data, Gee.List<int> client_address)
+    {
+        try {
+            if (! (begin_enter_data is BeginEnterData)) tasklet.exit_tasklet(null);
+            execute_begin_enter((BeginEnterData)begin_enter_data, client_address);
+            var ret = new BeginEnterResult();
+            return ret;
+        } catch (AlreadyEnteringError e) {
+            var ret = new BeginEnterResult();
+            ret.already_entering_error = true;
+            return ret;
+        }
+    }
+
+    internal void execute_begin_enter(BeginEnterData begin_enter_data, Gee.List<int> client_address)
+    throws AlreadyEnteringError
     {
         error("not implemented yet");
     }
