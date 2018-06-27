@@ -230,25 +230,76 @@ namespace Netsukuku.Hooking.ArcHandler
                     break;
                 }
                 if (redo_from_start) continue;
-                // ask_lvl has been computed.
-                // ask to coordinator of g-node of level ask_lvl to begin enter
-                BeginEnterData begin_enter_data = new BeginEnterData();
-                // call begin_enter
-                try {
-                    ProxyCoord.begin_enter(coord.begin_enter, ask_lvl, begin_enter_data);
-                } catch (CoordProxyError e) {
-                    warning("CoordProxyError in ProxyCoord.begin_enter. Abort arc_handler.");
-                    return;
-                } catch (ProxyCoord.UnknownResultError e) {
-                    warning("ProxyCoord.UnknownResultError in ProxyCoord.begin_enter. Abort arc_handler.");
-                    return;
-                } catch (ProxyCoord.AlreadyEnteringError e) {
-                    // Wait long time, the redo from start.
-                    tasklet.ms_wait(get_global_timeout() * 20);
-                    continue;
+                while (true)
+                {
+                    bool redo_from_begin_enter = false;
+                    // ask_lvl has been computed.
+                    // ask to coordinator of g-node of level ask_lvl to begin enter
+                    BeginEnterData begin_enter_data = new BeginEnterData();
+                    // call begin_enter
+                    try {
+                        ProxyCoord.begin_enter(coord.begin_enter, ask_lvl, begin_enter_data);
+                    } catch (CoordProxyError e) {
+                        warning("CoordProxyError in ProxyCoord.begin_enter. Abort arc_handler.");
+                        return;
+                    } catch (ProxyCoord.UnknownResultError e) {
+                        warning("ProxyCoord.UnknownResultError in ProxyCoord.begin_enter. Abort arc_handler.");
+                        return;
+                    } catch (ProxyCoord.AlreadyEnteringError e) {
+                        // Wait long time, the redo from start.
+                        tasklet.ms_wait(get_global_timeout() * 20);
+                        redo_from_start = true;
+                        break;
+                    }
+                    // try and enter
+                    EntryData entry_data = null;
+                    while (true)
+                    {
+                        IEntryData resp2;
+                        try {
+                            resp2 = st.search_migration_path(ask_lvl);
+                        } catch (StubError e) {
+                            // TODO signal bad_arc
+                            return;
+                        } catch (DeserializeError e) {
+                            // TODO signal bad_arc
+                            return;
+                        } catch (NoMigrationPathFoundError e) {
+                            // TODO abort_enter(ask_lvl)
+                            if (ask_lvl == 0)
+                            {
+                                // network is full at level 0.
+                                // Wait long time, the redo from start.
+                                tasklet.ms_wait(get_global_timeout() * 20);
+                                redo_from_start = true;
+                                break;
+                            }
+                            else
+                            {
+                                // try at lower level.
+                                ask_lvl--;
+                                redo_from_begin_enter = true;
+                                break;
+                            }
+                        } catch (MigrationPathExecuteFailureError e) {
+                            // retry immediately same lvl
+                            continue;
+                        }
+                        if (! (resp2 is EntryData))
+                        {
+                            // TODO signal bad_arc_response
+                            return;
+                        }
+                        else entry_data = (EntryData)resp2;
+                    }
+                    if (redo_from_begin_enter) continue;
+                    break;
                 }
-                
-                // TODO begin_enter
+                if (redo_from_start) continue;
+                // entry_data has been obtained.
+                // TODO ...
+
+                break;
             }
         }
 
