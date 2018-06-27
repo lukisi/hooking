@@ -266,6 +266,18 @@ namespace Netsukuku.Hooking.ArcHandler
                             return;
                         } catch (NoMigrationPathFoundError e) {
                             // TODO abort_enter(ask_lvl)
+                            // ask to coordinator of g-node of level ask_lvl to abort enter
+                            AbortEnterData abort_enter_data = new AbortEnterData();
+                            // call abort_enter
+                            try {
+                                ProxyCoord.abort_enter(coord.abort_enter, ask_lvl, abort_enter_data);
+                            } catch (CoordProxyError e) {
+                                warning("CoordProxyError in ProxyCoord.abort_enter. Abort arc_handler.");
+                                return;
+                            } catch (ProxyCoord.UnknownResultError e) {
+                                warning("ProxyCoord.UnknownResultError in ProxyCoord.abort_enter. Abort arc_handler.");
+                                return;
+                            }
                             if (ask_lvl == 0)
                             {
                                 // network is full at level 0.
@@ -297,7 +309,19 @@ namespace Netsukuku.Hooking.ArcHandler
                 }
                 if (redo_from_start) continue;
                 // entry_data has been obtained.
-                // TODO ...
+                // tell to coordinator of g-node of level ask_lvl we completed enter
+                CompletedEnterData completed_enter_data = new CompletedEnterData();
+                // call completed_enter
+                try {
+                    ProxyCoord.completed_enter(coord.completed_enter, ask_lvl, completed_enter_data);
+                } catch (CoordProxyError e) {
+                    warning("CoordProxyError in ProxyCoord.completed_enter. Abort arc_handler.");
+                    return;
+                } catch (ProxyCoord.UnknownResultError e) {
+                    warning("ProxyCoord.UnknownResultError in ProxyCoord.completed_enter. Abort arc_handler.");
+                    return;
+                }
+                // TODO use entry_data
 
                 break;
             }

@@ -65,6 +65,8 @@ namespace Netsukuku.Hooking
         public abstract void set_hooking_memory(int lvl, Object memory) throws CoordProxyError;
 
         public abstract Object begin_enter(int lvl, Object begin_enter_data) throws CoordProxyError;
+        public abstract Object completed_enter(int lvl, Object completed_enter_data) throws CoordProxyError;
+        public abstract Object abort_enter(int lvl, Object abort_enter_data) throws CoordProxyError;
 
         public abstract void reserve(int host_lvl, int reserve_request_id, out int new_pos, out int new_eldership) throws CoordReserveError;
         public abstract void delete_reserve(int host_lvl, int reserve_request_id);

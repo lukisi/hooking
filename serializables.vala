@@ -443,21 +443,21 @@ namespace Netsukuku.Hooking
         public bool already_entering_error {get; set;}
     }
 
-    /* TODO
-    serializable class CompletedEnterData:
-    */
+    internal class CompletedEnterData : Object
+    {
+    }
 
-    /* TODO
-    serializable class CompletedEnterResult:
-    */
+    internal class CompletedEnterResult : Object
+    {
+    }
 
-    /* TODO
-    serializable class AbortEnterData:
-    */
+    internal class AbortEnterData : Object
+    {
+    }
 
-    /* TODO
-    serializable class AbortEnterResult:
-    */
+    internal class AbortEnterResult : Object
+    {
+    }
 
     public class EntryData : Object, Json.Serializable, IEntryData
     {

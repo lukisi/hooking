@@ -334,6 +334,58 @@ class HookingTester : Object
         assert(ber1.already_entering_error == false);
     }
 
+    public void test_CompletedEnterData()
+    {
+        CompletedEnterData ced0;
+        {
+            Json.Node node;
+            {
+                CompletedEnterData ced = new CompletedEnterData();
+                node = Json.gobject_serialize(ced);
+            }
+            ced0 = (CompletedEnterData)Json.gobject_deserialize(typeof(CompletedEnterData), node);
+        }
+    }
+
+    public void test_CompletedEnterResult()
+    {
+        CompletedEnterResult cer0;
+        {
+            Json.Node node;
+            {
+                CompletedEnterResult cer = new CompletedEnterResult();
+                node = Json.gobject_serialize(cer);
+            }
+            cer0 = (CompletedEnterResult)Json.gobject_deserialize(typeof(CompletedEnterResult), node);
+        }
+    }
+
+    public void test_AbortEnterData()
+    {
+        AbortEnterData aed0;
+        {
+            Json.Node node;
+            {
+                AbortEnterData aed = new AbortEnterData();
+                node = Json.gobject_serialize(aed);
+            }
+            aed0 = (AbortEnterData)Json.gobject_deserialize(typeof(AbortEnterData), node);
+        }
+    }
+
+    public void test_AbortEnterResult()
+    {
+        AbortEnterResult aer0;
+        {
+            Json.Node node;
+            {
+                AbortEnterResult aer = new AbortEnterResult();
+                node = Json.gobject_serialize(aer);
+            }
+            aer0 = (AbortEnterResult)Json.gobject_deserialize(typeof(AbortEnterResult), node);
+        }
+    }
+
     public void test_entrydata()
     {
         EntryData ed0;
@@ -758,6 +810,30 @@ class HookingTester : Object
             var x = new HookingTester();
             x.set_up();
             x.test_BeginEnterResult();
+            x.tear_down();
+        });
+        GLib.Test.add_func ("/Serializables/CompletedEnterData", () => {
+            var x = new HookingTester();
+            x.set_up();
+            x.test_CompletedEnterData();
+            x.tear_down();
+        });
+        GLib.Test.add_func ("/Serializables/CompletedEnterResult", () => {
+            var x = new HookingTester();
+            x.set_up();
+            x.test_CompletedEnterResult();
+            x.tear_down();
+        });
+        GLib.Test.add_func ("/Serializables/AbortEnterData", () => {
+            var x = new HookingTester();
+            x.set_up();
+            x.test_AbortEnterData();
+            x.tear_down();
+        });
+        GLib.Test.add_func ("/Serializables/AbortEnterResult", () => {
+            var x = new HookingTester();
+            x.set_up();
+            x.test_AbortEnterResult();
             x.tear_down();
         });
         GLib.Test.add_func ("/Serializables/EntryData", () => {

@@ -97,4 +97,48 @@ namespace Netsukuku.Hooking.ProxyCoord
     {
         error("not implemented yet");
     }
+
+    internal delegate Object ProxyCompletedEnter(int lvl, Object completed_enter_data) throws CoordProxyError;
+
+    internal void completed_enter(ProxyCompletedEnter proxy_completed_enter, int lvl, CompletedEnterData completed_enter_data)
+    throws CoordProxyError, UnknownResultError
+    {
+        Object _ret = proxy_completed_enter(lvl, completed_enter_data);
+        if (! (_ret is CompletedEnterResult)) throw new UnknownResultError.GENERIC("");
+    }
+
+    internal Object execute_proxy_completed_enter(int lvl, Object completed_enter_data, Gee.List<int> client_address)
+    {
+        if (! (completed_enter_data is CompletedEnterData)) tasklet.exit_tasklet(null);
+        execute_completed_enter(lvl, (CompletedEnterData)completed_enter_data, client_address);
+        var ret = new CompletedEnterResult();
+        return ret;
+    }
+
+    internal void execute_completed_enter(int lvl, CompletedEnterData completed_enter_data, Gee.List<int> client_address)
+    {
+        error("not implemented yet");
+    }
+
+    internal delegate Object ProxyAbortEnter(int lvl, Object abort_enter_data) throws CoordProxyError;
+
+    internal void abort_enter(ProxyAbortEnter proxy_abort_enter, int lvl, AbortEnterData abort_enter_data)
+    throws CoordProxyError, UnknownResultError
+    {
+        Object _ret = proxy_abort_enter(lvl, abort_enter_data);
+        if (! (_ret is AbortEnterResult)) throw new UnknownResultError.GENERIC("");
+    }
+
+    internal Object execute_proxy_abort_enter(int lvl, Object abort_enter_data, Gee.List<int> client_address)
+    {
+        if (! (abort_enter_data is AbortEnterData)) tasklet.exit_tasklet(null);
+        execute_abort_enter(lvl, (AbortEnterData)abort_enter_data, client_address);
+        var ret = new AbortEnterResult();
+        return ret;
+    }
+
+    internal void execute_abort_enter(int lvl, AbortEnterData abort_enter_data, Gee.List<int> client_address)
+    {
+        error("not implemented yet");
+    }
 }
