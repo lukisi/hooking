@@ -5,6 +5,7 @@ serializables.c
 message_routing.c
 arc_handler.c
 proxy_coord.c
+propagation_coord.c
 structs.c
 test_serializables.c
 hooking.h

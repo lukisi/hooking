@@ -519,22 +519,22 @@ namespace Netsukuku.Hooking
         }
     }
 
-    /* TODO
-    serializable class PrepareEnterData:
-        int enter_id
-    */
+    internal class PrepareEnterData : Object
+    {
+        public int enter_id {get; set;}
+    }
 
-    /* TODO
-    serializable class FinishEnterData:
-        int enter_id
-        EntryData entry_data
-        int go_connectivity_position
-    */
+    internal class FinishEnterData : Object
+    {
+        public int enter_id {get; set;}
+        public EntryData entry_data {get; set;}
+        public int go_connectivity_position {get; set;}
+    }
 
-    /* TODO
-    serializable class PrepareMigrationData:
-        int migration_id
-    */
+    internal class PrepareMigrationData : Object
+    {
+        public int migration_id {get; set;}
+    }
 
     /* TODO
     serializable class FinishMigrationData:

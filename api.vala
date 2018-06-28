@@ -68,6 +68,9 @@ namespace Netsukuku.Hooking
         public abstract Object completed_enter(int lvl, Object completed_enter_data) throws CoordProxyError;
         public abstract Object abort_enter(int lvl, Object abort_enter_data) throws CoordProxyError;
 
+        public abstract void prepare_enter(int lvl, Object prepare_enter_data);
+        public abstract void finish_enter(int lvl, Object finish_enter_data);
+
         public abstract void reserve(int host_lvl, int reserve_request_id, out int new_pos, out int new_eldership) throws CoordReserveError;
         public abstract void delete_reserve(int host_lvl, int reserve_request_id);
         public abstract void prepare_migration(/*TODO*/);

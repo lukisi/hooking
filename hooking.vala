@@ -242,6 +242,16 @@ namespace Netsukuku.Hooking
             return ProxyCoord.execute_proxy_abort_enter(lvl, abort_enter_data, client_address);
         }
 
+        public void prepare_enter(int lvl, Object prepare_enter_data)
+        {
+            PropagationCoord.execute_propagate_prepare_enter(lvl, prepare_enter_data);
+        }
+
+        public void finish_enter(int lvl, Object finish_enter_data)
+        {
+            PropagationCoord.execute_propagate_finish_enter(lvl, finish_enter_data);
+        }
+
         private Gee.List<Solution> find_shortest_mig(int reserve_request_id, int first_host_lvl, int ok_host_lvl)
         {
             int subnetlevel = map_paths.get_subnetlevel();

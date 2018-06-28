@@ -230,6 +230,7 @@ namespace Netsukuku.Hooking.ArcHandler
                     break;
                 }
                 if (redo_from_start) continue;
+                EntryData entry_data = null;
                 while (true)
                 {
                     bool redo_from_begin_enter = false;
@@ -252,7 +253,6 @@ namespace Netsukuku.Hooking.ArcHandler
                         break;
                     }
                     // try and enter
-                    EntryData entry_data = null;
                     while (true)
                     {
                         IEntryData resp2;
@@ -265,7 +265,6 @@ namespace Netsukuku.Hooking.ArcHandler
                             // TODO signal bad_arc
                             return;
                         } catch (NoMigrationPathFoundError e) {
-                            // TODO abort_enter(ask_lvl)
                             // ask to coordinator of g-node of level ask_lvl to abort enter
                             AbortEnterData abort_enter_data = new AbortEnterData();
                             // call abort_enter
@@ -281,6 +280,7 @@ namespace Netsukuku.Hooking.ArcHandler
                             if (ask_lvl == 0)
                             {
                                 // network is full at level 0.
+                                warning("Failed to find a migration-path for a single node in the network we just met.");
                                 // Wait long time, the redo from start.
                                 tasklet.ms_wait(get_global_timeout() * 20);
                                 redo_from_start = true;
@@ -321,7 +321,18 @@ namespace Netsukuku.Hooking.ArcHandler
                     warning("ProxyCoord.UnknownResultError in ProxyCoord.completed_enter. Abort arc_handler.");
                     return;
                 }
-                // TODO use entry_data
+                // propagate prepare_enter
+                int enter_id = PRNGen.int_range(1, int.MAX);
+                PrepareEnterData prepare_enter_data = new PrepareEnterData();
+                prepare_enter_data.enter_id = enter_id;
+                PropagationCoord.prepare_enter(coord.prepare_enter, ask_lvl, prepare_enter_data);
+                // propagate finish_enter
+                int go_connectivity_position = PRNGen.int_range(gsizes[ask_lvl], int.MAX);
+                FinishEnterData finish_enter_data = new FinishEnterData();
+                finish_enter_data.enter_id = enter_id;
+                finish_enter_data.entry_data = entry_data;
+                finish_enter_data.go_connectivity_position = go_connectivity_position;
+                PropagationCoord.finish_enter(coord.finish_enter, ask_lvl, finish_enter_data);
 
                 break;
             }
