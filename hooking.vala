@@ -43,6 +43,13 @@ namespace Netsukuku.Hooking
         return ret;
     }
 
+    internal int get_global_timeout(int size)
+    {
+        // based on size of my network
+        // TODO
+        return 10000;
+    }
+
     internal ITasklet tasklet;
     public class HookingManager : Object, IHookingManagerSkeleton
     {
@@ -64,6 +71,8 @@ namespace Netsukuku.Hooking
         private Gee.List<int> gsizes;
         private MessageRouting.MessageRouting message_routing;
         private ArcHandler.ArcHandler arc_handler;
+        private ProxyCoord.ProxyCoord proxy_coord;
+        private PropagationCoord.PropagationCoord propagation_coord;
 
         public signal void same_network(IIdentityArc ia);
         public signal void another_network(IIdentityArc ia, int64 network_id);
@@ -82,7 +91,9 @@ namespace Netsukuku.Hooking
             this.coord = coord;
             message_routing = new MessageRouting.MessageRouting
                 (map_paths, execute_search, execute_explore, execute_delete_reserve, execute_mig);
-            arc_handler = new ArcHandler.ArcHandler(this, map_paths, coord);
+            proxy_coord = new ProxyCoord.ProxyCoord(this, map_paths, coord);
+            propagation_coord = new PropagationCoord.PropagationCoord(this, map_paths, coord);
+            arc_handler = new ArcHandler.ArcHandler(this, map_paths, coord, proxy_coord, propagation_coord);
         }
 
         private bool tuple_has_virtual_pos(TupleGNode t)
@@ -224,32 +235,32 @@ namespace Netsukuku.Hooking
 
         public Object evaluate_enter(Object evaluate_enter_data, Gee.List<int> client_address)
         {
-            return ProxyCoord.execute_proxy_evaluate_enter(evaluate_enter_data, client_address);
+            return proxy_coord.execute_proxy_evaluate_enter(evaluate_enter_data, client_address);
         }
 
         public Object begin_enter(int lvl, Object begin_enter_data, Gee.List<int> client_address)
         {
-            return ProxyCoord.execute_proxy_begin_enter(lvl, begin_enter_data, client_address);
+            return proxy_coord.execute_proxy_begin_enter(lvl, begin_enter_data, client_address);
         }
 
         public Object completed_enter(int lvl, Object completed_enter_data, Gee.List<int> client_address)
         {
-            return ProxyCoord.execute_proxy_completed_enter(lvl, completed_enter_data, client_address);
+            return proxy_coord.execute_proxy_completed_enter(lvl, completed_enter_data, client_address);
         }
 
         public Object abort_enter(int lvl, Object abort_enter_data, Gee.List<int> client_address)
         {
-            return ProxyCoord.execute_proxy_abort_enter(lvl, abort_enter_data, client_address);
+            return proxy_coord.execute_proxy_abort_enter(lvl, abort_enter_data, client_address);
         }
 
         public void prepare_enter(int lvl, Object prepare_enter_data)
         {
-            PropagationCoord.execute_propagate_prepare_enter(lvl, prepare_enter_data);
+            propagation_coord.execute_propagate_prepare_enter(lvl, prepare_enter_data);
         }
 
         public void finish_enter(int lvl, Object finish_enter_data)
         {
-            PropagationCoord.execute_propagate_finish_enter(lvl, finish_enter_data);
+            propagation_coord.execute_propagate_finish_enter(lvl, finish_enter_data);
         }
 
         private Gee.List<Solution> find_shortest_mig(int reserve_request_id, int first_host_lvl, int ok_host_lvl)

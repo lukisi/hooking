@@ -24,37 +24,57 @@ namespace Netsukuku.Hooking.PropagationCoord
 {
     internal delegate void PropagatePrepareEnter(int lvl, Object prepare_enter_data);
 
-    internal void prepare_enter(PropagatePrepareEnter propagate_prepare_enter, int lvl, PrepareEnterData prepare_enter_data)
-    {
-        propagate_prepare_enter(lvl, prepare_enter_data);
-    }
-
-    internal void execute_propagate_prepare_enter(int lvl, Object prepare_enter_data)
-    {
-        if (! (prepare_enter_data is PrepareEnterData)) tasklet.exit_tasklet(null);
-        execute_prepare_enter(lvl, (PrepareEnterData)prepare_enter_data);
-    }
-
-    internal void execute_prepare_enter(int lvl, PrepareEnterData prepare_enter_data)
-    {
-        error("not implemented yet");
-    }
-
     internal delegate void PropagateFinishEnter(int lvl, Object finish_enter_data);
 
-    internal void finish_enter(PropagateFinishEnter propagate_finish_enter, int lvl, FinishEnterData finish_enter_data)
+    internal class PropagationCoord : Object
     {
-        propagate_finish_enter(lvl, finish_enter_data);
-    }
+        private HookingManager mgr;
+        private IHookingMapPaths map_paths;
+        private ICoordinator coord;
+        private int levels;
+        private Gee.List<int> gsizes;
+        public PropagationCoord
+        (HookingManager mgr, IHookingMapPaths map_paths, ICoordinator coord)
+        {
+            this.mgr = mgr;
+            this.map_paths = map_paths;
+            levels = map_paths.get_levels();
+            gsizes = new ArrayList<int>();
+            for (int i = 0; i < levels; i++)
+                gsizes.add(map_paths.get_gsize(i));
+            this.coord = coord;
+        }
 
-    internal void execute_propagate_finish_enter(int lvl, Object finish_enter_data)
-    {
-        if (! (finish_enter_data is FinishEnterData)) tasklet.exit_tasklet(null);
-        execute_finish_enter(lvl, (FinishEnterData)finish_enter_data);
-    }
+        internal void prepare_enter(PropagatePrepareEnter propagate_prepare_enter, int lvl, PrepareEnterData prepare_enter_data)
+        {
+            propagate_prepare_enter(lvl, prepare_enter_data);
+        }
 
-    internal void execute_finish_enter(int lvl, FinishEnterData finish_enter_data)
-    {
-        error("not implemented yet");
+        internal void execute_propagate_prepare_enter(int lvl, Object prepare_enter_data)
+        {
+            if (! (prepare_enter_data is PrepareEnterData)) tasklet.exit_tasklet(null);
+            execute_prepare_enter(lvl, (PrepareEnterData)prepare_enter_data);
+        }
+
+        internal void execute_prepare_enter(int lvl, PrepareEnterData prepare_enter_data)
+        {
+            error("not implemented yet");
+        }
+
+        internal void finish_enter(PropagateFinishEnter propagate_finish_enter, int lvl, FinishEnterData finish_enter_data)
+        {
+            propagate_finish_enter(lvl, finish_enter_data);
+        }
+
+        internal void execute_propagate_finish_enter(int lvl, Object finish_enter_data)
+        {
+            if (! (finish_enter_data is FinishEnterData)) tasklet.exit_tasklet(null);
+            execute_finish_enter(lvl, (FinishEnterData)finish_enter_data);
+        }
+
+        internal void execute_finish_enter(int lvl, FinishEnterData finish_enter_data)
+        {
+            error("not implemented yet");
+        }
     }
 }

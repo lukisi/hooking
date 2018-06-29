@@ -30,9 +30,12 @@ namespace Netsukuku.Hooking.ArcHandler
         private ICoordinator coord;
         private int levels;
         private Gee.List<int> gsizes;
+        private ProxyCoord.ProxyCoord proxy_coord;
+        private PropagationCoord.PropagationCoord propagation_coord;
 
         public ArcHandler
-        (HookingManager mgr, IHookingMapPaths map_paths, ICoordinator coord)
+        (HookingManager mgr, IHookingMapPaths map_paths, ICoordinator coord,
+        ProxyCoord.ProxyCoord proxy_coord, PropagationCoord.PropagationCoord propagation_coord)
         {
             this.mgr = mgr;
             this.map_paths = map_paths;
@@ -41,6 +44,8 @@ namespace Netsukuku.Hooking.ArcHandler
             for (int i = 0; i < levels; i++)
                 gsizes.add(map_paths.get_gsize(i));
             this.coord = coord;
+            this.proxy_coord = proxy_coord;
+            this.propagation_coord = propagation_coord;
             arc_to_tasklet = new HashMap<IIdentityArc, ITaskletHandle>();
         }
 
@@ -50,14 +55,6 @@ namespace Netsukuku.Hooking.ArcHandler
                 if (map_paths.get_my_pos(i) >= gsizes[i])
                     return false;
             return true;
-        }
-
-        private int get_global_timeout()
-        {
-            // based on size of my network
-            int size = map_paths.get_n_nodes();
-            // TODO
-            return 10000;
         }
 
         public void add_arc(IIdentityArc ia)
@@ -210,7 +207,7 @@ namespace Netsukuku.Hooking.ArcHandler
                 while (true)
                 {
                     try {
-                        ask_lvl = ProxyCoord.evaluate_enter(coord.evaluate_enter, evaluate_enter_data);
+                        ask_lvl = proxy_coord.evaluate_enter(coord.evaluate_enter, evaluate_enter_data);
                     } catch (CoordProxyError e) {
                         warning("CoordProxyError in ProxyCoord.evaluate_enter. Abort arc_handler.");
                         return;
@@ -219,11 +216,11 @@ namespace Netsukuku.Hooking.ArcHandler
                         return;
                     } catch (ProxyCoord.AskAgainError e) {
                         // Wait a little, then redo evaluate.
-                        tasklet.ms_wait(get_global_timeout() / 4);
+                        tasklet.ms_wait(get_global_timeout(map_paths.get_n_nodes()) / 4);
                         continue;
                     } catch (ProxyCoord.IgnoreNetworkError e) {
                         // Wait long time, the redo from start.
-                        tasklet.ms_wait(get_global_timeout() * 20);
+                        tasklet.ms_wait(get_global_timeout(map_paths.get_n_nodes()) * 20);
                         redo_from_start  = true;
                         break;
                     }
@@ -239,7 +236,7 @@ namespace Netsukuku.Hooking.ArcHandler
                     BeginEnterData begin_enter_data = new BeginEnterData();
                     // call begin_enter
                     try {
-                        ProxyCoord.begin_enter(coord.begin_enter, ask_lvl, begin_enter_data);
+                        proxy_coord.begin_enter(coord.begin_enter, ask_lvl, begin_enter_data);
                     } catch (CoordProxyError e) {
                         warning("CoordProxyError in ProxyCoord.begin_enter. Abort arc_handler.");
                         return;
@@ -248,7 +245,7 @@ namespace Netsukuku.Hooking.ArcHandler
                         return;
                     } catch (ProxyCoord.AlreadyEnteringError e) {
                         // Wait long time, the redo from start.
-                        tasklet.ms_wait(get_global_timeout() * 20);
+                        tasklet.ms_wait(get_global_timeout(map_paths.get_n_nodes()) * 20);
                         redo_from_start = true;
                         break;
                     }
@@ -269,7 +266,7 @@ namespace Netsukuku.Hooking.ArcHandler
                             AbortEnterData abort_enter_data = new AbortEnterData();
                             // call abort_enter
                             try {
-                                ProxyCoord.abort_enter(coord.abort_enter, ask_lvl, abort_enter_data);
+                                proxy_coord.abort_enter(coord.abort_enter, ask_lvl, abort_enter_data);
                             } catch (CoordProxyError e) {
                                 warning("CoordProxyError in ProxyCoord.abort_enter. Abort arc_handler.");
                                 return;
@@ -282,7 +279,7 @@ namespace Netsukuku.Hooking.ArcHandler
                                 // network is full at level 0.
                                 warning("Failed to find a migration-path for a single node in the network we just met.");
                                 // Wait long time, the redo from start.
-                                tasklet.ms_wait(get_global_timeout() * 20);
+                                tasklet.ms_wait(get_global_timeout(map_paths.get_n_nodes()) * 20);
                                 redo_from_start = true;
                                 break;
                             }
@@ -313,7 +310,7 @@ namespace Netsukuku.Hooking.ArcHandler
                 CompletedEnterData completed_enter_data = new CompletedEnterData();
                 // call completed_enter
                 try {
-                    ProxyCoord.completed_enter(coord.completed_enter, ask_lvl, completed_enter_data);
+                    proxy_coord.completed_enter(coord.completed_enter, ask_lvl, completed_enter_data);
                 } catch (CoordProxyError e) {
                     warning("CoordProxyError in ProxyCoord.completed_enter. Abort arc_handler.");
                     return;
@@ -325,14 +322,14 @@ namespace Netsukuku.Hooking.ArcHandler
                 int enter_id = PRNGen.int_range(1, int.MAX);
                 PrepareEnterData prepare_enter_data = new PrepareEnterData();
                 prepare_enter_data.enter_id = enter_id;
-                PropagationCoord.prepare_enter(coord.prepare_enter, ask_lvl, prepare_enter_data);
+                propagation_coord.prepare_enter(coord.prepare_enter, ask_lvl, prepare_enter_data);
                 // propagate finish_enter
                 int go_connectivity_position = PRNGen.int_range(gsizes[ask_lvl], int.MAX);
                 FinishEnterData finish_enter_data = new FinishEnterData();
                 finish_enter_data.enter_id = enter_id;
                 finish_enter_data.entry_data = entry_data;
                 finish_enter_data.go_connectivity_position = go_connectivity_position;
-                PropagationCoord.finish_enter(coord.finish_enter, ask_lvl, finish_enter_data);
+                propagation_coord.finish_enter(coord.finish_enter, ask_lvl, finish_enter_data);
 
                 break;
             }
