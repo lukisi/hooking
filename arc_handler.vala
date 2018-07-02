@@ -30,6 +30,7 @@ namespace Netsukuku.Hooking.ArcHandler
         private ICoordinator coord;
         private int levels;
         private Gee.List<int> gsizes;
+        private int subnetlevel;
         private ProxyCoord.ProxyCoord proxy_coord;
         private PropagationCoord.PropagationCoord propagation_coord;
 
@@ -43,6 +44,7 @@ namespace Netsukuku.Hooking.ArcHandler
             gsizes = new ArrayList<int>();
             for (int i = 0; i < levels; i++)
                 gsizes.add(map_paths.get_gsize(i));
+            subnetlevel = map_paths.get_subnetlevel();
             this.coord = coord;
             this.proxy_coord = proxy_coord;
             this.propagation_coord = propagation_coord;
@@ -207,7 +209,7 @@ namespace Netsukuku.Hooking.ArcHandler
                 while (true)
                 {
                     try {
-                        ask_lvl = proxy_coord.evaluate_enter(coord.evaluate_enter, evaluate_enter_data);
+                        ask_lvl = proxy_coord.evaluate_enter(evaluate_enter_data);
                     } catch (CoordProxyError e) {
                         warning("CoordProxyError in ProxyCoord.evaluate_enter. Abort arc_handler.");
                         return;
@@ -236,7 +238,7 @@ namespace Netsukuku.Hooking.ArcHandler
                     BeginEnterData begin_enter_data = new BeginEnterData();
                     // call begin_enter
                     try {
-                        proxy_coord.begin_enter(coord.begin_enter, ask_lvl, begin_enter_data);
+                        proxy_coord.begin_enter(ask_lvl, begin_enter_data);
                     } catch (CoordProxyError e) {
                         warning("CoordProxyError in ProxyCoord.begin_enter. Abort arc_handler.");
                         return;
@@ -266,7 +268,7 @@ namespace Netsukuku.Hooking.ArcHandler
                             AbortEnterData abort_enter_data = new AbortEnterData();
                             // call abort_enter
                             try {
-                                proxy_coord.abort_enter(coord.abort_enter, ask_lvl, abort_enter_data);
+                                proxy_coord.abort_enter(ask_lvl, abort_enter_data);
                             } catch (CoordProxyError e) {
                                 warning("CoordProxyError in ProxyCoord.abort_enter. Abort arc_handler.");
                                 return;
@@ -310,7 +312,7 @@ namespace Netsukuku.Hooking.ArcHandler
                 CompletedEnterData completed_enter_data = new CompletedEnterData();
                 // call completed_enter
                 try {
-                    proxy_coord.completed_enter(coord.completed_enter, ask_lvl, completed_enter_data);
+                    proxy_coord.completed_enter(ask_lvl, completed_enter_data);
                 } catch (CoordProxyError e) {
                     warning("CoordProxyError in ProxyCoord.completed_enter. Abort arc_handler.");
                     return;

@@ -27,15 +27,7 @@ namespace Netsukuku.Hooking.ProxyCoord
     internal errordomain AskAgainError {GENERIC}
     internal errordomain IgnoreNetworkError {GENERIC}
 
-    internal delegate Object ProxyEvaluateEnter(Object evaluate_enter_data) throws CoordProxyError;
-
     internal errordomain AlreadyEnteringError {GENERIC}
-
-    internal delegate Object ProxyBeginEnter(int lvl, Object begin_enter_data) throws CoordProxyError;
-
-    internal delegate Object ProxyCompletedEnter(int lvl, Object completed_enter_data) throws CoordProxyError;
-
-    internal delegate Object ProxyAbortEnter(int lvl, Object abort_enter_data) throws CoordProxyError;
 
     internal class ProxyCoord : Object
     {
@@ -44,6 +36,7 @@ namespace Netsukuku.Hooking.ProxyCoord
         private ICoordinator coord;
         private int levels;
         private Gee.List<int> gsizes;
+        private int subnetlevel;
         public ProxyCoord
         (HookingManager mgr, IHookingMapPaths map_paths, ICoordinator coord)
         {
@@ -53,13 +46,14 @@ namespace Netsukuku.Hooking.ProxyCoord
             gsizes = new ArrayList<int>();
             for (int i = 0; i < levels; i++)
                 gsizes.add(map_paths.get_gsize(i));
+            subnetlevel = map_paths.get_subnetlevel();
             this.coord = coord;
         }
 
-        internal int evaluate_enter(ProxyEvaluateEnter proxy_evaluate_enter, EvaluateEnterData evaluate_enter_data)
+        internal int evaluate_enter(EvaluateEnterData evaluate_enter_data)
         throws AskAgainError, IgnoreNetworkError, CoordProxyError, UnknownResultError
         {
-            Object _ret = proxy_evaluate_enter(evaluate_enter_data);
+            Object _ret = coord.evaluate_enter(evaluate_enter_data);
             if (! (_ret is EvaluateEnterResult)) throw new UnknownResultError.GENERIC("");
             EvaluateEnterResult ret = (EvaluateEnterResult)_ret;
             if (ret.ask_again_error) throw new AskAgainError.GENERIC("");
@@ -92,10 +86,10 @@ namespace Netsukuku.Hooking.ProxyCoord
             error("not implemented yet");
         }
 
-        internal void begin_enter(ProxyBeginEnter proxy_begin_enter, int lvl, BeginEnterData begin_enter_data)
+        internal void begin_enter(int lvl, BeginEnterData begin_enter_data)
         throws AlreadyEnteringError, CoordProxyError, UnknownResultError
         {
-            Object _ret = proxy_begin_enter(lvl, begin_enter_data);
+            Object _ret = coord.begin_enter(lvl, begin_enter_data);
             if (! (_ret is BeginEnterResult)) throw new UnknownResultError.GENERIC("");
             BeginEnterResult ret = (BeginEnterResult)_ret;
             if (ret.already_entering_error) throw new AlreadyEnteringError.GENERIC("");
@@ -121,10 +115,10 @@ namespace Netsukuku.Hooking.ProxyCoord
             error("not implemented yet");
         }
 
-        internal void completed_enter(ProxyCompletedEnter proxy_completed_enter, int lvl, CompletedEnterData completed_enter_data)
+        internal void completed_enter(int lvl, CompletedEnterData completed_enter_data)
         throws CoordProxyError, UnknownResultError
         {
-            Object _ret = proxy_completed_enter(lvl, completed_enter_data);
+            Object _ret = coord.completed_enter(lvl, completed_enter_data);
             if (! (_ret is CompletedEnterResult)) throw new UnknownResultError.GENERIC("");
         }
 
@@ -141,10 +135,10 @@ namespace Netsukuku.Hooking.ProxyCoord
             error("not implemented yet");
         }
 
-        internal void abort_enter(ProxyAbortEnter proxy_abort_enter, int lvl, AbortEnterData abort_enter_data)
+        internal void abort_enter(int lvl, AbortEnterData abort_enter_data)
         throws CoordProxyError, UnknownResultError
         {
-            Object _ret = proxy_abort_enter(lvl, abort_enter_data);
+            Object _ret = coord.abort_enter(lvl, abort_enter_data);
             if (! (_ret is AbortEnterResult)) throw new UnknownResultError.GENERIC("");
         }
 

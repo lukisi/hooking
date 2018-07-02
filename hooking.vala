@@ -69,6 +69,7 @@ namespace Netsukuku.Hooking
         private ICoordinator coord;
         private int levels;
         private Gee.List<int> gsizes;
+        private int subnetlevel;
         private MessageRouting.MessageRouting message_routing;
         private ArcHandler.ArcHandler arc_handler;
         private ProxyCoord.ProxyCoord proxy_coord;
@@ -88,6 +89,7 @@ namespace Netsukuku.Hooking
             gsizes = new ArrayList<int>();
             for (int i = 0; i < levels; i++)
                 gsizes.add(map_paths.get_gsize(i));
+            subnetlevel = map_paths.get_subnetlevel();
             this.coord = coord;
             message_routing = new MessageRouting.MessageRouting
                 (map_paths, execute_search, execute_explore, execute_delete_reserve, execute_mig);
@@ -265,7 +267,6 @@ namespace Netsukuku.Hooking
 
         private Gee.List<Solution> find_shortest_mig(int reserve_request_id, int first_host_lvl, int ok_host_lvl)
         {
-            int subnetlevel = map_paths.get_subnetlevel();
             if (first_host_lvl <= subnetlevel) first_host_lvl = subnetlevel + 1;
             if (ok_host_lvl < first_host_lvl) ok_host_lvl = first_host_lvl;
             TupleGNode v = make_tuple_from_level(first_host_lvl, map_paths);
@@ -442,7 +443,7 @@ namespace Netsukuku.Hooking
             ret.gsizes = new ArrayList<int>();
             ret.gsizes.add_all(gsizes);
             ret.network_id = map_paths.get_network_id();
-            ret.neighbor_min_level = map_paths.get_subnetlevel();
+            ret.neighbor_min_level = subnetlevel;
             ret.neighbor_n_nodes = map_paths.get_n_nodes();
             if (ask_coord) ret.neighbor_n_nodes = coord.get_n_nodes();
             return ret;

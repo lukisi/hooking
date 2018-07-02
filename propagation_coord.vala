@@ -33,6 +33,7 @@ namespace Netsukuku.Hooking.PropagationCoord
         private ICoordinator coord;
         private int levels;
         private Gee.List<int> gsizes;
+        private int subnetlevel;
         public PropagationCoord
         (HookingManager mgr, IHookingMapPaths map_paths, ICoordinator coord)
         {
@@ -42,6 +43,7 @@ namespace Netsukuku.Hooking.PropagationCoord
             gsizes = new ArrayList<int>();
             for (int i = 0; i < levels; i++)
                 gsizes.add(map_paths.get_gsize(i));
+            subnetlevel = map_paths.get_subnetlevel();
             this.coord = coord;
         }
 
