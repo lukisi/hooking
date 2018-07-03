@@ -22,10 +22,6 @@ using Netsukuku.Hooking;
 
 namespace Netsukuku.Hooking.PropagationCoord
 {
-    internal delegate void PropagatePrepareEnter(int lvl, Object prepare_enter_data);
-
-    internal delegate void PropagateFinishEnter(int lvl, Object finish_enter_data);
-
     internal class PropagationCoord : Object
     {
         private HookingManager mgr;
@@ -47,9 +43,9 @@ namespace Netsukuku.Hooking.PropagationCoord
             this.coord = coord;
         }
 
-        internal void prepare_enter(PropagatePrepareEnter propagate_prepare_enter, int lvl, PrepareEnterData prepare_enter_data)
+        internal void prepare_enter(int lvl, PrepareEnterData prepare_enter_data)
         {
-            propagate_prepare_enter(lvl, prepare_enter_data);
+            coord.prepare_enter(lvl, prepare_enter_data);
         }
 
         internal void execute_propagate_prepare_enter(int lvl, Object prepare_enter_data)
@@ -60,12 +56,12 @@ namespace Netsukuku.Hooking.PropagationCoord
 
         internal void execute_prepare_enter(int lvl, PrepareEnterData prepare_enter_data)
         {
-            error("not implemented yet");
+            mgr.do_prepare_enter(prepare_enter_data.enter_id);
         }
 
-        internal void finish_enter(PropagateFinishEnter propagate_finish_enter, int lvl, FinishEnterData finish_enter_data)
+        internal void finish_enter(int lvl, FinishEnterData finish_enter_data)
         {
-            propagate_finish_enter(lvl, finish_enter_data);
+            coord.finish_enter(lvl, finish_enter_data);
         }
 
         internal void execute_propagate_finish_enter(int lvl, Object finish_enter_data)
@@ -76,7 +72,7 @@ namespace Netsukuku.Hooking.PropagationCoord
 
         internal void execute_finish_enter(int lvl, FinishEnterData finish_enter_data)
         {
-            error("not implemented yet");
+            mgr.do_finish_enter(finish_enter_data.enter_id, lvl /*guest_gnode_level*/, finish_enter_data.entry_data, finish_enter_data.go_connectivity_position);
         }
     }
 }
