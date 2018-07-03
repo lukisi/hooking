@@ -73,8 +73,9 @@ namespace Netsukuku.Hooking
 
         public abstract void reserve(int host_lvl, int reserve_request_id, out int new_pos, out int new_eldership) throws CoordReserveError;
         public abstract void delete_reserve(int host_lvl, int reserve_request_id);
-        public abstract void prepare_migration(/*TODO*/);
-        public abstract void finish_migration(/*TODO*/);
+
+        public abstract void prepare_migration(int lvl, Object prepare_migration_data);
+        public abstract void finish_migration(int lvl, Object finish_migration_data);
     }
 
     public errordomain CoordProxyError {GENERIC}
