@@ -305,22 +305,30 @@ namespace Netsukuku.Hooking.ProxyCoord
 
         internal Object execute_proxy_begin_enter(int lvl, Object begin_enter_data, Gee.List<int> client_address)
         {
+            if (! (begin_enter_data is BeginEnterData)) tasklet.exit_tasklet(null);
+            int lock_id = lock_hooking_memory();
+            var ret = new BeginEnterResult();
             try {
-                if (! (begin_enter_data is BeginEnterData)) tasklet.exit_tasklet(null);
-                execute_begin_enter(lvl, (BeginEnterData)begin_enter_data, client_address);
-                var ret = new BeginEnterResult();
-                return ret;
+                execute_begin_enter(lock_id, lvl, (BeginEnterData)begin_enter_data, client_address);
             } catch (AlreadyEnteringError e) {
-                var ret = new BeginEnterResult();
                 ret.already_entering_error = true;
-                return ret;
             }
+            unlock_hooking_memory(lock_id);
+            return ret;
         }
 
-        internal void execute_begin_enter(int lvl, BeginEnterData begin_enter_data, Gee.List<int> client_address)
+        internal void execute_begin_enter(int lock_id, int lvl, BeginEnterData begin_enter_data, Gee.List<int> client_address)
         throws AlreadyEnteringError
         {
-            error("not implemented yet");
+            // get memory
+            HookingMemory memory = get_hooking_memory(lock_id, lvl);
+            if (memory.begin_enter_timeout == null || memory.begin_enter_timeout.is_expired())
+            {
+                memory.begin_enter_timeout = new SerTimer(5*60*1000); // TODO verify this time is suited.
+                // set memory
+                set_hooking_memory(lock_id, lvl, memory);
+            }
+            else throw new AlreadyEnteringError.GENERIC("");
         }
 
         internal void completed_enter(int lvl, CompletedEnterData completed_enter_data)
