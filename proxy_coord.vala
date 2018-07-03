@@ -341,14 +341,20 @@ namespace Netsukuku.Hooking.ProxyCoord
         internal Object execute_proxy_completed_enter(int lvl, Object completed_enter_data, Gee.List<int> client_address)
         {
             if (! (completed_enter_data is CompletedEnterData)) tasklet.exit_tasklet(null);
-            execute_completed_enter(lvl, (CompletedEnterData)completed_enter_data, client_address);
+            int lock_id = lock_hooking_memory();
             var ret = new CompletedEnterResult();
+            execute_completed_enter(lock_id, lvl, (CompletedEnterData)completed_enter_data, client_address);
+            unlock_hooking_memory(lock_id);
             return ret;
         }
 
-        internal void execute_completed_enter(int lvl, CompletedEnterData completed_enter_data, Gee.List<int> client_address)
+        internal void execute_completed_enter(int lock_id, int lvl, CompletedEnterData completed_enter_data, Gee.List<int> client_address)
         {
-            error("not implemented yet");
+            // get memory
+            HookingMemory memory = get_hooking_memory(lock_id, lvl);
+            memory.begin_enter_timeout = null;
+            // set memory
+            set_hooking_memory(lock_id, lvl, memory);
         }
 
         internal void abort_enter(int lvl, AbortEnterData abort_enter_data)
@@ -361,14 +367,20 @@ namespace Netsukuku.Hooking.ProxyCoord
         internal Object execute_proxy_abort_enter(int lvl, Object abort_enter_data, Gee.List<int> client_address)
         {
             if (! (abort_enter_data is AbortEnterData)) tasklet.exit_tasklet(null);
-            execute_abort_enter(lvl, (AbortEnterData)abort_enter_data, client_address);
+            int lock_id = lock_hooking_memory();
             var ret = new AbortEnterResult();
+            execute_abort_enter(lock_id, lvl, (AbortEnterData)abort_enter_data, client_address);
+            unlock_hooking_memory(lock_id);
             return ret;
         }
 
-        internal void execute_abort_enter(int lvl, AbortEnterData abort_enter_data, Gee.List<int> client_address)
+        internal void execute_abort_enter(int lock_id, int lvl, AbortEnterData abort_enter_data, Gee.List<int> client_address)
         {
-            error("not implemented yet");
+            // get memory
+            HookingMemory memory = get_hooking_memory(lock_id, lvl);
+            memory.begin_enter_timeout = null;
+            // set memory
+            set_hooking_memory(lock_id, lvl, memory);
         }
 
         internal int lock_hooking_memory()
