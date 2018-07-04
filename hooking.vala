@@ -78,9 +78,13 @@ namespace Netsukuku.Hooking
         public signal void same_network(IIdentityArc ia);
         public signal void another_network(IIdentityArc ia, int64 network_id);
         public signal void do_prepare_enter(int enter_id);
-        public signal void do_finish_enter(int enter_id, int guest_gnode_level, EntryData entry_data, int go_connectivity_position);
-        public signal void do_prepare_migration(/* TODO */);
-        public signal void do_finish_migration(/* TODO */);
+        public signal void do_finish_enter
+            (int enter_id, int guest_gnode_level,
+            EntryData entry_data, int go_connectivity_position);
+        public signal void do_prepare_migration(int migration_id);
+        public signal void do_finish_migration
+            (int migration_id, int guest_gnode_level,
+            EntryData migration_data, int go_connectivity_position);
 
         public HookingManager(IHookingMapPaths map_paths, ICoordinator coord)
         {
@@ -200,23 +204,24 @@ namespace Netsukuku.Hooking
             if (p.operation == RequestPacketType.PREPARE_MIGRATION)
             {
                 int lvl = level(p.dest, map_paths);
-                /* TODO
-                Object prepare_migration_data = new PrepareMigrationData(p.migration_id);
-                coord.prepare_migration(lvl, prepare_migration_data);
-                */
+                PrepareMigrationData prepare_migration_data = new PrepareMigrationData(p.migration_id);
+                propagation_coord.prepare_migration(lvl, prepare_migration_data);
             }
             else if (p.operation == RequestPacketType.FINISH_MIGRATION)
             {
                 int lvl = level(p.dest, map_paths);
-                /* TODO
-                Object finish_migration_data = new FinishMigrationData
+                EntryData migration_data = new EntryData();
+                migration_data.pos = new ArrayList<int>();
+                migration_data.elderships = new ArrayList<int>();
+                migration_data.pos.add_all(p.host_gnode.pos);
+                migration_data.elderships.add_all(p.host_gnode.eldership);
+                migration_data.pos.insert(0, p.real_new_pos);
+                migration_data.elderships.insert(0, p.real_new_eldership);
+                FinishMigrationData finish_migration_data = new FinishMigrationData
                     (p.migration_id,
-                    p.conn_gnode_pos,
-                    p.host_gnode,
-                    p.real_new_pos,
-                    p.real_new_eldership);
-                coord.finish_migration(lvl, finish_migration_data);
-                */
+                    migration_data,
+                    p.conn_gnode_pos);
+                propagation_coord.finish_migration(lvl, finish_migration_data);
             }
             else
             {
@@ -263,6 +268,16 @@ namespace Netsukuku.Hooking
         public void finish_enter(int lvl, Object finish_enter_data)
         {
             propagation_coord.execute_propagate_finish_enter(lvl, finish_enter_data);
+        }
+
+        public void prepare_migration(int lvl, Object prepare_migration_data)
+        {
+            propagation_coord.execute_propagate_prepare_migration(lvl, prepare_migration_data);
+        }
+
+        public void finish_migration(int lvl, Object finish_migration_data)
+        {
+            propagation_coord.execute_propagate_finish_migration(lvl, finish_migration_data);
         }
 
         private Gee.List<Solution> find_shortest_mig(int reserve_request_id, int first_host_lvl, int ok_host_lvl)

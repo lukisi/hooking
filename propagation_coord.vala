@@ -46,6 +46,7 @@ namespace Netsukuku.Hooking.PropagationCoord
         internal void prepare_enter(int lvl, PrepareEnterData prepare_enter_data)
         {
             coord.prepare_enter(lvl, prepare_enter_data);
+            // This will return only when all the nodes in the cluster have completed.
         }
 
         internal void execute_propagate_prepare_enter(int lvl, Object prepare_enter_data)
@@ -62,6 +63,7 @@ namespace Netsukuku.Hooking.PropagationCoord
         internal void finish_enter(int lvl, FinishEnterData finish_enter_data)
         {
             coord.finish_enter(lvl, finish_enter_data);
+            // This will return quite soon, cause the real stuff is done in a tasklet by the Coord.
         }
 
         internal void execute_propagate_finish_enter(int lvl, Object finish_enter_data)
@@ -72,7 +74,45 @@ namespace Netsukuku.Hooking.PropagationCoord
 
         internal void execute_finish_enter(int lvl, FinishEnterData finish_enter_data)
         {
-            mgr.do_finish_enter(finish_enter_data.enter_id, lvl /*guest_gnode_level*/, finish_enter_data.entry_data, finish_enter_data.go_connectivity_position);
+            mgr.do_finish_enter
+                (finish_enter_data.enter_id, lvl /*guest_gnode_level*/,
+                finish_enter_data.entry_data, finish_enter_data.go_connectivity_position);
+        }
+
+        internal void prepare_migration(int lvl, PrepareMigrationData prepare_migration_data)
+        {
+            coord.prepare_migration(lvl, prepare_migration_data);
+            // This will return only when all the nodes in the cluster have completed.
+        }
+
+        internal void execute_propagate_prepare_migration(int lvl, Object prepare_migration_data)
+        {
+            if (! (prepare_migration_data is PrepareMigrationData)) tasklet.exit_tasklet(null);
+            execute_prepare_migration(lvl, (PrepareMigrationData)prepare_migration_data);
+        }
+
+        internal void execute_prepare_migration(int lvl, PrepareMigrationData prepare_migration_data)
+        {
+            mgr.do_prepare_migration(prepare_migration_data.migration_id);
+        }
+
+        internal void finish_migration(int lvl, FinishMigrationData finish_migration_data)
+        {
+            coord.finish_migration(lvl, finish_migration_data);
+            // This will return quite soon, cause the real stuff is done in a tasklet by the Coord.
+        }
+
+        internal void execute_propagate_finish_migration(int lvl, Object finish_migration_data)
+        {
+            if (! (finish_migration_data is FinishMigrationData)) tasklet.exit_tasklet(null);
+            execute_finish_migration(lvl, (FinishMigrationData)finish_migration_data);
+        }
+
+        internal void execute_finish_migration(int lvl, FinishMigrationData finish_migration_data)
+        {
+            mgr.do_finish_migration
+                (finish_migration_data.migration_id, lvl /*guest_gnode_level*/,
+                finish_migration_data.migration_data, finish_migration_data.go_connectivity_position);
         }
     }
 }

@@ -522,6 +522,11 @@ namespace Netsukuku.Hooking
     internal class PrepareEnterData : Object
     {
         public int enter_id {get; set;}
+
+        public PrepareEnterData(int id)
+        {
+            this.enter_id = id;
+        }
     }
 
     internal class FinishEnterData : Object
@@ -529,18 +534,38 @@ namespace Netsukuku.Hooking
         public int enter_id {get; set;}
         public EntryData entry_data {get; set;}
         public int go_connectivity_position {get; set;}
+
+        public FinishEnterData(int id, EntryData data, int go_connectivity_position)
+        {
+            this.enter_id = id;
+            this.entry_data = data;
+            this.go_connectivity_position = go_connectivity_position;
+        }
     }
 
     internal class PrepareMigrationData : Object
     {
         public int migration_id {get; set;}
+
+        public PrepareMigrationData(int id)
+        {
+            this.migration_id = id;
+        }
     }
 
-    /* TODO
-    serializable class FinishMigrationData:
-        int migration_id
-        ... TODO
-    */
+    internal class FinishMigrationData : Object
+    {
+        public int migration_id {get; set;}
+        public EntryData migration_data {get; set;}
+        public int go_connectivity_position {get; set;}
+
+        public FinishMigrationData(int id, EntryData data, int go_connectivity_position)
+        {
+            this.migration_id = id;
+            this.migration_data = data;
+            this.go_connectivity_position = go_connectivity_position;
+        }
+    }
 
     internal class TupleGNode : Object, Json.Serializable
     {
