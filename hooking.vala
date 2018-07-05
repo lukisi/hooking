@@ -58,7 +58,34 @@ namespace Netsukuku.Hooking
         public static void init(ITasklet _tasklet)
         {
             // Register serializable types
+            typeof(NetworkData).class_peek();
+            typeof(EvaluateEnterData).class_peek();
+            typeof(EvaluateEnterResult).class_peek();
+            typeof(EvaluateEnterEvaluation).class_peek();
+            typeof(SerTimer).class_peek();
+            typeof(HookingMemory).class_peek();
+            typeof(BeginEnterData).class_peek();
+            typeof(BeginEnterResult).class_peek();
+            typeof(CompletedEnterData).class_peek();
+            typeof(CompletedEnterResult).class_peek();
+            typeof(AbortEnterData).class_peek();
+            typeof(AbortEnterResult).class_peek();
             typeof(EntryData).class_peek();
+            typeof(PrepareEnterData).class_peek();
+            typeof(FinishEnterData).class_peek();
+            typeof(PrepareMigrationData).class_peek();
+            typeof(FinishMigrationData).class_peek();
+            typeof(TupleGNode).class_peek();
+            typeof(PathHop).class_peek();
+            typeof(SearchMigrationPathRequest).class_peek();
+            typeof(SearchMigrationPathErrorPkt).class_peek();
+            typeof(PairTupleGNodeInt).class_peek();
+            typeof(SearchMigrationPathResponse).class_peek();
+            typeof(ExploreGNodeRequest).class_peek();
+            typeof(ExploreGNodeResponse).class_peek();
+            typeof(DeleteReservationRequest).class_peek();
+            typeof(RequestPacket).class_peek();
+            typeof(ResponsePacket).class_peek();
             tasklet = _tasklet;
         }
 
