@@ -94,9 +94,11 @@ namespace Netsukuku.Hooking.ArcHandler
                 try {
                     resp = st.retrieve_network_data(false);
                 } catch (StubError e) {
+                    warning(@"Hooking.ArcHandler.tasklet: StubError: TODO signal bad arc. Terminating.");
                     // TODO signal bad_arc
                     return;
                 } catch (DeserializeError e) {
+                    warning(@"Hooking.ArcHandler.tasklet: DeserializeError: TODO signal bad arc. Terminating.");
                     // TODO signal bad_arc
                     return;
                 } catch (HookingNotPrincipalError e) {
@@ -105,6 +107,7 @@ namespace Netsukuku.Hooking.ArcHandler
                 }
                 if (! (resp is NetworkData))
                 {
+                    warning(@"Hooking.ArcHandler.tasklet: Not instance of NetworkData: TODO signal bad arc response. Terminating.");
                     // TODO signal bad_arc_response
                     return;
                 }
@@ -124,6 +127,7 @@ namespace Netsukuku.Hooking.ArcHandler
                     {
                         if (network_data.gsizes[i] != gsizes[i])
                         {
+                            warning(@"Hooking.ArcHandler.tasklet: Not same topology. Terminating.");
                             bad_topology = true;
                             break;
                         }
@@ -171,9 +175,11 @@ namespace Netsukuku.Hooking.ArcHandler
                     try {
                         resp = st.retrieve_network_data(true);
                     } catch (StubError e) {
+                        warning(@"Hooking.ArcHandler.tasklet: StubError: TODO signal bad arc. Terminating.");
                         // TODO signal bad_arc
                         return;
                     } catch (DeserializeError e) {
+                        warning(@"Hooking.ArcHandler.tasklet: DeserializeError: TODO signal bad arc. Terminating.");
                         // TODO signal bad_arc
                         return;
                     } catch (HookingNotPrincipalError e) {
@@ -182,6 +188,7 @@ namespace Netsukuku.Hooking.ArcHandler
                     }
                     if (! (resp is NetworkData))
                     {
+                        warning(@"Hooking.ArcHandler.tasklet: Not instance of NetworkData: TODO signal bad arc response. Terminating.");
                         // TODO signal bad_arc_response
                         return;
                     }
@@ -258,9 +265,11 @@ namespace Netsukuku.Hooking.ArcHandler
                         try {
                             resp2 = st.search_migration_path(ask_lvl);
                         } catch (StubError e) {
+                            warning(@"Hooking.ArcHandler.tasklet: StubError: TODO signal bad arc. Terminating.");
                             // TODO signal bad_arc
                             return;
                         } catch (DeserializeError e) {
+                            warning(@"Hooking.ArcHandler.tasklet: DeserializeError: TODO signal bad arc. Terminating.");
                             // TODO signal bad_arc
                             return;
                         } catch (NoMigrationPathFoundError e) {
@@ -298,6 +307,7 @@ namespace Netsukuku.Hooking.ArcHandler
                         }
                         if (! (resp2 is EntryData))
                         {
+                            warning(@"Hooking.ArcHandler.tasklet: Not instance of EntryData: TODO signal bad arc response. Terminating.");
                             // TODO signal bad_arc_response
                             return;
                         }

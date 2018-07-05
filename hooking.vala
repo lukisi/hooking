@@ -47,6 +47,8 @@ namespace Netsukuku.Hooking
     {
         // based on size of my network
         // TODO
+        if (size < 5) return 1000;
+        if (size < 100) return 5000;
         return 10000;
     }
 
