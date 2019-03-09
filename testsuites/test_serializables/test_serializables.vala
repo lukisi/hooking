@@ -593,8 +593,8 @@ class HookingTester : Object
         assert(pk0.new_conn_vir_pos == 34534);
         assert(pk0.new_eldership == 3);
         assert(pk0.final_host_lvl == 5);
-        assert(pk0.real_new_pos == null);
-        assert(pk0.real_new_eldership == null);
+        assert(pk0.real_new_pos == -1);
+        assert(pk0.real_new_eldership == -1);
 
         SearchMigrationPathResponse pk1;
         {

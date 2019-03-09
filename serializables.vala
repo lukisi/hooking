@@ -784,76 +784,20 @@ namespace Netsukuku.Hooking
         public TupleGNode origin {get; set;}
         public int min_host_lvl {get; set;}
         public Gee.List<PairTupleGNodeInt> set_adjacent {get; set;}
-
-        public int? final_host_lvl {
-            get {
-                if (internser_final_host_lvl == -1) return null;
-                else return internser_final_host_lvl;
-            }
-            set {
-                if (value == null) internser_final_host_lvl = -1;
-                else internser_final_host_lvl = value;
-            }
-        }
-
-        public int? real_new_pos {
-            get {
-                if (internser_real_new_pos == -1) return null;
-                else return internser_real_new_pos;
-            }
-            set {
-                if (value == null) internser_real_new_pos = -1;
-                else internser_real_new_pos = value;
-            }
-        }
-
-        public int? real_new_eldership {
-            get {
-                if (internser_real_new_eldership == -1) return null;
-                else return internser_real_new_eldership;
-            }
-            set {
-                if (value == null) internser_real_new_eldership = -1;
-                else internser_real_new_eldership = value;
-            }
-        }
-
-        public int? new_conn_vir_pos {
-            get {
-                if (internser_new_conn_vir_pos == -1) return null;
-                else return internser_new_conn_vir_pos;
-            }
-            set {
-                if (value == null) internser_new_conn_vir_pos = -1;
-                else internser_new_conn_vir_pos = value;
-            }
-        }
-
-        public int? new_eldership {
-            get {
-                if (internser_new_eldership == -1) return null;
-                else return internser_new_eldership;
-            }
-            set {
-                if (value == null) internser_new_eldership = -1;
-                else internser_new_eldership = value;
-            }
-        }
-
-        public int internser_final_host_lvl {get; set;}
-        public int internser_real_new_pos {get; set;}
-        public int internser_real_new_eldership {get; set;}
-        public int internser_new_conn_vir_pos {get; set;}
-        public int internser_new_eldership {get; set;}
+        public int final_host_lvl {get; set;}
+        public int real_new_pos {get; set;}
+        public int real_new_eldership {get; set;}
+        public int new_conn_vir_pos {get; set;}
+        public int new_eldership {get; set;}
 
         public SearchMigrationPathResponse()
         {
             set_adjacent = new ArrayList<PairTupleGNodeInt>();
-            final_host_lvl = null;
-            real_new_pos = null;
-            real_new_eldership = null;
-            new_conn_vir_pos = null;
-            new_eldership = null;
+            final_host_lvl = -1;
+            real_new_pos = -1;
+            real_new_eldership = -1;
+            new_conn_vir_pos = -1;
+            new_eldership = -1;
         }
 
         public bool deserialize_property
@@ -875,16 +819,16 @@ namespace Netsukuku.Hooking
             case "pkt-id":
             case "min_host_lvl":
             case "min-host-lvl":
-            case "internser_final_host_lvl":
-            case "internser-final-host-lvl":
-            case "internser_real_new_pos":
-            case "internser-real-new-pos":
-            case "internser_real_new_eldership":
-            case "internser-real-new-eldership":
-            case "internser_new_conn_vir_pos":
-            case "internser-new-conn-vir-pos":
-            case "internser_new_eldership":
-            case "internser-new-eldership":
+            case "final_host_lvl":
+            case "final-host-lvl":
+            case "real_new_pos":
+            case "real-new-pos":
+            case "real_new_eldership":
+            case "real-new-eldership":
+            case "new_conn_vir_pos":
+            case "new-conn-vir-pos":
+            case "new_eldership":
+            case "new-eldership":
                 try {
                     @value = deserialize_int(property_node);
                 } catch (HelperDeserializeError e) {
@@ -923,16 +867,16 @@ namespace Netsukuku.Hooking
             case "pkt-id":
             case "min_host_lvl":
             case "min-host-lvl":
-            case "internser_final_host_lvl":
-            case "internser-final-host-lvl":
-            case "internser_real_new_pos":
-            case "internser-real-new-pos":
-            case "internser_real_new_eldership":
-            case "internser-real-new-eldership":
-            case "internser_new_conn_vir_pos":
-            case "internser-new-conn-vir-pos":
-            case "internser_new_eldership":
-            case "internser-new-eldership":
+            case "final_host_lvl":
+            case "final-host-lvl":
+            case "real_new_pos":
+            case "real-new-pos":
+            case "real_new_eldership":
+            case "real-new-eldership":
+            case "new_conn_vir_pos":
+            case "new-conn-vir-pos":
+            case "new_eldership":
+            case "new-eldership":
                 return serialize_int((int)@value);
             case "set_adjacent":
             case "set-adjacent":
