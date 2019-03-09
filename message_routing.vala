@@ -33,8 +33,8 @@ namespace Netsukuku.Hooking.MessageRouting
     internal delegate void ExecuteSearchDelegate
         (TupleGNode visiting_gnode,
         int max_host_lvl, int reserve_request_id,
-        out int min_host_lvl, out int? final_host_lvl, out int? real_new_pos, out int? real_new_eldership,
-        out Gee.List<PairTupleGNodeInt>? set_adjacent, out int? new_conn_vir_pos, out int? new_eldership);
+        out int min_host_lvl, out int final_host_lvl, out int real_new_pos, out int real_new_eldership,
+        out Gee.List<PairTupleGNodeInt>? set_adjacent, out int new_conn_vir_pos, out int new_eldership);
 
     internal delegate void ExecuteExploreDelegate
         (int requested_lvl,
@@ -93,8 +93,8 @@ namespace Netsukuku.Hooking.MessageRouting
         public void send_search_request
         (SolutionStep current,
         int max_host_lvl, int reserve_request_id,
-        out int min_host_lvl, out int? final_host_lvl, out int? real_new_pos, out int? real_new_eldership,
-        out Gee.List<PairTupleGNodeInt>? set_adjacent, out int? new_conn_vir_pos, out int? new_eldership)
+        out int min_host_lvl, out int final_host_lvl, out int real_new_pos, out int real_new_eldership,
+        out Gee.List<PairTupleGNodeInt>? set_adjacent, out int new_conn_vir_pos, out int new_eldership)
         throws SearchMigrationPathError
         {
             Gee.List<PathHop> path_hops = get_path_hops(current);

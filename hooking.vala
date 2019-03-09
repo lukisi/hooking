@@ -143,19 +143,19 @@ namespace Netsukuku.Hooking
         private void execute_search
         (TupleGNode visiting_gnode,
         int max_host_lvl, int reserve_request_id,
-        out int min_host_lvl, out int? final_host_lvl, out int? real_new_pos, out int? real_new_eldership,
-        out Gee.List<PairTupleGNodeInt>? set_adjacent, out int? new_conn_vir_pos, out int? new_eldership)
+        out int min_host_lvl, out int final_host_lvl, out int real_new_pos, out int real_new_eldership,
+        out Gee.List<PairTupleGNodeInt>? set_adjacent, out int new_conn_vir_pos, out int new_eldership)
         {
             // Assert (I am in visiting_gnode) AND (I am real). Else, ignore message.
             if (! i_am_inside(visiting_gnode, map_paths)) tasklet.exit_tasklet(null);
             if (tuple_has_virtual_pos(make_tuple_from_level(0, map_paths))) tasklet.exit_tasklet(null);
             min_host_lvl = level(visiting_gnode, map_paths);
-            final_host_lvl = null;
-            real_new_pos = null;
-            real_new_eldership = null;
+            final_host_lvl = -1;
+            real_new_pos = -1;
+            real_new_eldership = -1;
             set_adjacent = null;
-            new_conn_vir_pos = null;
-            new_eldership = null;
+            new_conn_vir_pos = -1;
+            new_eldership = -1;
             int pos = -1;
             int eldership = -1;
             while (min_host_lvl <= max_host_lvl)
@@ -333,12 +333,12 @@ namespace Netsukuku.Hooking
                     prev_sol_distance * 1.3 <= current.get_distance()
                     ) break;
                 int min_host_lvl;
-                int? final_host_lvl;
-                int? real_new_pos;
-                int? real_new_eldership;
+                int final_host_lvl;
+                int real_new_pos;
+                int real_new_eldership;
                 Gee.List<PairTupleGNodeInt>? set_adjacent;
-                int? new_conn_vir_pos;
-                int? new_eldership;
+                int new_conn_vir_pos;
+                int new_eldership;
                 try {
                     message_routing.send_search_request
                     (current, max_host_lvl, reserve_request_id,
