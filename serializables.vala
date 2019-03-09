@@ -301,17 +301,7 @@ namespace Netsukuku.Hooking
         public SerTimer? evaluate_enter_timeout {get; set;}
         public EvaluateEnterEvaluation? evaluate_enter_elected {get; set;}
         public SerTimer? begin_enter_timeout {get; set;}
-
-        public int? evaluate_enter_first_ask_lvl {
-            get {
-                if (internser_evaluate_enter_first_ask_lvl == -1) return null;
-                else return internser_evaluate_enter_first_ask_lvl;
-            }
-            set {
-                if (value == null) internser_evaluate_enter_first_ask_lvl = -1;
-                else internser_evaluate_enter_first_ask_lvl = value;
-            }
-        }
+        public int evaluate_enter_first_ask_lvl {get; set;}
 
         public EvaluationStatus? evaluate_enter_status {
             get {
@@ -330,13 +320,12 @@ namespace Netsukuku.Hooking
             }
         }
 
-        public int internser_evaluate_enter_first_ask_lvl {get; set;}
         public int internser_evaluate_enter_status {get; set;}
 
         public HookingMemory()
         {
             evaluate_enter_evaluation_list = new ArrayList<EvaluateEnterEvaluation>();
-            evaluate_enter_first_ask_lvl = null;
+            evaluate_enter_first_ask_lvl = -1;
             evaluate_enter_timeout = null;
             evaluate_enter_status = null;
             evaluate_enter_elected = null;
@@ -359,8 +348,8 @@ namespace Netsukuku.Hooking
                     return false;
                 }
                 break;
-            case "internser_evaluate_enter_first_ask_lvl":
-            case "internser-evaluate-enter-first-ask-lvl":
+            case "evaluate_enter_first_ask_lvl":
+            case "evaluate-enter-first-ask-lvl":
             case "internser_evaluate_enter_status":
             case "internser-evaluate-enter-status":
                 try {
@@ -412,8 +401,8 @@ namespace Netsukuku.Hooking
             case "evaluate_enter_evaluation_list":
             case "evaluate-enter-evaluation-list":
                 return serialize_list_evaluateenterevaluation((Gee.List<EvaluateEnterEvaluation>)@value);
-            case "internser_evaluate_enter_first_ask_lvl":
-            case "internser-evaluate-enter-first-ask-lvl":
+            case "evaluate_enter_first_ask_lvl":
+            case "evaluate-enter-first-ask-lvl":
             case "internser_evaluate_enter_status":
             case "internser-evaluate-enter-status":
                 return serialize_int((int)@value);

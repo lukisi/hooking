@@ -181,7 +181,6 @@ class HookingTester : Object
             mm0 = (HookingMemory)Json.gobject_deserialize(typeof(HookingMemory), node);
         }
         assert(mm0.evaluate_enter_evaluation_list.size == 0);
-        assert(mm0.evaluate_enter_first_ask_lvl == null);
         assert(mm0.evaluate_enter_timeout == null);
         assert(mm0.evaluate_enter_status == null);
         assert(mm0.evaluate_enter_elected == null);

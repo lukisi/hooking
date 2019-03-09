@@ -266,7 +266,7 @@ namespace Netsukuku.Hooking.ProxyCoord
                         memory.evaluate_enter_evaluation_list.clear();
                         memory.evaluate_enter_timeout = null;
                         memory.evaluate_enter_elected = null;
-                        memory.evaluate_enter_first_ask_lvl = null;
+                        memory.evaluate_enter_first_ask_lvl = -1;
                         memory.evaluate_enter_status = null;
                     }
                     // set memory
@@ -285,7 +285,7 @@ namespace Netsukuku.Hooking.ProxyCoord
             {
                 memory.evaluate_enter_timeout = null;
                 memory.evaluate_enter_elected = null;
-                memory.evaluate_enter_first_ask_lvl = null;
+                memory.evaluate_enter_first_ask_lvl = -1;
                 memory.evaluate_enter_status = null;
                 // set memory
                 set_hooking_memory(lock_id, levels, memory);
