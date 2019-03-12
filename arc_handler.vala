@@ -334,14 +334,10 @@ namespace Netsukuku.Hooking.ArcHandler
                 int enter_id = PRNGen.int_range(1, int.MAX);
                 PrepareEnterData prepare_enter_data = new PrepareEnterData(enter_id);
                 propagation_coord.prepare_enter(ask_lvl, prepare_enter_data);
-                mgr.do_prepare_enter(enter_id);
                 // propagate finish_enter
                 int go_connectivity_position = PRNGen.int_range(gsizes[ask_lvl], int.MAX);
                 FinishEnterData finish_enter_data = new FinishEnterData(enter_id, entry_data, go_connectivity_position);
                 propagation_coord.finish_enter(ask_lvl, finish_enter_data);
-                mgr.do_finish_enter
-                    (enter_id, ask_lvl /*guest_gnode_level*/,
-                    entry_data, go_connectivity_position);
                 return;
             }
         }
