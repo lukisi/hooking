@@ -504,7 +504,18 @@ namespace Netsukuku.Hooking
             int reserve_request_id = PRNGen.int_range(0, int.MAX);
             Gee.List<Solution> solutions = find_shortest_mig(reserve_request_id, first_host_lvl, ok_host_lvl);
             if (solutions.is_empty) throw new NoMigrationPathFoundError.GENERIC("You might try at lower level.");
-            Solution sol = solutions.last();
+            Solution sol = solutions.remove_at(solutions.size-1);
+            foreach (Solution s in solutions)
+            {
+                // spawn tasklet
+                CallDeleteReserveTasklet ts = new CallDeleteReserveTasklet();
+                ts.t = this;
+                ts.dest_gnode = (TupleGNode)dup_object(s.leaf.visiting_gnode);
+                // This is the g-node we asked to; but we got the reservation from its coordinator at level s.final_host_lvl.
+                ts.dest_gnode = make_tuple_up_to_level(ts.dest_gnode, s.final_host_lvl, map_paths);
+                ts.reserve_request_id = reserve_request_id;
+                tasklet.spawn(ts);
+            }
             if (sol.leaf.get_distance() == 0)
             {
                 // direct access, no migrations needed
@@ -541,6 +552,21 @@ namespace Netsukuku.Hooking
                 ret.elderships.insert(0, second.previous_gnode_new_eldership);
                 return ret;
             }
+        }
+        private class CallDeleteReserveTasklet : Object, ITaskletSpawnable
+        {
+            public HookingManager t;
+            public TupleGNode dest_gnode;
+            public int reserve_request_id;
+            public void * func()
+            {
+                t.call_delete_reserve(dest_gnode, reserve_request_id);
+                return null;
+            }
+        }
+        private void call_delete_reserve(TupleGNode dest_gnode, int reserve_request_id)
+        {
+            message_routing.send_delete_reserve_request(dest_gnode, reserve_request_id);
         }
 
         public void
