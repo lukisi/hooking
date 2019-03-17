@@ -1,0 +1,108 @@
+#!/bin/bash
+
+radio_domain -i 100_wl0 -o 200_wl0 &
+RADIO_100_PID=$!
+radio_domain -i 200_wl0 -o 100_wl0 &
+RADIO_200_PID=$!
+
+sleep 0.3
+
+echo Starting launches at `date +%T.%N`
+
+./system_peer --topology 2,2,2 --firstaddr 1,0,0 \
+              -p 100 -i wl0 -a wl0,200,wl0,2000 \
+              -t call_get_n_nodes,290,0 \
+              -t addtag,300,300 \
+              -t communicate_enter_data,310,0,0 \
+              -t add_identity,400,0,1,3,0+0+2:0:0 \
+              -t add_gateway,420,1,0+0,0,2,-1 \
+              -t update_n_nodes,430,1,2 \
+              -t enter_net,460,0,1,0,1:0:0,200:200:200 \
+              -t addtag,600,600 \
+              -t "addtag,2400,2400: enter_net should start retrieving at 2460 and should get to the request for the 3rd key at 2860" \
+              -t addtag,2500,2500 \
+              -t addtag,2600,2600 \
+              -t addtag,2700,2700 \
+              -t addtag,2800,2800 \
+              -t addtag,2900,2900 \
+              -t addtag,3000,3000 \
+              -t addtag,3100,3100 \
+              -t "addtag,4400,4400: WaitThenSend should respond to the 1st at 4460 ... to the 3rd at 4860" \
+              -t addtag,4500,4500 \
+              -t addtag,4600,4600 \
+              -t addtag,4700,4700 \
+              -t addtag,4800,4800 \
+              -t addtag,4900,4900 \
+              -t addtag,5000,5000 \
+              -t "addtag,5100,5100: this node will call_get_n_nodes." \
+              -t call_get_n_nodes,5200,1 \
+              -t addtag,5300,5300 \
+              -t "addtag,6100,6100: the other node will call_get_n_nodes." \
+              -t addtag,6300,6300 \
+              -t "addtag,27000,27000: after more than 20 secs from last call this node will call_get_n_nodes." \
+              -t call_get_n_nodes,27100,1 \
+              > test_first_pid100_out.txt 2>&1 &
+PEER_100_PID=$!
+
+./system_peer --topology 2,2,2 --firstaddr 2,0,0 \
+              -p 200 -i wl0 -a wl0,100,wl0,2000 \
+              -t call_get_n_nodes,290,0 \
+              -t addtag,300,300 \
+              -t add_identityarc,400,0,0+1+1:0:0 \
+              -t add_gateway,420,0,0+1,0,1,-1 \
+              -t update_n_nodes,430,0,2 \
+              -t addtag,600,600 \
+              -t "addtag,2400,2400: enter_net should start retrieving at 2460 and should get to the request for the 3rd key at 2860" \
+              -t addtag,2500,2500 \
+              -t addtag,2600,2600 \
+              -t addtag,2700,2700 \
+              -t addtag,2800,2800 \
+              -t addtag,2900,2900 \
+              -t addtag,3000,3000 \
+              -t addtag,3100,3100 \
+              -t "addtag,4400,4400: WaitThenSend should respond to the 1st at 4460 ... to the 3rd at 4860" \
+              -t addtag,4500,4500 \
+              -t addtag,4600,4600 \
+              -t addtag,4700,4700 \
+              -t addtag,4800,4800 \
+              -t addtag,4900,4900 \
+              -t addtag,5000,5000 \
+              -t "addtag,5100,5100: the other node will call_get_n_nodes." \
+              -t addtag,5300,5300 \
+              -t "addtag,6100,6100: this node will call_get_n_nodes." \
+              -t call_get_n_nodes,6200,0 \
+              -t addtag,6300,6300 \
+              -t "addtag,27000,27000: after more than 20 secs from last call the other node will call_get_n_nodes." \
+              > test_first_pid200_out.txt 2>&1 &
+PEER_200_PID=$!
+
+echo Done launches at `date +%T.%N`
+
+sleep 29
+
+echo checking status...
+PEER_ABORT=0
+kill -0 $PEER_100_PID || { wait $PEER_100_PID; echo system_peer 100 prematurely exited with $?; PEER_ABORT=1; }
+kill -0 $PEER_200_PID || { wait $PEER_200_PID; echo system_peer 200 prematurely exited with $?; PEER_ABORT=1; }
+
+echo killing...
+# interrupt peers
+kill $PEER_100_PID $PEER_200_PID
+
+wait $PEER_100_PID $PEER_200_PID
+
+# Ignore errors in this shutdown. Remove any remaining local socket.
+rm -f conn_169.254.*
+rm -f conn_*_inside_*
+rm -f recv_???_wl0
+
+# kill proxy demons
+kill $RADIO_100_PID $RADIO_200_PID
+
+wait $RADIO_100_PID $RADIO_200_PID
+
+# delay for removal of local sockets (e.g. send_100_wl0)
+sleep 0.3
+
+# check PEER_ABORT
+test $PEER_ABORT -eq 0 || exit 1
