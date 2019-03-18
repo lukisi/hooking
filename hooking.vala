@@ -103,7 +103,9 @@ namespace Netsukuku.Hooking
         private ArcHandler.ArcHandler arc_handler;
         private ProxyCoord.ProxyCoord proxy_coord;
         private PropagationCoord.PropagationCoord propagation_coord;
+        private bool is_bootstrapped;
 
+        public signal void failing_arc(IIdentityArc ia);
         public signal void same_network(IIdentityArc ia);
         public signal void another_network(IIdentityArc ia, int64 network_id);
         public signal void do_prepare_enter(int enter_id);
@@ -129,6 +131,13 @@ namespace Netsukuku.Hooking
             proxy_coord = new ProxyCoord.ProxyCoord(this, map_paths, coord);
             propagation_coord = new PropagationCoord.PropagationCoord(this, map_paths, coord);
             arc_handler = new ArcHandler.ArcHandler(this, map_paths, coord, proxy_coord, propagation_coord);
+            is_bootstrapped = false;
+        }
+
+        public void bootstrapped(Gee.List<IIdentityArc> initial_arcs)
+        {
+            is_bootstrapped = true;
+            foreach (var ia in initial_arcs) add_arc(ia);
         }
 
         private bool tuple_has_virtual_pos(TupleGNode t)
@@ -476,8 +485,9 @@ namespace Netsukuku.Hooking
         public INetworkData
         retrieve_network_data(bool ask_coord,
                     CallerInfo? _rpc_caller=null)
-        throws HookingNotPrincipalError
+        throws HookingNotPrincipalError, NotBootstrappedError
         {
+            if (!is_bootstrapped) throw new NotBootstrappedError.GENERIC("Not bootstrapped.");
             TupleGNode me = make_tuple_from_level(0, map_paths);
             if (tuple_has_virtual_pos(me)) throw new HookingNotPrincipalError.GENERIC("Not main.");
             NetworkData ret = new NetworkData();
@@ -496,8 +506,9 @@ namespace Netsukuku.Hooking
         public IEntryData
         search_migration_path(int lvl,
                     CallerInfo? _rpc_caller=null)
-        throws NoMigrationPathFoundError, MigrationPathExecuteFailureError
+        throws NoMigrationPathFoundError, MigrationPathExecuteFailureError, NotBootstrappedError
         {
+            if (!is_bootstrapped) throw new NotBootstrappedError.GENERIC("Not bootstrapped.");
             int epsilon = map_paths.get_epsilon(lvl);
             int first_host_lvl = lvl + 1;
             int ok_host_lvl = lvl + epsilon;
