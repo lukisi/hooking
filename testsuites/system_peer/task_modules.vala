@@ -139,32 +139,10 @@ namespace SystemPeer
 
             new_identity_data.update_my_naddr_pos_fp_list(my_naddr_pos, fp_list);
 
-            // Assume bootstrap_completed
-
-            // Another peers manager
-            new_identity_data.peers_mgr = new PeersManager(old_identity_data.peers_mgr,
-                guest_level, host_level,
-                new PeersMapPaths(new_identity_data.local_identity_index),
-                new PeersBackStubFactory(new_identity_data.local_identity_index),
-                new PeersNeighborsFactory(new_identity_data.local_identity_index));
-
-            // CoordinatorManager
-            new_identity_data.coord_mgr = new CoordinatorManager(gsizes,
-                new CoordinatorEvaluateEnterHandler(new_identity_data.local_identity_index),
-                new CoordinatorBeginEnterHandler(new_identity_data.local_identity_index),
-                new CoordinatorCompletedEnterHandler(new_identity_data.local_identity_index),
-                new CoordinatorAbortEnterHandler(new_identity_data.local_identity_index),
-                new CoordinatorPropagationHandler(new_identity_data.local_identity_index),
-                new CoordinatorStubFactory(new_identity_data.local_identity_index),
-                guest_level,
-                host_level,
-                old_identity_data.coord_mgr);
-            new_identity_data.coord_mgr.bootstrap_completed(
-                new_identity_data.peers_mgr,
-                new CoordinatorMap(new_identity_data.local_identity_index),
-                new_identity_data.main_id);
-            if (new_identity_data.main_id)
-                new_identity_data.gone_connectivity.connect(new_identity_data.handle_gone_connectivity_for_coord);
+            // Another hooking manager
+            new_identity_data.hook_mgr = new HookingManager(
+                new HookingMapPaths(new_identity_data.local_identity_index),
+                new HookingCoordinator(new_identity_data.local_identity_index));
 
             string addr = ""; string addrnext = "";
             for (int i = 0; i < levels; i++)
@@ -179,9 +157,21 @@ namespace SystemPeer
             }
             tester_events.add(@"PeersManager:$(new_identity_data.local_identity_index):enter_net:addr[$(addr)]:fp[$(fp)]");
             // immediately after creation, connect to signals.
-            new_identity_data.peers_mgr.failing_arc.connect(new_identity_data.failing_arc);
+            new_identity_data.hook_mgr.same_network.connect(new_identity_data.same_network);
+            new_identity_data.hook_mgr.another_network.connect(new_identity_data.another_network);
+            new_identity_data.hook_mgr.do_prepare_enter.connect(new_identity_data.do_prepare_enter);
+            new_identity_data.hook_mgr.do_finish_enter.connect(new_identity_data.do_finish_enter);
+            new_identity_data.hook_mgr.do_prepare_migration.connect(new_identity_data.do_prepare_migration);
+            new_identity_data.hook_mgr.do_finish_migration.connect(new_identity_data.do_finish_migration);
+            new_identity_data.hook_mgr.failing_arc.connect(new_identity_data.failing_arc);
 
             print(@"INFO: New identity $(new_nodeid.id) entered with address $(addr).\n");
+
+            // Assume bootstrapped immediately
+            ArrayList<IIdentityArc> initial_arcs = new ArrayList<IIdentityArc>();
+            foreach (IdentityArc ia in new_identity_data.identity_arcs)
+                initial_arcs.add(new HookingIdentityArc(new_identity_data.local_identity_index, ia));
+            new_identity_data.hook_mgr.bootstrapped(initial_arcs);
 
             new_identity_data = null;
 
@@ -197,7 +187,13 @@ namespace SystemPeer
             assert(old_identity_data != null);
 
             // remove old identity.
-            old_identity_data.peers_mgr.failing_arc.disconnect(old_identity_data.failing_arc);
+            old_identity_data.hook_mgr.same_network.disconnect(old_identity_data.same_network);
+            old_identity_data.hook_mgr.another_network.disconnect(old_identity_data.another_network);
+            old_identity_data.hook_mgr.do_prepare_enter.disconnect(old_identity_data.do_prepare_enter);
+            old_identity_data.hook_mgr.do_finish_enter.disconnect(old_identity_data.do_finish_enter);
+            old_identity_data.hook_mgr.do_prepare_migration.disconnect(old_identity_data.do_prepare_migration);
+            old_identity_data.hook_mgr.do_finish_migration.disconnect(old_identity_data.do_finish_migration);
+            old_identity_data.hook_mgr.failing_arc.disconnect(old_identity_data.failing_arc);
 
             remove_local_identity(old_identity_data.nodeid);
 

@@ -249,12 +249,9 @@ namespace SystemPeer
         first_identity_data.update_my_naddr_pos_fp_list(my_naddr_pos, fp_list);
         next_local_identity_index++;
 
-        // First identity is immediately bootstrapped.
-
-        first_identity_data.peers_mgr = new PeersManager(null,0,0,
-            new PeersMapPaths(first_identity_data.local_identity_index),
-            new PeersBackStubFactory(first_identity_data.local_identity_index),
-            new PeersNeighborsFactory(first_identity_data.local_identity_index));
+        first_identity_data.hook_mgr = new HookingManager(
+            new HookingMapPaths(first_identity_data.local_identity_index),
+            new HookingCoordinator(first_identity_data.local_identity_index));
         string addr = ""; string addrnext = "";
         for (int i = 0; i < levels; i++)
         {
@@ -268,23 +265,17 @@ namespace SystemPeer
         }
         tester_events.add(@"PeersManager:$(first_identity_data.local_identity_index):create_net:addr[$(addr)]:fp[$(fp)]");
         // immediately after creation, connect to signals.
-        first_identity_data.peers_mgr.failing_arc.connect(first_identity_data.failing_arc);
+        first_identity_data.hook_mgr.same_network.connect(first_identity_data.same_network);
+        first_identity_data.hook_mgr.another_network.connect(first_identity_data.another_network);
+        first_identity_data.hook_mgr.do_prepare_enter.connect(first_identity_data.do_prepare_enter);
+        first_identity_data.hook_mgr.do_finish_enter.connect(first_identity_data.do_finish_enter);
+        first_identity_data.hook_mgr.do_prepare_migration.connect(first_identity_data.do_prepare_migration);
+        first_identity_data.hook_mgr.do_finish_migration.connect(first_identity_data.do_finish_migration);
+        first_identity_data.hook_mgr.failing_arc.connect(first_identity_data.failing_arc);
 
-        // CoordinatorManager
-        first_identity_data.coord_mgr = new CoordinatorManager(gsizes,
-            new CoordinatorEvaluateEnterHandler(first_identity_data.local_identity_index),
-            new CoordinatorBeginEnterHandler(first_identity_data.local_identity_index),
-            new CoordinatorCompletedEnterHandler(first_identity_data.local_identity_index),
-            new CoordinatorAbortEnterHandler(first_identity_data.local_identity_index),
-            new CoordinatorPropagationHandler(first_identity_data.local_identity_index),
-            new CoordinatorStubFactory(first_identity_data.local_identity_index),
-            null, null, null);
-        first_identity_data.coord_mgr.bootstrap_completed(
-            first_identity_data.peers_mgr,
-            new CoordinatorMap(first_identity_data.local_identity_index),
-            first_identity_data.main_id);
-        if (first_identity_data.main_id)
-            first_identity_data.gone_connectivity.connect(first_identity_data.handle_gone_connectivity_for_coord);
+        // First identity is immediately bootstrapped.
+
+        first_identity_data.hook_mgr.bootstrapped(new ArrayList<IIdentityArc>());
 
         first_identity_data = null;
 
@@ -319,8 +310,14 @@ namespace SystemPeer
         {
             if (! identity_data.main_id)
             {
-                // ... disconnect signal handlers of peers_mgr.
-                identity_data.peers_mgr.failing_arc.disconnect(identity_data.failing_arc);
+                // ... disconnect signal handlers of hook_mgr.
+                identity_data.hook_mgr.same_network.disconnect(identity_data.same_network);
+                identity_data.hook_mgr.another_network.disconnect(identity_data.another_network);
+                identity_data.hook_mgr.do_prepare_enter.disconnect(identity_data.do_prepare_enter);
+                identity_data.hook_mgr.do_finish_enter.disconnect(identity_data.do_finish_enter);
+                identity_data.hook_mgr.do_prepare_migration.disconnect(identity_data.do_prepare_migration);
+                identity_data.hook_mgr.do_finish_migration.disconnect(identity_data.do_finish_migration);
+                identity_data.hook_mgr.failing_arc.disconnect(identity_data.failing_arc);
 
                 remove_local_identity(identity_data.nodeid);
             }
@@ -332,8 +329,14 @@ namespace SystemPeer
         IdentityData last_identity_data = local_identities.values.to_array()[0];
         assert(last_identity_data.main_id);
 
-        // ... disconnect signal handlers of peers_mgr.
-        last_identity_data.peers_mgr.failing_arc.disconnect(last_identity_data.failing_arc);
+        // ... disconnect signal handlers of hook_mgr.
+        last_identity_data.hook_mgr.same_network.disconnect(last_identity_data.same_network);
+        last_identity_data.hook_mgr.another_network.disconnect(last_identity_data.another_network);
+        last_identity_data.hook_mgr.do_prepare_enter.disconnect(last_identity_data.do_prepare_enter);
+        last_identity_data.hook_mgr.do_finish_enter.disconnect(last_identity_data.do_finish_enter);
+        last_identity_data.hook_mgr.do_prepare_migration.disconnect(last_identity_data.do_prepare_migration);
+        last_identity_data.hook_mgr.do_finish_migration.disconnect(last_identity_data.do_finish_migration);
+        last_identity_data.hook_mgr.failing_arc.disconnect(last_identity_data.failing_arc);
 
         remove_local_identity(last_identity_data.nodeid);
         last_identity_data = null;
@@ -448,6 +451,7 @@ namespace SystemPeer
             for (int i = 0; i < levels; i++) gateways[i] = new HashMap<int,ArrayList<IdentityArc>>();
             my_naddr_pos = null;
             fp_list = null;
+            circa_n_nodes = 1;
         }
 
         public int local_identity_index;
@@ -468,6 +472,7 @@ namespace SystemPeer
         private ArrayList<int> fp_list;
         public int get_my_naddr_pos(int lvl) {return my_naddr_pos[lvl];}
         public int get_fp_of_my_gnode(int lvl) {return fp_list[lvl];}
+        public int circa_n_nodes;
 
         // must be called after updating main_identity_data
         public void update_my_naddr_pos_fp_list(Gee.List<int> my_naddr_pos, Gee.List<int> fp_list)
@@ -550,15 +555,6 @@ namespace SystemPeer
                 if (ia.arc == arc && ia.peer_nodeid.equals(peer_nodeid))
                 return ia;
             return null;
-        }
-
-        // Use this to signal when a identity (that was main) has become of connectivity.
-        public signal void gone_connectivity();
-
-        public void handle_gone_connectivity_for_coord()
-        {
-            coord_mgr.gone_connectivity();
-            gone_connectivity.disconnect(handle_gone_connectivity_for_coord);
         }
 
         // handle signals from hooking_manager

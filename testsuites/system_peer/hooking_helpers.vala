@@ -103,6 +103,33 @@ namespace SystemPeer
             }
         }
 
+        public int get_levels()
+        {
+            return levels;
+        }
+
+        public int get_gsize(int level)
+        {
+            return gsizes[level];
+        }
+
+        public int get_epsilon(int level)
+        {
+            int delta_levels = 0;
+            int delta_exp = g_exp[delta_levels+level];
+            while (delta_exp < 6 && delta_levels+level < levels) // TODO or levels-1?
+            {
+                delta_levels++;
+                delta_exp += g_exp[delta_levels+level];
+            }
+            return delta_levels;
+        }
+
+        public int get_n_nodes()
+        {
+            return identity_data.circa_n_nodes;
+        }
+
         public Gee.List<IPairHCoordInt> adjacent_to_my_gnode(int level_adjacent_gnodes, int level_my_gnode)
         {
             error("not implemented yet");
@@ -123,32 +150,12 @@ namespace SystemPeer
             error("not implemented yet");
         }
 
-        public int get_epsilon(int level)
-        {
-            error("not implemented yet");
-        }
-
-        public int get_gsize(int level)
-        {
-            error("not implemented yet");
-        }
-
-        public int get_levels()
-        {
-            error("not implemented yet");
-        }
-
         public int get_my_eldership(int level)
         {
             error("not implemented yet");
         }
 
         public int get_my_pos(int level)
-        {
-            error("not implemented yet");
-        }
-
-        public int get_n_nodes()
         {
             error("not implemented yet");
         }
@@ -166,9 +173,10 @@ namespace SystemPeer
 
     class HookingIdentityArc : Object, IIdentityArc
     {
-        public HookingIdentityArc(int local_identity_index)
+        public HookingIdentityArc(int local_identity_index, IdentityArc ia)
         {
             this.local_identity_index = local_identity_index;
+            this.ia = ia;
         }
         private int local_identity_index;
         private IdentityData? _identity_data;
@@ -184,7 +192,8 @@ namespace SystemPeer
 
         public IHookingManagerStub get_stub()
         {
-            error("not implemented yet");
+            IAddressManagerStub addrstub = stub_factory.get_stub_identity_aware_unicast_from_ia(ia, true);
+            return new HookingManagerStubHolder(addrstub, ia);
         }
     }
 
