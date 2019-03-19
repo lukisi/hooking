@@ -56,34 +56,18 @@ namespace SystemPeer
 
         private IAddressManagerSkeleton? get_dispatcher(StreamCallerInfo caller_info)
         {
-            // in this test we have:
-            //  * IdentityAwareSourceID and IdentityAwareUnicastID
-            //  * MainIdentitySourceID and MainIdentityUnicastID
-            if (caller_info.source_id is IdentityAwareSourceID)
-            {
-                if (! (caller_info.unicast_id is IdentityAwareUnicastID))
-                    abort_tasklet(@"Bad combination caller_info.source_id caller_info.unicast_id");
-                if (! (caller_info.src_nic is NeighbourSrcNic))
-                    abort_tasklet(@"Bad combination caller_info.source_id caller_info.src_nic");
-                IdentityAwareSourceID _source_id = (IdentityAwareSourceID)caller_info.source_id;
-                NodeID source_nodeid = _source_id.id;
-                IdentityAwareUnicastID _unicast_id = (IdentityAwareUnicastID)caller_info.unicast_id;
-                NodeID unicast_nodeid = _unicast_id.id;
-                string peer_mac = ((NeighbourSrcNic)caller_info.src_nic).mac;
-                return get_identity_skeleton(source_nodeid, unicast_nodeid, peer_mac);
-            }
-            else if (caller_info.source_id is MainIdentitySourceID)
-            {
-                if (! (caller_info.unicast_id is MainIdentityUnicastID))
-                    abort_tasklet(@"Bad combination caller_info.source_id caller_info.unicast_id");
-                if (! (caller_info.src_nic is RoutableSrcNic))
-                    abort_tasklet(@"Bad combination caller_info.source_id caller_info.src_nic");
-                return new IdentitySkeleton(main_identity_data.local_identity_index);
-            }
-            else
-            {
-                abort_tasklet(@"Bad caller_info.source_id");
-            }
+            // in this test we have only IdentityAwareSourceID and IdentityAwareUnicastID
+            if (! (caller_info.source_id is IdentityAwareSourceID)) abort_tasklet(@"Bad caller_info.source_id");
+            if (! (caller_info.unicast_id is IdentityAwareUnicastID))
+                abort_tasklet(@"Bad combination caller_info.source_id caller_info.unicast_id");
+            if (! (caller_info.src_nic is NeighbourSrcNic))
+                abort_tasklet(@"Bad combination caller_info.source_id caller_info.src_nic");
+            IdentityAwareSourceID _source_id = (IdentityAwareSourceID)caller_info.source_id;
+            NodeID source_nodeid = _source_id.id;
+            IdentityAwareUnicastID _unicast_id = (IdentityAwareUnicastID)caller_info.unicast_id;
+            NodeID unicast_nodeid = _unicast_id.id;
+            string peer_mac = ((NeighbourSrcNic)caller_info.src_nic).mac;
+            return get_identity_skeleton(source_nodeid, unicast_nodeid, peer_mac);
         }
 
         private Gee.List<IAddressManagerSkeleton> get_dispatcher_set(DatagramCallerInfo caller_info)
@@ -323,47 +307,27 @@ namespace SystemPeer
             public unowned IPeersManagerSkeleton
             peers_manager_getter()
             {
-                // member peers_mgr of identity_data is PeersManager, which is a IPeersManagerSkeleton
-                if (identity_data.peers_mgr == null)
-                {
-                    print(@"IdentitySkeleton.peers_manager_getter: id $(identity_data.nodeid.id) has peers_mgr NULL. Might be too early, wait a bit.\n");
-                    bool once_more = true; int wait_next = 5;
-                    while (once_more)
-                    {
-                        once_more = false;
-                        if (identity_data.peers_mgr == null)
-                        {
-                            //  let's wait a bit and try again a few times.
-                            if (wait_next < 3000) {
-                                wait_next = wait_next * 10; tasklet.ms_wait(wait_next); once_more = true;
-                            }
-                        }
-                        else
-                        {
-                            print(@"IdentitySkeleton.peers_manager_getter: id $(identity_data.nodeid.id) now has peers_mgr valid.\n");
-                        }
-                    }
-                }
-                if (identity_data.peers_mgr == null)
-                {
-                    print(@"IdentitySkeleton.peers_manager_getter: id $(identity_data.nodeid.id) has peers_mgr NULL yet. Might be too late, abort responding.\n");
-                    tasklet.exit_tasklet(null);
-                }
-                return identity_data.peers_mgr;
+                error("not in this test");
             }
 
             public unowned ICoordinatorManagerSkeleton
             coordinator_manager_getter()
             {
-                // member coord_mgr of identity_data is CoordinatorManager, which is a ICoordinatorManagerSkeleton
-                if (identity_data.coord_mgr == null)
+                error("not in this test");
+            }
+
+            public unowned IHookingManagerSkeleton
+            hooking_manager_getter()
+            {
+                // member hook_mgr of identity_data is HookingManager, which is a IHookingManagerSkeleton
+                if (identity_data.hook_mgr == null)
                 {
-                    print(@"IdentitySkeleton.coordinator_manager_getter: id $(identity_data.nodeid.id) has coord_mgr NULL. Might be too early, wait a bit.\n");
+                    print(@"IdentitySkeleton.hooking_manager_getter: id $(identity_data.nodeid.id) has hook_mgr NULL. Might be too early, wait a bit.\n");
                     bool once_more = true; int wait_next = 5;
                     while (once_more)
                     {
                         once_more = false;
-                        if (identity_data.coord_mgr == null)
+                        if (identity_data.hook_mgr == null)
                         {
                             //  let's wait a bit and try again a few times.
                             if (wait_next < 3000) {
@@ -372,22 +336,16 @@ namespace SystemPeer
                         }
                         else
                         {
-                            print(@"IdentitySkeleton.coordinator_manager_getter: id $(identity_data.nodeid.id) now has coord_mgr valid.\n");
+                            print(@"IdentitySkeleton.hooking_manager_getter: id $(identity_data.nodeid.id) now has hook_mgr valid.\n");
                         }
                     }
                 }
-                if (identity_data.coord_mgr == null)
+                if (identity_data.hook_mgr == null)
                 {
-                    print(@"IdentitySkeleton.coordinator_manager_getter: id $(identity_data.nodeid.id) has coord_mgr NULL yet. Might be too late, abort responding.\n");
+                    print(@"IdentitySkeleton.hooking_manager_getter: id $(identity_data.nodeid.id) has hook_mgr NULL yet. Might be too late, abort responding.\n");
                     tasklet.exit_tasklet(null);
                 }
-                return identity_data.coord_mgr;
-            }
-
-            public unowned IHookingManagerSkeleton
-            hooking_manager_getter()
-            {
-                error("not in this test");
+                return identity_data.hook_mgr;
             }
 
             /* TODO in ntkdrpc

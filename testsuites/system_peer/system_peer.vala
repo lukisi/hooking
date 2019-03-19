@@ -294,18 +294,13 @@ namespace SystemPeer
             else if (schedule_task_add_identityarc(task)) {}
             else if (schedule_task_enter_net(task)) {}
             else if (schedule_task_add_gateway(task)) {}
-            else if (schedule_task_update_n_nodes(task)) {}
-            else if (schedule_task_call_get_n_nodes(task)) {}
-            else if (schedule_task_communicate_enter_data(task)) {}
             else if (schedule_task_addtag(task)) {}
-            else if (schedule_task_check_get_n_nodes(task)) {}
-            else if (schedule_task_check_routing_and_propagation(task)) {}
             else error(@"unknown task $(task)");
         }
 
         // TODO
 
-        // Temporary: register handlers for SIGINT and SIGTERM to exit
+        // Register handlers for SIGINT and SIGTERM to exit
         Posix.@signal(Posix.Signal.INT, safe_exit);
         Posix.@signal(Posix.Signal.TERM, safe_exit);
         // Main loop
@@ -339,8 +334,6 @@ namespace SystemPeer
 
         // ... disconnect signal handlers of peers_mgr.
         last_identity_data.peers_mgr.failing_arc.disconnect(last_identity_data.failing_arc);
-        // Call stop_rpc.
-        last_identity_data.shutdown_rpc();
 
         remove_local_identity(last_identity_data.nodeid);
         last_identity_data = null;
@@ -455,8 +448,6 @@ namespace SystemPeer
             for (int i = 0; i < levels; i++) gateways[i] = new HashMap<int,ArrayList<IdentityArc>>();
             my_naddr_pos = null;
             fp_list = null;
-            circa_n_nodes = 1;
-            hook_mgr = new FakeHookingManager(local_identity_index);
         }
 
         public int local_identity_index;
@@ -471,15 +462,12 @@ namespace SystemPeer
             }
         }
 
-        public PeersManager peers_mgr;
-        public CoordinatorManager coord_mgr;
-        public FakeHookingManager hook_mgr;
+        public HookingManager hook_mgr;
 
         private ArrayList<int> my_naddr_pos;
         private ArrayList<int> fp_list;
         public int get_my_naddr_pos(int lvl) {return my_naddr_pos[lvl];}
         public int get_fp_of_my_gnode(int lvl) {return fp_list[lvl];}
-        public int circa_n_nodes;
 
         // must be called after updating main_identity_data
         public void update_my_naddr_pos_fp_list(Gee.List<int> my_naddr_pos, Gee.List<int> fp_list)
@@ -501,7 +489,6 @@ namespace SystemPeer
                 this.my_naddr_pos.add_all(my_naddr_pos);
                 this.fp_list = new ArrayList<int>();
                 this.fp_list.add_all(fp_list);
-                start_listen_inside_gnodes(my_naddr_pos, fp_list);
             }
             else if (first_identity) // && !initialization
             {
@@ -523,16 +510,6 @@ namespace SystemPeer
                 this.my_naddr_pos.add_all(my_naddr_pos);
                 this.fp_list = new ArrayList<int>();
                 this.fp_list.add_all(fp_list);
-                // find first level at which we have to change listen_pathname
-                int first_level = 0;
-                while (first_level < levels)
-                {
-                    if (copy_of_identity.my_naddr_pos[first_level] != my_naddr_pos[first_level]) break;
-                    if (copy_of_identity.fp_list[first_level] != fp_list[first_level]) break;
-                    first_level++;
-                }
-                stop_listen_inside_gnodes(copy_of_identity.my_naddr_pos, copy_of_identity.fp_list, first_level);
-                start_listen_inside_gnodes(my_naddr_pos, fp_list, first_level);
             }
             else if (initialization) // && !main_id && !first_identity
             {
@@ -547,14 +524,6 @@ namespace SystemPeer
                 //  In this case the old identity was not the first identity.
                 assert(!main_id);
                 error("not implemented yet");
-            }
-        }
-
-        public void shutdown_rpc()
-        {
-            if (main_id)
-            {
-                stop_listen_inside_gnodes(my_naddr_pos, fp_list);
             }
         }
 
@@ -592,11 +561,41 @@ namespace SystemPeer
             gone_connectivity.disconnect(handle_gone_connectivity_for_coord);
         }
 
-        // handle signals from qspn_manager
+        // handle signals from hooking_manager
 
-        public void failing_arc(IPeersArc arc)
+        public void same_network(IIdentityArc ia)
         {
-            per_identity_peers_failing_arc(this, arc);
+            per_identity_hooking_same_network(this, ia);
+        }
+
+        public void another_network(IIdentityArc ia, int64 network_id)
+        {
+            per_identity_hooking_another_network(this, ia, network_id);
+        }
+
+        public void do_prepare_enter(int enter_id)
+        {
+            per_identity_hooking_do_prepare_enter(this, enter_id);
+        }
+
+        public void do_finish_enter(int enter_id, int guest_gnode_level, EntryData entry_data, int go_connectivity_position)
+        {
+            per_identity_hooking_do_finish_enter(this, enter_id, guest_gnode_level, entry_data, go_connectivity_position);
+        }
+
+        public void do_prepare_migration(int migration_id)
+        {
+            per_identity_hooking_do_prepare_migration(this, migration_id);
+        }
+
+        public void do_finish_migration(int migration_id, int guest_gnode_level, EntryData migration_data, int go_connectivity_position)
+        {
+            per_identity_hooking_do_finish_migration(this, migration_id, guest_gnode_level, migration_data, go_connectivity_position);
+        }
+
+        public void failing_arc(IIdentityArc ia)
+        {
+            per_identity_hooking_failing_arc(this, ia);
         }
     }
 

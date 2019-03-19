@@ -101,8 +101,7 @@ system_peer_SOURCES =  \
 	testsuites/system_peer/task_identities.vala \
 	testsuites/system_peer/task_modules.vala \
 	testsuites/system_peer/task_gateways.vala \
-	testsuites/system_peer/address_inside_gnode.vala \
-	testsuites/system_peer/task_check_get_n_nodes.vala \
+	testsuites/system_peer/task_check_something.vala \
 	hooking.vapi \
 	$(NULL)
 

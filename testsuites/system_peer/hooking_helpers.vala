@@ -5,9 +5,9 @@ using TaskletSystem;
 
 namespace SystemPeer
 {
-    class CoordinatorEvaluateEnterHandler : Object, IEvaluateEnterHandler
+    class HookingCoordinator : Object, ICoordinator
     {
-        public CoordinatorEvaluateEnterHandler(int local_identity_index)
+        public HookingCoordinator(int local_identity_index)
         {
             this.local_identity_index = local_identity_index;
         }
@@ -21,127 +21,75 @@ namespace SystemPeer
             }
         }
 
-        public Object evaluate_enter(int lvl, Object evaluate_enter_data, Gee.List<int> client_address)
-        throws HandlingImpossibleError
+        public Object abort_enter(int lvl, Object abort_enter_data) throws CoordProxyError
         {
-            return identity_data.hook_mgr.evaluate_enter(evaluate_enter_data, client_address);
-        }
-    }
-
-    class CoordinatorBeginEnterHandler : Object, IBeginEnterHandler
-    {
-        public CoordinatorBeginEnterHandler(int local_identity_index)
-        {
-            this.local_identity_index = local_identity_index;
-        }
-        private int local_identity_index;
-        private IdentityData? _identity_data;
-        public IdentityData identity_data {
-            get {
-                _identity_data = find_local_identity_by_index(local_identity_index);
-                if (_identity_data == null) tasklet.exit_tasklet();
-                return _identity_data;
-            }
+            error("not implemented yet");
         }
 
-        public Object begin_enter(int lvl, Object begin_enter_data, Gee.List<int> client_address)
-        throws HandlingImpossibleError
+        public Object begin_enter(int lvl, Object begin_enter_data) throws CoordProxyError
         {
-            return identity_data.hook_mgr.begin_enter(lvl, begin_enter_data, client_address);
-        }
-    }
-
-    class CoordinatorCompletedEnterHandler : Object, ICompletedEnterHandler
-    {
-        public CoordinatorCompletedEnterHandler(int local_identity_index)
-        {
-            this.local_identity_index = local_identity_index;
-        }
-        private int local_identity_index;
-        private IdentityData? _identity_data;
-        public IdentityData identity_data {
-            get {
-                _identity_data = find_local_identity_by_index(local_identity_index);
-                if (_identity_data == null) tasklet.exit_tasklet();
-                return _identity_data;
-            }
+            error("not implemented yet");
         }
 
-        public Object completed_enter(int lvl, Object completed_enter_data, Gee.List<int> client_address)
-        throws HandlingImpossibleError
+        public Object completed_enter(int lvl, Object completed_enter_data) throws CoordProxyError
         {
-            return identity_data.hook_mgr.completed_enter(lvl, completed_enter_data, client_address);
-        }
-    }
-
-    class CoordinatorAbortEnterHandler : Object, IAbortEnterHandler
-    {
-        public CoordinatorAbortEnterHandler(int local_identity_index)
-        {
-            this.local_identity_index = local_identity_index;
-        }
-        private int local_identity_index;
-        private IdentityData? _identity_data;
-        public IdentityData identity_data {
-            get {
-                _identity_data = find_local_identity_by_index(local_identity_index);
-                if (_identity_data == null) tasklet.exit_tasklet();
-                return _identity_data;
-            }
+            error("not implemented yet");
         }
 
-        public Object abort_enter(int lvl, Object abort_enter_data, Gee.List<int> client_address)
-        throws HandlingImpossibleError
+        public void delete_reserve(int host_lvl, int reserve_request_id)
         {
-            return identity_data.hook_mgr.abort_enter(lvl, abort_enter_data, client_address);
-        }
-    }
-
-    class CoordinatorPropagationHandler : Object, IPropagationHandler
-    {
-        public CoordinatorPropagationHandler(int local_identity_index)
-        {
-            this.local_identity_index = local_identity_index;
-        }
-        private int local_identity_index;
-        private IdentityData? _identity_data;
-        public IdentityData identity_data {
-            get {
-                _identity_data = find_local_identity_by_index(local_identity_index);
-                if (_identity_data == null) tasklet.exit_tasklet();
-                return _identity_data;
-            }
+            error("not implemented yet");
         }
 
-        public void prepare_migration(int lvl, Object prepare_migration_data)
+        public Object evaluate_enter(Object evaluate_enter_data) throws CoordProxyError
         {
-            identity_data.hook_mgr.prepare_migration(lvl, prepare_migration_data);
-        }
-
-        public void finish_migration(int lvl, Object finish_migration_data)
-        {
-            identity_data.hook_mgr.finish_migration(lvl, finish_migration_data);
-        }
-
-        public void prepare_enter(int lvl, Object prepare_enter_data)
-        {
-            identity_data.hook_mgr.prepare_enter(lvl, prepare_enter_data);
+            error("not implemented yet");
         }
 
         public void finish_enter(int lvl, Object finish_enter_data)
         {
-            identity_data.hook_mgr.finish_enter(lvl, finish_enter_data);
+            error("not implemented yet");
         }
 
-        public void we_have_splitted(int lvl, Object we_have_splitted_data)
+        public void finish_migration(int lvl, Object finish_migration_data)
+        {
+            error("not implemented yet");
+        }
+
+        public Object get_hooking_memory(int lvl) throws CoordProxyError
+        {
+            error("not implemented yet");
+        }
+
+        public int get_n_nodes()
+        {
+            error("not implemented yet");
+        }
+
+        public void prepare_enter(int lvl, Object prepare_enter_data)
+        {
+            error("not implemented yet");
+        }
+
+        public void prepare_migration(int lvl, Object prepare_migration_data)
+        {
+            error("not implemented yet");
+        }
+
+        public void reserve(int host_lvl, int reserve_request_id, out int new_pos, out int new_eldership) throws CoordReserveError
+        {
+            error("not implemented yet");
+        }
+
+        public void set_hooking_memory(int lvl, Object memory) throws CoordProxyError
         {
             error("not implemented yet");
         }
     }
 
-    class CoordinatorMap : Object, ICoordinatorMap
+    class HookingMapPaths : Object, IHookingMapPaths
     {
-        public CoordinatorMap(int local_identity_index)
+        public HookingMapPaths(int local_identity_index)
         {
             this.local_identity_index = local_identity_index;
         }
@@ -155,44 +103,70 @@ namespace SystemPeer
             }
         }
 
-        public int get_my_pos(int lvl)
+        public Gee.List<IPairHCoordInt> adjacent_to_my_gnode(int level_adjacent_gnodes, int level_my_gnode)
         {
-            return identity_data.get_my_naddr_pos(lvl);
+            error("not implemented yet");
         }
 
-        public bool can_reserve(int lvl)
+        public bool exists(int level, int pos)
         {
-            if (/*subnetlevel*/ 0 > lvl) return false;
-            if (lvl >= levels) return false;
-            return true;
+            error("not implemented yet");
         }
 
-        public Gee.List<int> get_free_pos(int lvl)
+        public IHookingManagerStub gateway(int level, int pos)
         {
-            Gee.List<int> ret = new ArrayList<int>();
-            for (int i = 0; i < gsizes[lvl]; i++) ret.add(i);
-            foreach (int pos in identity_data.gateways[lvl].keys)
-            {
-                if (! identity_data.gateways[lvl][pos].is_empty) ret.remove(pos);
-            }
-            ret.remove(get_my_pos(lvl));
-            return ret;
+            error("not implemented yet");
+        }
+
+        public int get_eldership(int level, int pos)
+        {
+            error("not implemented yet");
+        }
+
+        public int get_epsilon(int level)
+        {
+            error("not implemented yet");
+        }
+
+        public int get_gsize(int level)
+        {
+            error("not implemented yet");
+        }
+
+        public int get_levels()
+        {
+            error("not implemented yet");
+        }
+
+        public int get_my_eldership(int level)
+        {
+            error("not implemented yet");
+        }
+
+        public int get_my_pos(int level)
+        {
+            error("not implemented yet");
         }
 
         public int get_n_nodes()
         {
-            return identity_data.circa_n_nodes;
+            error("not implemented yet");
         }
 
-        public int64 get_fp_id(int lvl)
+        public int64 get_network_id()
         {
-            return identity_data.get_fp_of_my_gnode(lvl);
+            error("not implemented yet");
+        }
+
+        public int get_subnetlevel()
+        {
+            error("not implemented yet");
         }
     }
 
-    class CoordinatorStubFactory : Object, IStubFactory
+    class HookingIdentityArc : Object, IIdentityArc
     {
-        public CoordinatorStubFactory(int local_identity_index)
+        public HookingIdentityArc(int local_identity_index)
         {
             this.local_identity_index = local_identity_index;
         }
@@ -206,38 +180,43 @@ namespace SystemPeer
             }
         }
 
-        public ICoordinatorManagerStub get_stub_for_all_neighbors()
+        public IdentityArc ia;
+
+        public IHookingManagerStub get_stub()
         {
-            ArrayList<NodeID> broadcast_node_id_set = new ArrayList<NodeID>();
-            foreach (IdentityArc ia in identity_data.identity_arcs)
-            {
-                // assume it is on my network?
-                broadcast_node_id_set.add(ia.peer_nodeid);
+            error("not implemented yet");
+        }
+    }
+
+    class HookingPairHCoordInt : Object, IPairHCoordInt
+    {
+        public HookingPairHCoordInt(int local_identity_index)
+        {
+            this.local_identity_index = local_identity_index;
+        }
+        private int local_identity_index;
+        private IdentityData? _identity_data;
+        public IdentityData identity_data {
+            get {
+                _identity_data = find_local_identity_by_index(local_identity_index);
+                if (_identity_data == null) tasklet.exit_tasklet();
+                return _identity_data;
             }
-            if(broadcast_node_id_set.is_empty) return new CoordinatorManagerStubVoid();
-            Gee.List<IAddressManagerStub> addr_list = new ArrayList<IAddressManagerStub>();
-            foreach (string my_dev in pseudonic_map.keys)
-            {
-                IAddressManagerStub addrstub = stub_factory.get_stub_identity_aware_broadcast(
-                    my_dev,
-                    identity_data,
-                    broadcast_node_id_set,
-                    null);
-                addr_list.add(addrstub);
-            }
-            return new CoordinatorManagerStubBroadcastHolder(addr_list, identity_data.local_identity_index);
         }
 
-        public Gee.List<ICoordinatorManagerStub> get_stub_for_each_neighbor()
+        public HCoord get_hc_adjacent()
         {
-            ArrayList<ICoordinatorManagerStub> ret = new ArrayList<ICoordinatorManagerStub>();
-            foreach (IdentityArc ia in identity_data.identity_arcs)
-            {
-                // assume it is on my network?
-                IAddressManagerStub addrstub = stub_factory.get_stub_identity_aware_unicast_from_ia(ia, true);
-                ret.add(new CoordinatorManagerStubHolder(addrstub, ia));
-            }
-            return ret;
+            error("not implemented yet");
+        }
+
+        public int get_level_my_gnode()
+        {
+            error("not implemented yet");
+        }
+
+        public int get_pos_my_border_gnode()
+        {
+            error("not implemented yet");
         }
     }
 }
