@@ -227,6 +227,10 @@ namespace SystemPeer
             IdentityArc ia = new IdentityArc(my_identity_data.local_identity_index, pseudoarc, peer_nodeid, peer_naddr_pos);
             my_identity_data.identity_arcs.add(ia);
 
+            // after little add arc to module: in the script this task is implied.
+            tasklet.ms_wait(60);
+            execute_task_add_identityarc_to_module(my_id, arc_num, peer_id);
+
             return null;
         }
     }

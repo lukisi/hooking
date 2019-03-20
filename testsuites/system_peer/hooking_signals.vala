@@ -93,6 +93,39 @@ namespace SystemPeer
 
     void per_identity_hooking_failing_arc(IdentityData id, IIdentityArc _ia)
     {
-        error("not implemented yet");
+        IdentityArc ia = ((HookingIdentityArc)_ia).ia;
+        NodeID peer_nodeid = ia.peer_nodeid;
+        PseudoArc pseudoarc = ia.arc;
+        int arc_num = -1;
+        for (int i = 0; i < arc_list.size; i++)
+        {
+            PseudoArc _pseudoarc = arc_list[i];
+            if (_pseudoarc == pseudoarc)
+            {
+                arc_num = i;
+                break;
+            }
+        }
+        assert(arc_num >= 0);
+        int peer_id = -1;
+        for (int i = 0; i < 10; i++)
+        {
+            NodeID _peer_nodeid = fake_random_nodeid(pseudoarc.peer_pid, i);
+            if (_peer_nodeid.equals(peer_nodeid))
+            {
+                peer_id = i;
+                break;
+            }
+        }
+        assert(peer_id >= 0);
+        string descr = @"$(arc_num)+$(peer_id)";
+        print(@"INFO: Identity #$(id.local_identity_index): arc $(descr) is malfunctioning.\n");
+        tester_events.add(@"HookingManager:$(id.local_identity_index):Signal:failing_arc:$(descr)");
+        // remove ia from identity_arcs
+        id.identity_arcs.remove(ia);
+        // remove ia from gateways
+        foreach (int lvl in id.gateways.keys)
+            foreach (int pos in id.gateways[lvl].keys)
+            id.gateways[lvl][pos].remove(ia);
     }
 }

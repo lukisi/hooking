@@ -11,7 +11,7 @@ namespace SystemPeer
         {
             string remain = task.substring("enter_net,".length);
             string[] args = remain.split(",");
-            if (args.length != 6) error("bad args num in task 'enter_net'");
+            if (args.length != 7) error("bad args num in task 'enter_net'");
             int64 ms_wait;
             if (! int64.try_parse(args[0], out ms_wait)) error("bad args ms_wait in task 'enter_net'");
             int64 my_old_id;
@@ -33,10 +33,20 @@ namespace SystemPeer
                     in_g_naddr.add((int)element);
                 }
             }
-
-            ArrayList<int> in_g_fp_list = new ArrayList<int>();
+            ArrayList<int> in_g_elderships = new ArrayList<int>();
             {
                 string[] parts = args[5].split(":");
+                if (host_level != levels - (parts.length - 1)) error("bad parts num in in_g_elderships in task 'enter_net'");
+                for (int i = 0; i < parts.length; i++)
+                {
+                    int64 element;
+                    if (! int64.try_parse(parts[i], out element)) error("bad parts element in in_g_elderships in task 'enter_net'");
+                    in_g_elderships.add((int)element);
+                }
+            }
+            ArrayList<int> in_g_fp_list = new ArrayList<int>();
+            {
+                string[] parts = args[6].split(":");
                 if (host_level != levels - (parts.length - 1)) error("bad parts num in in_g_fp_list in task 'enter_net'");
                 for (int i = 0; i < parts.length; i++)
                 {
@@ -66,6 +76,7 @@ namespace SystemPeer
                 (int)guest_level,
                 host_level,
                 in_g_naddr,
+                in_g_elderships,
                 in_g_fp_list);
             tasklet.spawn(s);
             return true;
@@ -82,6 +93,7 @@ namespace SystemPeer
             int guest_level,
             int host_level,
             ArrayList<int> in_g_naddr,
+            ArrayList<int> in_g_elderships,
             ArrayList<int> in_g_fp_list)
         {
             this.ms_wait = ms_wait;
@@ -90,6 +102,7 @@ namespace SystemPeer
             this.guest_level = guest_level;
             this.host_level = host_level;
             this.in_g_naddr = in_g_naddr;
+            this.in_g_elderships = in_g_elderships;
             this.in_g_fp_list = in_g_fp_list;
         }
         private int ms_wait;
@@ -98,6 +111,7 @@ namespace SystemPeer
         private int guest_level;
         private int host_level;
         private ArrayList<int> in_g_naddr;
+        private ArrayList<int> in_g_elderships;
         private ArrayList<int> in_g_fp_list;
 
         public void * func()
@@ -115,12 +129,17 @@ namespace SystemPeer
             assert(new_identity_data != null);
 
             ArrayList<int> my_naddr_pos = new ArrayList<int>();
+            ArrayList<int> elderships = new ArrayList<int>();
             ArrayList<int> fp_list = new ArrayList<int>();
 
             for (int i = 0; i < host_level-1; i++)
                 my_naddr_pos.add(old_identity_data.get_my_naddr_pos(i));
             for (int i = host_level-1; i < levels; i++)
                 my_naddr_pos.add(in_g_naddr[i-(host_level-1)]);
+
+            for (int i = 0; i < guest_level; i++) elderships.add(old_identity_data.get_eldership_of_my_gnode(i));
+            for (int i = guest_level; i < host_level-1; i++)  elderships.add(0);
+            for (int i = host_level-1; i < levels; i++) elderships.add(in_g_elderships[i-(host_level-1)]);
 
             int prev_level_fp = fake_random_fp(pid);
             for (int i = 0; i < guest_level; i++)
@@ -137,7 +156,7 @@ namespace SystemPeer
                 fp_list.add(in_g_fp_list[i-(host_level-1)]);
             }
 
-            new_identity_data.update_my_naddr_pos_fp_list(my_naddr_pos, fp_list);
+            new_identity_data.update_my_naddr_pos_fp_list(my_naddr_pos, elderships, fp_list);
 
             // Another hooking manager
             new_identity_data.hook_mgr = new HookingManager(
@@ -236,5 +255,21 @@ namespace SystemPeer
 
             return null;
         }
+    }
+
+    void execute_task_add_identityarc_to_module(int my_id, int arc_num, int peer_id)
+    {
+        // find identity_data
+        NodeID nodeid = fake_random_nodeid(pid, my_id);
+        IdentityData identity_data = find_local_identity(nodeid);
+        assert(identity_data != null);
+
+        // find ia
+        PseudoArc pseudoarc = arc_list[arc_num];
+        NodeID peer_nodeid = fake_random_nodeid(pseudoarc.peer_pid, peer_id);
+        IdentityArc? ia = identity_data.identity_arcs_find(pseudoarc, peer_nodeid);
+        if (ia == null) error(@"not found IdentityArc for $(arc_num)+$(peer_id)");
+
+        identity_data.hook_mgr.add_arc(new HookingIdentityArc(identity_data.local_identity_index, ia));
     }
 }

@@ -103,6 +103,16 @@ namespace SystemPeer
             }
         }
 
+        public int64 get_network_id()
+        {
+            return identity_data.get_fp_of_my_gnode(levels-1);
+        }
+
+        public int get_n_nodes()
+        {
+            return identity_data.circa_n_nodes;
+        }
+
         public int get_levels()
         {
             return levels;
@@ -125,9 +135,19 @@ namespace SystemPeer
             return delta_levels;
         }
 
-        public int get_n_nodes()
+        public int get_my_pos(int level)
         {
-            return identity_data.circa_n_nodes;
+            return identity_data.get_my_naddr_pos(level);
+        }
+
+        public int get_my_eldership(int level)
+        {
+            return identity_data.get_eldership_of_my_gnode(level);
+        }
+
+        public int get_subnetlevel()
+        {
+            return 0;
         }
 
         public Gee.List<IPairHCoordInt> adjacent_to_my_gnode(int level_adjacent_gnodes, int level_my_gnode)
@@ -146,26 +166,6 @@ namespace SystemPeer
         }
 
         public int get_eldership(int level, int pos)
-        {
-            error("not implemented yet");
-        }
-
-        public int get_my_eldership(int level)
-        {
-            error("not implemented yet");
-        }
-
-        public int get_my_pos(int level)
-        {
-            error("not implemented yet");
-        }
-
-        public int64 get_network_id()
-        {
-            error("not implemented yet");
-        }
-
-        public int get_subnetlevel()
         {
             error("not implemented yet");
         }

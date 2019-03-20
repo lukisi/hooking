@@ -242,11 +242,15 @@ namespace SystemPeer
         IdentityData first_identity_data = create_local_identity(first_nodeid, next_local_identity_index);
         main_identity_data = first_identity_data;
         ArrayList<int> my_naddr_pos = new ArrayList<int>();
+        ArrayList<int> elderships = new ArrayList<int>();
         ArrayList<int> fp_list = new ArrayList<int>();
         my_naddr_pos.add_all(naddr);
         for (int i = 0; i < levels; i++)
+        {
+            elderships.add(0);
             fp_list.add(fake_random_fp(pid));
-        first_identity_data.update_my_naddr_pos_fp_list(my_naddr_pos, fp_list);
+        }
+        first_identity_data.update_my_naddr_pos_fp_list(my_naddr_pos, elderships, fp_list);
         next_local_identity_index++;
 
         first_identity_data.hook_mgr = new HookingManager(
@@ -450,6 +454,7 @@ namespace SystemPeer
             gateways = new HashMap<int,HashMap<int,ArrayList<IdentityArc>>>();
             for (int i = 0; i < levels; i++) gateways[i] = new HashMap<int,ArrayList<IdentityArc>>();
             my_naddr_pos = null;
+            elderships = null;
             fp_list = null;
             circa_n_nodes = 1;
         }
@@ -469,13 +474,15 @@ namespace SystemPeer
         public HookingManager hook_mgr;
 
         private ArrayList<int> my_naddr_pos;
+        private ArrayList<int> elderships;
         private ArrayList<int> fp_list;
         public int get_my_naddr_pos(int lvl) {return my_naddr_pos[lvl];}
+        public int get_eldership_of_my_gnode(int lvl) {return elderships[lvl];}
         public int get_fp_of_my_gnode(int lvl) {return fp_list[lvl];}
         public int circa_n_nodes;
 
         // must be called after updating main_identity_data
-        public void update_my_naddr_pos_fp_list(Gee.List<int> my_naddr_pos, Gee.List<int> fp_list)
+        public void update_my_naddr_pos_fp_list(Gee.List<int> my_naddr_pos, Gee.List<int> elderships, Gee.List<int> fp_list)
         {
             // bool first_identity: if TRUE it means that this is the first identity of the system.
             bool first_identity = copy_of_identity == null;
@@ -487,11 +494,15 @@ namespace SystemPeer
                 // This is the beginning of first identity.
                 assert(main_id);
                 assert(this.my_naddr_pos == null);
+                assert(this.elderships == null);
                 assert(this.fp_list == null);
                 assert(my_naddr_pos.size == levels);
+                assert(elderships.size == levels);
                 assert(fp_list.size == levels);
                 this.my_naddr_pos = new ArrayList<int>();
                 this.my_naddr_pos.add_all(my_naddr_pos);
+                this.elderships = new ArrayList<int>();
+                this.elderships.add_all(elderships);
                 this.fp_list = new ArrayList<int>();
                 this.fp_list.add_all(fp_list);
             }
@@ -508,11 +519,15 @@ namespace SystemPeer
                 // This is the beginning of a new identity from the previous main identity. It may happen
                 //  for a migration or a enter_net.
                 assert(this.my_naddr_pos == null);
+                assert(this.elderships == null);
                 assert(this.fp_list == null);
                 assert(my_naddr_pos.size == levels);
+                assert(elderships.size == levels);
                 assert(fp_list.size == levels);
                 this.my_naddr_pos = new ArrayList<int>();
                 this.my_naddr_pos.add_all(my_naddr_pos);
+                this.elderships = new ArrayList<int>();
+                this.elderships.add_all(elderships);
                 this.fp_list = new ArrayList<int>();
                 this.fp_list.add_all(fp_list);
             }
