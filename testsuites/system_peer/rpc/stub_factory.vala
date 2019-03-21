@@ -5,11 +5,6 @@ using TaskletSystem;
 
 namespace SystemPeer
 {
-    interface IIdentityAwareMissingArcHandler : Object
-    {
-        public abstract void missing(IdentityData identity_data, IdentityArc identity_arc);
-    }
-
     class StubFactory : Object
     {
         public StubFactory()

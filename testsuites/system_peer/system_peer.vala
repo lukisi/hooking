@@ -551,18 +551,6 @@ namespace SystemPeer
             }
         }
 
-        public HCoord my_naddr_get_coord_by_address(ArrayList<int> dest_pos)
-        {
-            int l = my_naddr_pos.size-1;
-            while (l >= 0)
-            {
-                if (my_naddr_pos[l] != dest_pos[l]) return new HCoord(l, dest_pos[l]);
-                l--;
-            }
-            // same naddr: error
-            return new HCoord(-1, -1);
-        }
-
         public HashMap<int,HashMap<int,ArrayList<IdentityArc>>> gateways;
         // gateways[3][2][0] means the best gateway to (3,2).
 
@@ -627,14 +615,12 @@ namespace SystemPeer
         }
         public PseudoArc arc;
         public NodeID peer_nodeid;
-        public ArrayList<int> peer_naddr_pos;
 
-        public IdentityArc(int local_identity_index, PseudoArc arc, NodeID peer_nodeid, ArrayList<int> peer_naddr_pos)
+        public IdentityArc(int local_identity_index, PseudoArc arc, NodeID peer_nodeid)
         {
             this.local_identity_index = local_identity_index;
             this.arc = arc;
             this.peer_nodeid = peer_nodeid;
-            this.peer_naddr_pos = peer_naddr_pos;
         }
     }
 
