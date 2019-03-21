@@ -9,20 +9,28 @@ sleep 0.3
 
 echo Starting launches at `date +%T.%N`
 
-./system_peer --topology 2,2,2 --firstaddr 1,0,0 \
+./system_peer --topology 2,2,2 --firstaddr 3,3,3 \
               -p 100 -i wl0 -a wl0,200,wl0,2000 \
               -t addtag,300,300 \
-              -t add_identity,400,0,1,3,0+0+2:0:0 \
-              -t add_gateway,420,1,0+0,0,2,-1 \
-              -t enter_net,460,0,1,0,1:0:0,1:0:0,200:200:200 \
+              \
+              -t add_identityarc,400,0,0+0+2:0:0 \
+              \
+              -t addtag,1300,1300 \
+              -t add_identity,1400,0,1,3,0+0+2:0:0 \
+              -t add_gateway,1420,1,0+0,0,2,-1 \
+              -t enter_net,1460,0,1,0,1:0:0,1:0:0,200:200:200 \
               > test_first_pid100_out.txt 2>&1 &
 PEER_100_PID=$!
 
 ./system_peer --topology 2,2,2 --firstaddr 2,0,0 \
               -p 200 -i wl0 -a wl0,100,wl0,2000 \
               -t addtag,300,300 \
-              -t add_identityarc,400,0,0+1+1:0:0 \
-              -t add_gateway,420,0,0+1,0,1,-1 \
+              \
+              -t add_identityarc,400,0,0+0+3:3:3 \
+              \
+              -t addtag,1300,1300 \
+              -t add_identityarc,1400,0,0+1+1:0:0 \
+              -t add_gateway,1420,0,0+1,0,1,-1 \
               > test_first_pid200_out.txt 2>&1 &
 PEER_200_PID=$!
 
