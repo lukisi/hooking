@@ -63,7 +63,7 @@ namespace SystemPeer
 
         public int get_n_nodes()
         {
-            error("not implemented yet");
+            return identity_data.coord_n_nodes;
         }
 
         public void prepare_enter(int lvl, Object prepare_enter_data)

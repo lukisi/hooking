@@ -290,6 +290,8 @@ namespace SystemPeer
             else if (schedule_task_enter_net(task)) {}
             else if (schedule_task_add_gateway(task)) {}
             else if (schedule_task_addtag(task)) {}
+            else if (schedule_task_update_n_nodes(task)) {}
+            else if (schedule_task_update_coord_n_nodes(task)) {}
             else error(@"unknown task $(task)");
         }
 
@@ -457,6 +459,7 @@ namespace SystemPeer
             elderships = null;
             fp_list = null;
             circa_n_nodes = 1;
+            coord_n_nodes = 1;
         }
 
         public int local_identity_index;
@@ -480,6 +483,7 @@ namespace SystemPeer
         public int get_eldership_of_my_gnode(int lvl) {return elderships[lvl];}
         public int get_fp_of_my_gnode(int lvl) {return fp_list[lvl];}
         public int circa_n_nodes;
+        public int coord_n_nodes;
 
         // must be called after updating main_identity_data
         public void update_my_naddr_pos_fp_list(Gee.List<int> my_naddr_pos, Gee.List<int> elderships, Gee.List<int> fp_list)

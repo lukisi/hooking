@@ -18,6 +18,8 @@ echo Starting launches at `date +%T.%N`
               -t addtag,1300,1300 \
               -t add_identity,1400,0,1,3,0+0+2:0:0 \
               -t add_gateway,1420,1,0+0,0,2,-1 \
+              -t update_n_nodes,1440,1,2 \
+              -t update_coord_n_nodes,1440,1,2 \
               -t enter_net,1460,0,1,0,1:0:0,1:0:0,200:200:200 \
               > test_first_pid100_out.txt 2>&1 &
 PEER_100_PID=$!
@@ -31,6 +33,8 @@ PEER_100_PID=$!
               -t addtag,1300,1300 \
               -t add_identityarc,1400,0,0+1+1:0:0 \
               -t add_gateway,1420,0,0+1,0,1,-1 \
+              -t update_n_nodes,1440,0,2 \
+              -t update_coord_n_nodes,1440,0,2 \
               > test_first_pid200_out.txt 2>&1 &
 PEER_200_PID=$!
 

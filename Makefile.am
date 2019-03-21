@@ -99,6 +99,8 @@ system_peer_SOURCES =  \
 	testsuites/system_peer/hooking_signals.vala \
 	testsuites/system_peer/task_addtag.vala \
 	testsuites/system_peer/task_identities.vala \
+	testsuites/system_peer/task_identity_data.vala \
+	testsuites/system_peer/task_coord_data.vala \
 	testsuites/system_peer/task_modules.vala \
 	testsuites/system_peer/task_gateways.vala \
 	testsuites/system_peer/task_check_something.vala \
