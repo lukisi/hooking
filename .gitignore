@@ -18,6 +18,7 @@ testsuites/system_peer/serializables.c
 testsuites/system_peer/rngen.c
 testsuites/system_peer/hooking_helpers.c
 testsuites/system_peer/hooking_signals.c
+testsuites/system_peer/comm_local_socket.c
 testsuites/system_peer/task_addtag.c
 testsuites/system_peer/task_identities.c
 testsuites/system_peer/task_identity_data.c
