@@ -21,42 +21,84 @@ namespace SystemPeer
             }
         }
 
-        public Object abort_enter(int lvl, Object abort_enter_data) throws CoordProxyError
+        public Object evaluate_enter(Object evaluate_enter_data) throws CoordProxyError
         {
+            assert(identity_data.proxy_endpoints != null);
+            string send_pathname = identity_data.proxy_endpoints[levels];
             error("not implemented yet");
         }
 
         public Object begin_enter(int lvl, Object begin_enter_data) throws CoordProxyError
         {
+            assert(identity_data.proxy_endpoints != null);
+            string send_pathname = identity_data.proxy_endpoints[lvl];
+            error("not implemented yet");
+        }
+
+        public Object abort_enter(int lvl, Object abort_enter_data) throws CoordProxyError
+        {
+            assert(identity_data.proxy_endpoints != null);
+            string send_pathname = identity_data.proxy_endpoints[lvl];
             error("not implemented yet");
         }
 
         public Object completed_enter(int lvl, Object completed_enter_data) throws CoordProxyError
         {
+            assert(identity_data.proxy_endpoints != null);
+            string send_pathname = identity_data.proxy_endpoints[lvl];
             error("not implemented yet");
         }
 
-        public void delete_reserve(int host_lvl, int reserve_request_id)
+        public void prepare_enter(int lvl, Object prepare_enter_data)
         {
-            error("not implemented yet");
-        }
-
-        public Object evaluate_enter(Object evaluate_enter_data) throws CoordProxyError
-        {
+            assert(identity_data.propagation_endpoints != null);
+            foreach (string s in identity_data.propagation_endpoints[lvl])
+            {
+                string send_pathname = s;
+                // TODO
+            }
             error("not implemented yet");
         }
 
         public void finish_enter(int lvl, Object finish_enter_data)
         {
+            assert(identity_data.propagation_endpoints != null);
+            foreach (string s in identity_data.propagation_endpoints[lvl])
+            {
+                string send_pathname = s;
+                // TODO
+            }
+            error("not implemented yet");
+        }
+
+        public void prepare_migration(int lvl, Object prepare_migration_data)
+        {
+            assert(identity_data.propagation_endpoints != null);
+            foreach (string s in identity_data.propagation_endpoints[lvl])
+            {
+                string send_pathname = s;
+                // TODO
+            }
             error("not implemented yet");
         }
 
         public void finish_migration(int lvl, Object finish_migration_data)
         {
+            assert(identity_data.propagation_endpoints != null);
+            foreach (string s in identity_data.propagation_endpoints[lvl])
+            {
+                string send_pathname = s;
+                // TODO
+            }
             error("not implemented yet");
         }
 
         public Object get_hooking_memory(int lvl) throws CoordProxyError
+        {
+            error("not implemented yet");
+        }
+
+        public void set_hooking_memory(int lvl, Object memory) throws CoordProxyError
         {
             error("not implemented yet");
         }
@@ -66,22 +108,12 @@ namespace SystemPeer
             return identity_data.coord_n_nodes;
         }
 
-        public void prepare_enter(int lvl, Object prepare_enter_data)
-        {
-            error("not implemented yet");
-        }
-
-        public void prepare_migration(int lvl, Object prepare_migration_data)
-        {
-            error("not implemented yet");
-        }
-
         public void reserve(int host_lvl, int reserve_request_id, out int new_pos, out int new_eldership) throws CoordReserveError
         {
             error("not implemented yet");
         }
 
-        public void set_hooking_memory(int lvl, Object memory) throws CoordProxyError
+        public void delete_reserve(int host_lvl, int reserve_request_id)
         {
             error("not implemented yet");
         }

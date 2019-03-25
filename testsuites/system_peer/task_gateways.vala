@@ -102,4 +102,142 @@ namespace SystemPeer
             return null;
         }
     }
+
+    bool schedule_task_update_proxy_endpoint(string task)
+    {
+        if (task.has_prefix("update_proxy_endpoint,"))
+        {
+            string remain = task.substring("update_proxy_endpoint,".length);
+            string[] args = remain.split(",");
+            if (args.length != 4) error("bad args num in task 'update_proxy_endpoint'");
+            int64 ms_wait;
+            if (! int64.try_parse(args[0], out ms_wait)) error("bad args ms_wait in task 'update_proxy_endpoint'");
+            int64 my_id;
+            if (! int64.try_parse(args[1], out my_id)) error("bad args my_id in task 'update_proxy_endpoint'");
+            int64 lvl;
+            if (! int64.try_parse(args[2], out lvl)) error("bad args lvl in task 'update_proxy_endpoint'");
+            string proxy_ref = args[3];
+            print(@"INFO: in $(ms_wait) ms will update proxy[$(lvl)]=$(proxy_ref) to identity #$(my_id).\n");
+            UpdateProxyRefTasklet s = new UpdateProxyRefTasklet(
+                (int)ms_wait,
+                (int)my_id,
+                (int)lvl,
+                proxy_ref);
+            tasklet.spawn(s);
+            return true;
+        }
+        else return false;
+    }
+
+    class UpdateProxyRefTasklet : Object, ITaskletSpawnable
+    {
+        public UpdateProxyRefTasklet(
+            int ms_wait,
+            int my_id,
+            int lvl,
+            string proxy_ref)
+        {
+            this.ms_wait = ms_wait;
+            this.my_id = my_id;
+            this.lvl = lvl;
+            this.proxy_ref = proxy_ref;
+        }
+        private int ms_wait;
+        private int my_id;
+        private int lvl;
+        private string proxy_ref;
+
+        public void * func()
+        {
+            tasklet.ms_wait(ms_wait);
+
+            // find identity_data
+            NodeID nodeid = fake_random_nodeid(pid, my_id);
+            IdentityData identity_data = find_local_identity(nodeid);
+            assert(identity_data != null);
+
+            if (identity_data.proxy_endpoints == null)
+            {
+                identity_data.proxy_endpoints = new ArrayList<string>();
+                for (int i = 0; i < levels+1; i++) identity_data.proxy_endpoints.add("");
+            }
+            identity_data.proxy_endpoints[lvl] = proxy_ref;
+
+            return null;
+        }
+    }
+
+    bool schedule_task_update_propagation_endpoint(string task)
+    {
+        if (task.has_prefix("update_propagation_endpoint,"))
+        {
+            string remain = task.substring("update_propagation_endpoint,".length);
+            string[] args = remain.split(",");
+            if (args.length != 4) error("bad args num in task 'update_propagation_endpoint'");
+            int64 ms_wait;
+            if (! int64.try_parse(args[0], out ms_wait)) error("bad args ms_wait in task 'update_propagation_endpoint'");
+            int64 my_id;
+            if (! int64.try_parse(args[1], out my_id)) error("bad args my_id in task 'update_propagation_endpoint'");
+            int64 lvl;
+            if (! int64.try_parse(args[2], out lvl)) error("bad args lvl in task 'update_propagation_endpoint'");
+
+            ArrayList<string> propagation_ref_list = new ArrayList<string>();
+            {
+                string[] parts = args[3].split("+");
+                for (int i = 0; i < parts.length; i++)
+                {
+                    propagation_ref_list.add(parts[i]);
+                }
+            }
+
+            print(@"INFO: in $(ms_wait) ms will update propagation[$(lvl)]=$(args[3]) to identity #$(my_id).\n");
+            UpdatePropagationRefTasklet s = new UpdatePropagationRefTasklet(
+                (int)ms_wait,
+                (int)my_id,
+                (int)lvl,
+                propagation_ref_list);
+            tasklet.spawn(s);
+            return true;
+        }
+        else return false;
+    }
+
+    class UpdatePropagationRefTasklet : Object, ITaskletSpawnable
+    {
+        public UpdatePropagationRefTasklet(
+            int ms_wait,
+            int my_id,
+            int lvl,
+            ArrayList<string> propagation_ref_list)
+        {
+            this.ms_wait = ms_wait;
+            this.my_id = my_id;
+            this.lvl = lvl;
+            this.propagation_ref_list = propagation_ref_list;
+        }
+        private int ms_wait;
+        private int my_id;
+        private int lvl;
+        private ArrayList<string> propagation_ref_list;
+
+        public void * func()
+        {
+            tasklet.ms_wait(ms_wait);
+
+            // find identity_data
+            NodeID nodeid = fake_random_nodeid(pid, my_id);
+            IdentityData identity_data = find_local_identity(nodeid);
+            assert(identity_data != null);
+
+            if (identity_data.propagation_endpoints == null)
+            {
+                identity_data.propagation_endpoints = new ArrayList<ArrayList<string>>();
+                for (int i = 0; i < levels+1; i++) identity_data.propagation_endpoints.add(new ArrayList<string>());
+            }
+            identity_data.propagation_endpoints[lvl].clear();
+            identity_data.propagation_endpoints[lvl].add_all(propagation_ref_list);
+
+            return null;
+        }
+    }
 }

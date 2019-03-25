@@ -292,6 +292,8 @@ namespace SystemPeer
             else if (schedule_task_addtag(task)) {}
             else if (schedule_task_update_n_nodes(task)) {}
             else if (schedule_task_update_coord_n_nodes(task)) {}
+            else if (schedule_task_update_proxy_endpoint(task)) {}
+            else if (schedule_task_update_propagation_endpoint(task)) {}
             else error(@"unknown task $(task)");
         }
 
@@ -459,6 +461,8 @@ namespace SystemPeer
             elderships = null;
             fp_list = null;
             circa_n_nodes = 1;
+            proxy_endpoints = null;
+            propagation_endpoints = null;
             coord_n_nodes = 1;
         }
 
@@ -483,6 +487,18 @@ namespace SystemPeer
         public int get_eldership_of_my_gnode(int lvl) {return elderships[lvl];}
         public int get_fp_of_my_gnode(int lvl) {return fp_list[lvl];}
         public int circa_n_nodes;
+
+        // coord endpoints
+        public ArrayList<string> proxy_endpoints;
+        // If I want to call evaluate_enter [always to coord(levels)] I will set send_pathname=proxy_endpoints[levels];
+        // If I want to call begin_enter to coord(lvl) I will set send_pathname=proxy_endpoints[lvl];
+        // Note: there is a useless proxy_endpoints[0].
+        public ArrayList<ArrayList<string>> propagation_endpoints;
+        // If I want to call prepare_enter/finish_enter to all nodes in my g-node lvl I will
+        // do foreach (string s in propagation_endpoints[lvl]) set send_pathname=s;
+        // Note: there is a useless propagation_endpoints[0].
+
+        // coord data
         public int coord_n_nodes;
 
         // must be called after updating main_identity_data
