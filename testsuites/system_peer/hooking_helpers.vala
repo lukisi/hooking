@@ -24,8 +24,23 @@ namespace SystemPeer
         public Object evaluate_enter(Object evaluate_enter_data) throws CoordProxyError
         {
             assert(identity_data.proxy_endpoints != null);
-            string send_pathname = identity_data.proxy_endpoints[levels];
-            error("not implemented yet");
+            string endpoint = identity_data.proxy_endpoints[levels];
+            string send_pathname = @"conn_$(endpoint)";
+            ICommStub st = get_comm_stream_system(send_pathname, new NullSourceID(), new NullUnicastID(), new NullSrcNic(), true);
+            Object ret;
+            try {
+                ret = st.evaluate_enter(evaluate_enter_data);
+            } catch (StubError e) {
+                warning(@"StubError: $(e.message)");
+                throw new CoordProxyError.GENERIC(@"StubError: $(e.message)");
+            } catch (StreamSystemError e) {
+                warning(@"StreamSystemError: $(e.message)");
+                throw new CoordProxyError.GENERIC(@"StreamSystemError: $(e.message)");
+            } catch (DeserializeError e) {
+                warning(@"DeserializeError: $(e.message)");
+                throw new CoordProxyError.GENERIC(@"DeserializeError: $(e.message)");
+            }
+            return ret;
         }
 
         public Object begin_enter(int lvl, Object begin_enter_data) throws CoordProxyError

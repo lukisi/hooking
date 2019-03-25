@@ -214,6 +214,12 @@ namespace SystemPeer
             old_identity_data.hook_mgr.do_finish_migration.disconnect(old_identity_data.do_finish_migration);
             old_identity_data.hook_mgr.failing_arc.disconnect(old_identity_data.failing_arc);
 
+            // Stop listen stream on pid_id for proxy/propagation communications
+            string st_listen_pathname = @"conn_$(pid)_$(old_identity_data.local_identity_index)";
+            comm_skeleton_factory.stop_stream_system_listen(st_listen_pathname);
+            tasklet.ms_wait(1);
+            print(@"stopped stream_system_listen $(st_listen_pathname).\n");
+
             remove_local_identity(old_identity_data.nodeid);
 
             return null;

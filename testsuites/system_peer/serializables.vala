@@ -84,6 +84,19 @@ namespace SystemPeer
     }
 
 
+    public class NullSourceID : Object, ISourceID
+    {
+    }
+
+    public class NullUnicastID : Object, IUnicastID
+    {
+    }
+
+    public class NullSrcNic : Object, ISrcNic
+    {
+    }
+
+
     internal errordomain HelperDeserializeError {
         GENERIC
     }

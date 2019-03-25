@@ -193,6 +193,7 @@ namespace SystemPeer
         // RPC
         skeleton_factory = new SkeletonFactory();
         stub_factory = new StubFactory();
+        comm_skeleton_factory = new CommSkeletonFactory();
 
         pseudonic_map = new HashMap<string,PseudoNetworkInterface>();
         arc_list = new ArrayList<PseudoArc>();
@@ -252,6 +253,12 @@ namespace SystemPeer
         }
         first_identity_data.update_my_naddr_pos_fp_list(my_naddr_pos, elderships, fp_list);
         next_local_identity_index++;
+
+        // Start listen stream on pid_id for proxy/propagation communications
+        string st_listen_pathname = @"conn_$(pid)_0";
+        comm_skeleton_factory.start_stream_system_listen(st_listen_pathname);
+        tasklet.ms_wait(1);
+        print(@"started stream_system_listen $(st_listen_pathname).\n");
 
         first_identity_data.hook_mgr = new HookingManager(
             new HookingMapPaths(first_identity_data.local_identity_index),
@@ -327,6 +334,12 @@ namespace SystemPeer
                 identity_data.hook_mgr.do_finish_migration.disconnect(identity_data.do_finish_migration);
                 identity_data.hook_mgr.failing_arc.disconnect(identity_data.failing_arc);
 
+                // Stop listen stream on pid_id for proxy/propagation communications
+                st_listen_pathname = @"conn_$(pid)_$(identity_data.local_identity_index)";
+                comm_skeleton_factory.stop_stream_system_listen(st_listen_pathname);
+                tasklet.ms_wait(1);
+                print(@"stopped stream_system_listen $(st_listen_pathname).\n");
+
                 remove_local_identity(identity_data.nodeid);
             }
         }
@@ -345,6 +358,12 @@ namespace SystemPeer
         last_identity_data.hook_mgr.do_prepare_migration.disconnect(last_identity_data.do_prepare_migration);
         last_identity_data.hook_mgr.do_finish_migration.disconnect(last_identity_data.do_finish_migration);
         last_identity_data.hook_mgr.failing_arc.disconnect(last_identity_data.failing_arc);
+
+        // Stop listen stream on pid_id for proxy/propagation communications
+        st_listen_pathname = @"conn_$(pid)_$(last_identity_data.local_identity_index)";
+        comm_skeleton_factory.stop_stream_system_listen(st_listen_pathname);
+        tasklet.ms_wait(1);
+        print(@"stopped stream_system_listen $(st_listen_pathname).\n");
 
         remove_local_identity(last_identity_data.nodeid);
         last_identity_data = null;

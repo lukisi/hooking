@@ -20,6 +20,8 @@ testsuites/system_peer/hooking_helpers.c
 testsuites/system_peer/hooking_signals.c
 testsuites/system_peer/comm_local_socket.c
 testsuites/system_peer/comm_serialization.c
+testsuites/system_peer/comm_skeleton_factory.c
+testsuites/system_peer/comm_stub_factory.c
 testsuites/system_peer/task_addtag.c
 testsuites/system_peer/task_identities.c
 testsuites/system_peer/task_identity_data.c

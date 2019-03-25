@@ -99,6 +99,8 @@ system_peer_SOURCES =  \
 	testsuites/system_peer/hooking_signals.vala \
 	testsuites/system_peer/comm_local_socket.vala \
 	testsuites/system_peer/comm_serialization.vala \
+	testsuites/system_peer/comm_skeleton_factory.vala \
+	testsuites/system_peer/comm_stub_factory.vala \
 	testsuites/system_peer/task_addtag.vala \
 	testsuites/system_peer/task_identities.vala \
 	testsuites/system_peer/task_identity_data.vala \

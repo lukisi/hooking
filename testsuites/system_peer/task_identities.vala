@@ -89,6 +89,12 @@ namespace SystemPeer
             IdentityData another_identity_data = create_local_identity(another_nodeid, next_local_identity_index);
             next_local_identity_index++;
 
+            // Start listen stream on pid_id for proxy/propagation communications
+            string st_listen_pathname = @"conn_$(pid)_$(another_identity_data.local_identity_index)";
+            comm_skeleton_factory.start_stream_system_listen(st_listen_pathname);
+            tasklet.ms_wait(1);
+            print(@"started stream_system_listen $(st_listen_pathname).\n");
+
             // find old_id
             NodeID old_nodeid = fake_random_nodeid(pid, my_old_id);
             IdentityData old_identity_data = find_local_identity(old_nodeid);
