@@ -16,7 +16,7 @@ namespace SystemPeer
             string unicast_id,
             string src_nic,
             string m_name,
-            Gee.List<string> arguments,
+            string arg,
             bool wait_reply,
             out string resp
             ) throws StreamSystemCommunicatorNoDispatcherError;
@@ -51,7 +51,7 @@ namespace SystemPeer
         public abstract void after_kill();
     }
 
-    public class Comm : Object
+    public class CommSockets : Object
     {
         /* API */
 
@@ -68,12 +68,12 @@ namespace SystemPeer
         public string send_stream_system(
             string send_pathname,
             string source_id, string src_nic, string unicast_id,
-            string m_name, Gee.List<string> arguments, bool wait_reply) throws StreamSystemError
+            string m_name, string arg, bool wait_reply) throws StreamSystemError
         {
             return do_send_stream_system(
                 send_pathname,
                 source_id, src_nic, unicast_id,
-                m_name, arguments,  wait_reply);
+                m_name, arg,  wait_reply);
         }
 
         /* Internals */
@@ -96,7 +96,7 @@ namespace SystemPeer
 
         static void build_unicast_request(
             string m_name,
-            Gee.List<string> arguments,
+            string arg,
             string source_id,
             string unicast_id,
             string src_nic,
@@ -108,25 +108,7 @@ namespace SystemPeer
             b.begin_object();
                 b.set_member_name("method-name").add_string_value(m_name);
 
-                b.set_member_name("arguments").begin_array();
-                    for (int j = 0; j < arguments.size; j++)
-                    {
-                        string arg = arguments[j];
-                        var p = new Json.Parser();
-                        try {
-                            parse_and_validate(p, arg);
-                        } catch (Error e) {
-                            throw new InvalidJsonError.GENERIC(
-                                @"Error parsing JSON for argument from my own stub: $(e.message)"
-                                + @" method-name: $(m_name)"
-                                + @" argument #$(j): '$(arg)'");
-                        }
-                        unowned Json.Node p_rootnode = p.get_root();
-                        assert(p_rootnode != null);
-                        Json.Node* cp = p_rootnode.copy();
-                        b.add_value(cp);
-                    }
-                b.end_array();
+                b.set_member_name("argument").add_string_value(arg);
 
                 b.set_member_name("source-id");
                 {
@@ -185,7 +167,7 @@ namespace SystemPeer
         static void parse_unicast_request(
             string json_tree_request,
             out string m_name,
-            out Gee.List<string> arguments,
+            out string arg,
             out string source_id,
             out string unicast_id,
             out string src_nic,
@@ -207,22 +189,11 @@ namespace SystemPeer
                 m_name = r_buf.get_string_value();
                 r_buf.end_member();
 
-                if (!r_buf.read_member("arguments")) throw new MessageError.MALFORMED("root must have arguments");
-                if (!r_buf.is_array()) throw new MessageError.MALFORMED("arguments must be an array");
-                int num_elements = r_buf.count_elements();
-                arguments = new ArrayList<string>();
-                for (int j = 0; j < num_elements; j++)
-                {
-                    r_buf.read_element(j);
-                    if (!r_buf.is_object() && !r_buf.is_array()) throw new MessageError.MALFORMED("each argument must be a valid JSON tree");
-                    r_buf.end_element();
-                }
+                if (!r_buf.read_member("argument")) throw new MessageError.MALFORMED("root must have argument");
+                if (!r_buf.is_value()) throw new MessageError.MALFORMED("argument must be a string");
+                if (r_buf.get_value().get_value_type() != typeof(string)) throw new MessageError.MALFORMED("argument must be a string");
+                arg = r_buf.get_string_value();
                 r_buf.end_member();
-                for (int j = 0; j < num_elements; j++)
-                {
-                    unowned Json.Node node1 = buf_rootnode.get_object().get_array_member("arguments").get_element(j);
-                    arguments.add(generate_stream(node1));
-                }
 
                 if (!r_buf.read_member("source-id")) throw new MessageError.MALFORMED("root must have source-id");
                 if (!r_buf.is_object() && !r_buf.is_array())
@@ -536,13 +507,13 @@ namespace SystemPeer
                     string unicast_id;
                     string src_nic;
                     string m_name;
-                    Gee.List<string> arguments;
+                    string arg;
                     bool wait_reply;
                     try {
                         parse_unicast_request(
                             (string)buf,
                             out m_name,
-                            out arguments,
+                            out arg,
                             out source_id,
                             out unicast_id,
                             out src_nic,
@@ -562,7 +533,7 @@ namespace SystemPeer
                             unicast_id,
                             src_nic,
                             m_name,
-                            arguments,
+                            arg,
                             wait_reply,
                             out resp);
                     } catch (StreamSystemCommunicatorNoDispatcherError e) {
@@ -612,7 +583,7 @@ namespace SystemPeer
         string do_send_stream_system(
             string send_pathname,
             string source_id, string src_nic, string unicast_id,
-            string m_name, Gee.List<string> arguments, bool wait_reply) throws StreamSystemError
+            string m_name, string arg, bool wait_reply) throws StreamSystemError
         {
             // Handle pools of connections.
             if (connected_pools == null) connected_pools = new HashMap<string, Gee.List<IConnectedStreamSocket>>();
@@ -625,13 +596,13 @@ namespace SystemPeer
             return send_stream(
                 connected_pool, key, get_new_connection,
                 source_id, src_nic, unicast_id,
-                m_name, arguments, wait_reply);
+                m_name, arg, wait_reply);
         }
 
         string send_stream(
             Gee.List<IConnectedStreamSocket> connected_pool, string key, GetNewConnection get_new_connection,
             string source_id, string src_nic, string unicast_id,
-            string m_name, Gee.List<string> arguments, bool wait_reply) throws StreamSystemError
+            string m_name, string arg, bool wait_reply) throws StreamSystemError
         {
             IConnectedStreamSocket c = null;
             bool try_again = true;
@@ -656,7 +627,7 @@ namespace SystemPeer
                 try {
                     build_unicast_request(
                         m_name,
-                        arguments,
+                        arg,
                         source_id,
                         unicast_id,
                         src_nic,
