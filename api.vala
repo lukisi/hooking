@@ -61,7 +61,7 @@ namespace Netsukuku.Hooking
         // This is going to be proxied to the coordinator of the whole network: lvl=levels
         public abstract Object evaluate_enter(Object evaluate_enter_data) throws CoordProxyError;
 
-        public abstract Object get_hooking_memory(int lvl) throws CoordProxyError;
+        public abstract Object? get_hooking_memory(int lvl) throws CoordProxyError;
         public abstract void set_hooking_memory(int lvl, Object memory) throws CoordProxyError;
 
         public abstract Object begin_enter(int lvl, Object begin_enter_data) throws CoordProxyError;

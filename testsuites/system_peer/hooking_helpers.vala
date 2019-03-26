@@ -115,7 +115,7 @@ namespace SystemPeer
             error("not implemented yet");
         }
 
-        public Object get_hooking_memory(int lvl) throws CoordProxyError
+        public Object? get_hooking_memory(int lvl) throws CoordProxyError
         {
             debug(@"HookingCoordinator: get_hooking_memory($(lvl)).");
             if (identity_data.hooking_memory.has_key(lvl)) return identity_data.hooking_memory[lvl];
@@ -214,7 +214,9 @@ namespace SystemPeer
 
         public bool exists(int level, int pos)
         {
-            error("not implemented yet");
+            assert(identity_data.gateways.has_key(level));
+            if (identity_data.gateways[level].has_key(pos)) return true;
+            return false;
         }
 
         public IHookingManagerStub gateway(int level, int pos)
