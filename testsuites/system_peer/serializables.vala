@@ -92,8 +92,13 @@ namespace SystemPeer
     {
     }
 
-    public class NullSrcNic : Object, ISrcNic
+    public class ClientAddressSrcNic : Object, ISrcNic
     {
+        public ClientAddressSrcNic(string client_address)
+        {
+            this.client_address = client_address;
+        }
+        public string client_address {get; set;}
     }
 
 

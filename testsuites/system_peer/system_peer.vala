@@ -256,7 +256,7 @@ namespace SystemPeer
 
         // Start listen stream on pid_id for proxy/propagation communications
         string st_listen_pathname = @"conn_$(pid)_0";
-        comm_skeleton_factory.start_stream_system_listen(st_listen_pathname);
+        comm_skeleton_factory.start_stream_system_listen(st_listen_pathname, first_identity_data);
         tasklet.ms_wait(1);
         print(@"started stream_system_listen $(st_listen_pathname).\n");
 
@@ -274,6 +274,7 @@ namespace SystemPeer
         {
             fp = @"$(fp),$(first_identity_data.get_fp_of_my_gnode(i))";
         }
+        print(@"INFO: $(first_identity_name) has address $(addr) and fp $(fp).\n");
         tester_events.add(@"PeersManager:$(first_identity_data.local_identity_index):create_net:addr[$(addr)]:fp[$(fp)]");
         // immediately after creation, connect to signals.
         first_identity_data.hook_mgr.same_network.connect(first_identity_data.same_network);

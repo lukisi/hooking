@@ -184,7 +184,7 @@ namespace SystemPeer
             new_identity_data.hook_mgr.do_finish_migration.connect(new_identity_data.do_finish_migration);
             new_identity_data.hook_mgr.failing_arc.connect(new_identity_data.failing_arc);
 
-            print(@"INFO: New identity $(new_nodeid.id) entered with address $(addr).\n");
+            print(@"INFO: New identity $(new_nodeid.id) entered with address $(addr) and fp $(fp).\n");
 
             // Assume bootstrapped immediately
             ArrayList<IIdentityArc> initial_arcs = new ArrayList<IIdentityArc>();

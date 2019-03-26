@@ -10,22 +10,89 @@ namespace SystemPeer
         // ... TODO
     }
 
-    public CommSkeletonFactory comm_skeleton_factory;
-    public class CommSkeletonFactory : Object
+    internal class StreamSystemCommunicator : Object, IStreamSystemCommunicator, ICommSkeleton
+    {
+        public StreamSystemCommunicator(CommSerialization com_ser, IdentityData identity_data)
+        {
+            this.com_ser = com_ser;
+            this.identity_data = identity_data;
+        }
+        private CommSerialization com_ser;
+        private IdentityData identity_data;
+        private ArrayList<int> client_address;
+
+        public void communicate(
+            string source_id,
+            string unicast_id,
+            string src_nic,
+            string m_name,
+            string arg,
+            bool wait_reply,
+            out string resp
+            ) throws StreamSystemCommunicatorNoDispatcherError
+        {
+            // public Object read_direct_object_notnull(Type expected_type, string js) throws CommDeserializeError, HelperNotJsonError
+            string s_total_client_address;
+            try {
+                Object _src_nic = com_ser.read_direct_object_notnull(typeof(ClientAddressSrcNic), src_nic);
+                ClientAddressSrcNic client_address_src_nic = (ClientAddressSrcNic)_src_nic;
+                s_total_client_address = client_address_src_nic.client_address;
+            } catch (CommDeserializeError e) {
+                throw new StreamSystemCommunicatorNoDispatcherError.GENERIC(@"CommDeserializeError $(e.message)");
+            } catch (HelperNotJsonError e) {
+                throw new StreamSystemCommunicatorNoDispatcherError.GENERIC(@"HelperNotJsonError $(e.message)");
+            }
+            ArrayList<int> total_client_address = new ArrayList<int>();
+            string[] parts = s_total_client_address.split(",");
+            for (int i = 0; i < parts.length; i++)
+            {
+                int64 element;
+                if (! int64.try_parse(parts[i], out element)) error("bad parts element in src_nic.client_address in remote call comm.");
+                total_client_address.add((int)element);
+            }
+            client_address = new ArrayList<int>();
+            for (int i = levels-1; i >= 0; i--)
+            {
+                if (client_address.size == 0 && total_client_address[i] == identity_data.get_my_naddr_pos(i)) continue;
+                client_address.insert(0, total_client_address[i]);
+            }
+            resp = comm_dispatcher_execute_rpc(com_ser, this, m_name, arg);
+        }
+
+        private void log_call(string m_name)
+        {
+            string s_client_address = ""; string next = "";
+            for (int i = 0; i < client_address.size; i++)
+            {
+                s_client_address = @"$(s_client_address)$(next)$(client_address[i])";
+                next = ",";
+            }
+            if (client_address.size == 0) s_client_address = "myself";
+            debug(@"StreamSystemCommunicator: calling $(m_name) per request from $(s_client_address).");
+        }
+
+        public Object evaluate_enter(Object arg0)
+        {
+            log_call("evaluate_enter");
+            return identity_data.hook_mgr.evaluate_enter(arg0, client_address);
+        }
+    }
+
+    CommSkeletonFactory comm_skeleton_factory;
+    class CommSkeletonFactory : Object
     {
         private CommSerialization com_ser;
         private CommSockets com_soc;
-        private IStreamSystemCommunicator communicator;
         HashMap<string,IListenerHandle> handles_by_listen_pathname;
         public CommSkeletonFactory()
         {
             com_ser = new CommSerialization();
             com_soc = new CommSockets();
-            // communicator = ???
         }
 
-        public void start_stream_system_listen(string listen_pathname)
-        {   
+        public void start_stream_system_listen(string listen_pathname, IdentityData identity_data)
+        {
+            IStreamSystemCommunicator communicator = new StreamSystemCommunicator(com_ser, identity_data);
             com_soc.start_stream_system_listen(listen_pathname, communicator);
         }
         public void stop_stream_system_listen(string listen_pathname)

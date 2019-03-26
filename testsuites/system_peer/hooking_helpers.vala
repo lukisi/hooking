@@ -26,7 +26,14 @@ namespace SystemPeer
             assert(identity_data.proxy_endpoints != null);
             string endpoint = identity_data.proxy_endpoints[levels];
             string send_pathname = @"conn_$(endpoint)";
-            ICommStub st = get_comm_stream_system(send_pathname, new NullSourceID(), new NullUnicastID(), new NullSrcNic(), true);
+            string client_address = ""; string next = "";
+            for (int i = 0; i < levels; i++)
+            {
+                client_address = @"$(client_address)$(next)$(identity_data.get_my_naddr_pos(i))";
+                next = ",";
+            }
+            var src_nic = new ClientAddressSrcNic(client_address);
+            ICommStub st = get_comm_stream_system(send_pathname, new NullSourceID(), new NullUnicastID(), src_nic, true);
             Object ret;
             try {
                 ret = st.evaluate_enter(evaluate_enter_data);
