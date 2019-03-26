@@ -397,8 +397,8 @@ namespace Netsukuku.Hooking.ProxyCoord
                 Object _ret = coord.get_hooking_memory(lvl);
                 if (_ret == null)
                 {
-                    critical(@"Hooking.ProxyCoord.get_hooking_memory: bad result <null>");
-                    tasklet.exit_tasklet(null);
+                    debug(@"ProxyCoord: get_hooking_memory from coord($(lvl)) returned null. We return a new HookingMemory().");
+                    return new HookingMemory();
                 }
                 if (! (_ret is HookingMemory))
                 {

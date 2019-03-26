@@ -484,6 +484,7 @@ namespace SystemPeer
             proxy_endpoints = null;
             propagation_endpoints = null;
             coord_n_nodes = 1;
+            hooking_memory = new HashMap<int,Object>();
         }
 
         public int local_identity_index;
@@ -520,6 +521,7 @@ namespace SystemPeer
 
         // coord data
         public int coord_n_nodes;
+        public HashMap<int,Object> hooking_memory;
 
         // must be called after updating main_identity_data
         public void update_my_naddr_pos_fp_list(Gee.List<int> my_naddr_pos, Gee.List<int> elderships, Gee.List<int> fp_list)

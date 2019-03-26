@@ -117,12 +117,15 @@ namespace SystemPeer
 
         public Object get_hooking_memory(int lvl) throws CoordProxyError
         {
-            error("not implemented yet");
+            debug(@"HookingCoordinator: get_hooking_memory($(lvl)).");
+            if (identity_data.hooking_memory.has_key(lvl)) return identity_data.hooking_memory[lvl];
+            return null;
         }
 
         public void set_hooking_memory(int lvl, Object memory) throws CoordProxyError
         {
-            error("not implemented yet");
+            debug(@"HookingCoordinator: set_hooking_memory($(lvl)).");
+            identity_data.hooking_memory[lvl] = memory;
         }
 
         public int get_n_nodes()
