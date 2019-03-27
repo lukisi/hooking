@@ -6,7 +6,7 @@ namespace SystemPeer
 {
     public interface ICommSkeleton : Object
     {
-        public abstract Object evaluate_enter(Object arg0);
+        public abstract Object evaluate_enter(Object arg0, ArrayList<int> client_address);
         // ... TODO
     }
 
@@ -19,7 +19,6 @@ namespace SystemPeer
         }
         private CommSerialization com_ser;
         private IdentityData identity_data;
-        private ArrayList<int> client_address;
 
         public void communicate(
             string source_id,
@@ -31,35 +30,69 @@ namespace SystemPeer
             out string resp
             ) throws StreamSystemCommunicatorNoDispatcherError
         {
-            // public Object read_direct_object_notnull(Type expected_type, string js) throws CommDeserializeError, HelperNotJsonError
-            string s_total_client_address;
+            ArrayList<int> client_address = null;
+            Object _src_nic;
             try {
-                Object _src_nic = com_ser.read_direct_object_notnull(typeof(ClientAddressSrcNic), src_nic);
+                _src_nic = com_ser.read_direct_object_notnull(typeof(Object), src_nic);
+            } catch (CommDeserializeError e) {
+                error(@"CommDeserializeError $(e.message)");
+            } catch (HelperNotJsonError e) {
+                error(@"HelperNotJsonError $(e.message)");
+            }
+            _src_nic = com_ser.read_direct_object_notnull(typeof(Object), src_nic);
+            if (_src_nic is ClientAddressSrcNic)
+            {
+                string s_total_client_address;
                 ClientAddressSrcNic client_address_src_nic = (ClientAddressSrcNic)_src_nic;
                 s_total_client_address = client_address_src_nic.client_address;
-            } catch (CommDeserializeError e) {
-                throw new StreamSystemCommunicatorNoDispatcherError.GENERIC(@"CommDeserializeError $(e.message)");
-            } catch (HelperNotJsonError e) {
-                throw new StreamSystemCommunicatorNoDispatcherError.GENERIC(@"HelperNotJsonError $(e.message)");
+                ArrayList<int> total_client_address = new ArrayList<int>();
+                string[] parts = s_total_client_address.split(",");
+                for (int i = 0; i < parts.length; i++)
+                {
+                    int64 element;
+                    if (! int64.try_parse(parts[i], out element)) error("bad parts element in src_nic.client_address in remote call comm.");
+                    total_client_address.add((int)element);
+                }
+                client_address = new ArrayList<int>();
+                for (int i = levels-1; i >= 0; i--)
+                {
+                    if (client_address.size == 0 && total_client_address[i] == identity_data.get_my_naddr_pos(i)) continue;
+                    client_address.insert(0, total_client_address[i]);
+                }
             }
-            ArrayList<int> total_client_address = new ArrayList<int>();
-            string[] parts = s_total_client_address.split(",");
-            for (int i = 0; i < parts.length; i++)
+
+            if (m_name == "comm.evaluate_enter")
             {
-                int64 element;
-                if (! int64.try_parse(parts[i], out element)) error("bad parts element in src_nic.client_address in remote call comm.");
-                total_client_address.add((int)element);
+                // is client_address mandatory for this method?
+                assert(client_address != null);
+                // argument:
+                Object arg0;
+                try {
+                    arg0 = com_ser.read_argument_object_notnull(typeof(Object), arg);
+                    if (arg0 is ISerializable)
+                        if (!((ISerializable)arg0).check_deserialization())
+                            error(@"Reading argument for $(m_name): instance of $(arg0.get_type().name()) has not been fully deserialized");
+                } catch (HelperNotJsonError e) {
+                    error(@"Reading argument for $(m_name): HelperNotJsonError $(e.message)");
+                } catch (CommDeserializeError e) {
+                    error(@"Reading argument for $(m_name): CommDeserializeError $(e.message)");
+                }
+
+                Object result = evaluate_enter(arg0, client_address);
+                resp = com_ser.prepare_return_value_object(result);
             }
-            client_address = new ArrayList<int>();
-            for (int i = levels-1; i >= 0; i--)
+            else if (m_name == "TODO")
             {
-                if (client_address.size == 0 && total_client_address[i] == identity_data.get_my_naddr_pos(i)) continue;
-                client_address.insert(0, total_client_address[i]);
+                error(@"Unknown method: \"$(m_name)\"");
+                // TODO
             }
-            resp = comm_dispatcher_execute_rpc(com_ser, this, m_name, arg);
+            else
+            {
+                error(@"Unknown method: \"$(m_name)\"");
+            }
         }
 
-        private void log_call(string m_name)
+        private void log_call_with_client_address(string m_name, ArrayList<int> client_address)
         {
             string s_client_address = ""; string next = "";
             for (int i = 0; i < client_address.size; i++)
@@ -71,9 +104,9 @@ namespace SystemPeer
             debug(@"StreamSystemCommunicator: calling $(m_name) per request from $(s_client_address).");
         }
 
-        public Object evaluate_enter(Object arg0)
+        public Object evaluate_enter(Object arg0, ArrayList<int> client_address)
         {
-            log_call("evaluate_enter");
+            log_call_with_client_address("evaluate_enter", client_address);
             return identity_data.hook_mgr.evaluate_enter(arg0, client_address);
         }
     }
@@ -99,57 +132,5 @@ namespace SystemPeer
         {
             com_soc.stop_stream_system_listen(listen_pathname);
         }
-    }
-
-    internal class CommStreamDispatcher : Object
-    {
-        public CommStreamDispatcher(ICommSkeleton comm, CommSerialization com_ser)
-        {
-            this.comm = comm;
-            this.com_ser = com_ser;
-        }
-        private ICommSkeleton comm;
-        private CommSerialization com_ser;
-
-        public string execute(string m_name, string arg)
-        {
-            return comm_dispatcher_execute_rpc(com_ser, comm, m_name, arg);
-        }
-    }
-
-    internal string comm_dispatcher_execute_rpc(
-        CommSerialization com_ser,
-        ICommSkeleton comm,
-        string m_name, string arg)
-    {
-        string ret;
-        if (m_name == "comm.evaluate_enter")
-        {
-            // argument:
-            Object arg0;
-            try {
-                arg0 = com_ser.read_argument_object_notnull(typeof(Object), arg);
-                if (arg0 is ISerializable)
-                    if (!((ISerializable)arg0).check_deserialization())
-                        error(@"Reading argument for $(m_name): instance of $(arg0.get_type().name()) has not been fully deserialized");
-            } catch (HelperNotJsonError e) {
-                error(@"Reading argument for $(m_name): HelperNotJsonError $(e.message)");
-            } catch (CommDeserializeError e) {
-                error(@"Reading argument for $(m_name): CommDeserializeError $(e.message)");
-            }
-
-            Object result = comm.evaluate_enter(arg0);
-            ret = com_ser.prepare_return_value_object(result);
-        }
-        else if (m_name == "TODO")
-        {
-            error(@"Unknown method: \"$(m_name)\"");
-            // TODO
-        }
-        else
-        {
-            error(@"Unknown method: \"$(m_name)\"");
-        }
-        return ret;
     }
 }
