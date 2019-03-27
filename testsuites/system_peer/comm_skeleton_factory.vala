@@ -7,6 +7,9 @@ namespace SystemPeer
     public interface ICommSkeleton : Object
     {
         public abstract Object evaluate_enter(Object arg0, ArrayList<int> client_address);
+        public abstract Object begin_enter(Object arg0, ArrayList<int> client_address);
+        public abstract Object completed_enter(Object arg0, ArrayList<int> client_address);
+        public abstract Object abort_enter(Object arg0, ArrayList<int> client_address);
         // ... TODO
     }
 
@@ -108,6 +111,30 @@ namespace SystemPeer
         {
             log_call_with_client_address("evaluate_enter", client_address);
             return identity_data.hook_mgr.evaluate_enter(arg0, client_address);
+        }
+
+        public Object begin_enter(Object arg0, ArrayList<int> client_address)
+        {
+            log_call_with_client_address("begin_enter", client_address);
+            assert(arg0 is ArgBeginEnter);
+            ArgBeginEnter _arg0 = (ArgBeginEnter)arg0;
+            return identity_data.hook_mgr.begin_enter(_arg0.lvl, _arg0.begin_enter_data, client_address);
+        }
+
+        public Object completed_enter(Object arg0, ArrayList<int> client_address)
+        {
+            log_call_with_client_address("completed_enter", client_address);
+            assert(arg0 is ArgCompletedEnter);
+            ArgCompletedEnter _arg0 = (ArgCompletedEnter)arg0;
+            return identity_data.hook_mgr.completed_enter(_arg0.lvl, _arg0.completed_enter_data, client_address);
+        }
+
+        public Object abort_enter(Object arg0, ArrayList<int> client_address)
+        {
+            log_call_with_client_address("abort_enter", client_address);
+            assert(arg0 is ArgAbortEnter);
+            ArgAbortEnter _arg0 = (ArgAbortEnter)arg0;
+            return identity_data.hook_mgr.abort_enter(_arg0.lvl, _arg0.abort_enter_data, client_address);
         }
     }
 

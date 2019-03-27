@@ -83,25 +83,6 @@ namespace SystemPeer
         public string mac {get; set;}
     }
 
-
-    public class NullSourceID : Object, ISourceID
-    {
-    }
-
-    public class NullUnicastID : Object, IUnicastID
-    {
-    }
-
-    public class ClientAddressSrcNic : Object, ISrcNic
-    {
-        public ClientAddressSrcNic(string client_address)
-        {
-            this.client_address = client_address;
-        }
-        public string client_address {get; set;}
-    }
-
-
     internal errordomain HelperDeserializeError {
         GENERIC
     }

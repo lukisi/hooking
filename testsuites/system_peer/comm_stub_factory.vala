@@ -7,14 +7,19 @@ namespace SystemPeer
     public interface ICommStub : Object
     {
         public abstract Object evaluate_enter(Object arg0) throws StubError, StreamSystemError, DeserializeError;
+        public abstract Object begin_enter(Object arg0) throws StubError, StreamSystemError, DeserializeError;
+        public abstract Object completed_enter(Object arg0) throws StubError, StreamSystemError, DeserializeError;
+        public abstract Object abort_enter(Object arg0) throws StubError, StreamSystemError, DeserializeError;
         // ... TODO
     }
 
     public ICommStub get_comm_stream_system(
         string send_pathname,
-        ISourceID source_id, IUnicastID unicast_id, ISrcNic src_nic,
+        ISrcNic src_nic,
         bool wait_reply)
     {
+        ISourceID source_id = new NullSourceID();
+        IUnicastID unicast_id = new NullUnicastID();
         return new StreamSystemCommStub(send_pathname,
             source_id, unicast_id, src_nic,
             wait_reply);
@@ -54,9 +59,8 @@ namespace SystemPeer
             return ret;
         }
 
-        public Object evaluate_enter(Object arg0) throws StubError, StreamSystemError, DeserializeError
+        private Object process_comm(string m_name, Object arg0) throws StubError, StreamSystemError, DeserializeError
         {
-            string m_name = "comm.evaluate_enter";
             string arg = com_ser.prepare_argument_object(arg0);
 
             string resp = this.call(m_name, arg);
@@ -75,6 +79,26 @@ namespace SystemPeer
                 if (!((ISerializable)ret).check_deserialization())
                     throw new DeserializeError.GENERIC(@"$(doing): instance of $(ret.get_type().name()) has not been fully deserialized");
             return ret;
+        }
+
+        public Object evaluate_enter(Object arg0) throws StubError, StreamSystemError, DeserializeError
+        {
+            return process_comm("comm.evaluate_enter", arg0);
+        }
+
+        public Object begin_enter(Object arg0) throws StubError, StreamSystemError, DeserializeError
+        {
+            return process_comm("comm.begin_enter", arg0);
+        }
+
+        public Object completed_enter(Object arg0) throws StubError, StreamSystemError, DeserializeError
+        {
+            return process_comm("comm.completed_enter", arg0);
+        }
+
+        public Object abort_enter(Object arg0) throws StubError, StreamSystemError, DeserializeError
+        {
+            return process_comm("comm.abort_enter", arg0);
         }
     }
 }

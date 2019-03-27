@@ -33,7 +33,7 @@ namespace SystemPeer
                 next = ",";
             }
             var src_nic = new ClientAddressSrcNic(client_address);
-            ICommStub st = get_comm_stream_system(send_pathname, new NullSourceID(), new NullUnicastID(), src_nic, true);
+            ICommStub st = get_comm_stream_system(send_pathname, src_nic, true);
             Object ret;
             try {
                 ret = st.evaluate_enter(evaluate_enter_data);
@@ -53,30 +53,96 @@ namespace SystemPeer
         public Object begin_enter(int lvl, Object begin_enter_data) throws CoordProxyError
         {
             assert(identity_data.proxy_endpoints != null);
-            string send_pathname = identity_data.proxy_endpoints[lvl];
-            error("not implemented yet");
-        }
-
-        public Object abort_enter(int lvl, Object abort_enter_data) throws CoordProxyError
-        {
-            assert(identity_data.proxy_endpoints != null);
-            string send_pathname = identity_data.proxy_endpoints[lvl];
-            error("not implemented yet");
+            string endpoint = identity_data.proxy_endpoints[lvl];
+            string send_pathname = @"conn_$(endpoint)";
+            string client_address = ""; string next = "";
+            for (int i = 0; i < levels; i++)
+            {
+                client_address = @"$(client_address)$(next)$(identity_data.get_my_naddr_pos(i))";
+                next = ",";
+            }
+            var src_nic = new ClientAddressSrcNic(client_address);
+            ICommStub st = get_comm_stream_system(send_pathname, src_nic, true);
+            Object ret;
+            try {
+                ret = st.begin_enter(new ArgBeginEnter(lvl, begin_enter_data));
+            } catch (StubError e) {
+                warning(@"StubError: $(e.message)");
+                throw new CoordProxyError.GENERIC(@"StubError: $(e.message)");
+            } catch (StreamSystemError e) {
+                warning(@"StreamSystemError: $(e.message)");
+                throw new CoordProxyError.GENERIC(@"StreamSystemError: $(e.message)");
+            } catch (DeserializeError e) {
+                warning(@"DeserializeError: $(e.message)");
+                throw new CoordProxyError.GENERIC(@"DeserializeError: $(e.message)");
+            }
+            return ret;
         }
 
         public Object completed_enter(int lvl, Object completed_enter_data) throws CoordProxyError
         {
             assert(identity_data.proxy_endpoints != null);
-            string send_pathname = identity_data.proxy_endpoints[lvl];
-            error("not implemented yet");
+            string endpoint = identity_data.proxy_endpoints[lvl];
+            string send_pathname = @"conn_$(endpoint)";
+            string client_address = ""; string next = "";
+            for (int i = 0; i < levels; i++)
+            {
+                client_address = @"$(client_address)$(next)$(identity_data.get_my_naddr_pos(i))";
+                next = ",";
+            }
+            var src_nic = new ClientAddressSrcNic(client_address);
+            ICommStub st = get_comm_stream_system(send_pathname, src_nic, true);
+            Object ret;
+            try {
+                ret = st.completed_enter(new ArgCompletedEnter(lvl, completed_enter_data));
+            } catch (StubError e) {
+                warning(@"StubError: $(e.message)");
+                throw new CoordProxyError.GENERIC(@"StubError: $(e.message)");
+            } catch (StreamSystemError e) {
+                warning(@"StreamSystemError: $(e.message)");
+                throw new CoordProxyError.GENERIC(@"StreamSystemError: $(e.message)");
+            } catch (DeserializeError e) {
+                warning(@"DeserializeError: $(e.message)");
+                throw new CoordProxyError.GENERIC(@"DeserializeError: $(e.message)");
+            }
+            return ret;
+        }
+
+        public Object abort_enter(int lvl, Object abort_enter_data) throws CoordProxyError
+        {
+            assert(identity_data.proxy_endpoints != null);
+            string endpoint = identity_data.proxy_endpoints[lvl];
+            string send_pathname = @"conn_$(endpoint)";
+            string client_address = ""; string next = "";
+            for (int i = 0; i < levels; i++)
+            {
+                client_address = @"$(client_address)$(next)$(identity_data.get_my_naddr_pos(i))";
+                next = ",";
+            }
+            var src_nic = new ClientAddressSrcNic(client_address);
+            ICommStub st = get_comm_stream_system(send_pathname, src_nic, true);
+            Object ret;
+            try {
+                ret = st.abort_enter(new ArgAbortEnter(lvl, abort_enter_data));
+            } catch (StubError e) {
+                warning(@"StubError: $(e.message)");
+                throw new CoordProxyError.GENERIC(@"StubError: $(e.message)");
+            } catch (StreamSystemError e) {
+                warning(@"StreamSystemError: $(e.message)");
+                throw new CoordProxyError.GENERIC(@"StreamSystemError: $(e.message)");
+            } catch (DeserializeError e) {
+                warning(@"DeserializeError: $(e.message)");
+                throw new CoordProxyError.GENERIC(@"DeserializeError: $(e.message)");
+            }
+            return ret;
         }
 
         public void prepare_enter(int lvl, Object prepare_enter_data)
         {
             assert(identity_data.propagation_endpoints != null);
-            foreach (string s in identity_data.propagation_endpoints[lvl])
+            foreach (string endpoint in identity_data.propagation_endpoints[lvl])
             {
-                string send_pathname = s;
+                string send_pathname = @"conn_$(endpoint)";
                 // TODO
             }
             error("not implemented yet");
@@ -85,9 +151,9 @@ namespace SystemPeer
         public void finish_enter(int lvl, Object finish_enter_data)
         {
             assert(identity_data.propagation_endpoints != null);
-            foreach (string s in identity_data.propagation_endpoints[lvl])
+            foreach (string endpoint in identity_data.propagation_endpoints[lvl])
             {
-                string send_pathname = s;
+                string send_pathname = @"conn_$(endpoint)";
                 // TODO
             }
             error("not implemented yet");
@@ -96,9 +162,9 @@ namespace SystemPeer
         public void prepare_migration(int lvl, Object prepare_migration_data)
         {
             assert(identity_data.propagation_endpoints != null);
-            foreach (string s in identity_data.propagation_endpoints[lvl])
+            foreach (string endpoint in identity_data.propagation_endpoints[lvl])
             {
-                string send_pathname = s;
+                string send_pathname = @"conn_$(endpoint)";
                 // TODO
             }
             error("not implemented yet");
@@ -107,9 +173,9 @@ namespace SystemPeer
         public void finish_migration(int lvl, Object finish_migration_data)
         {
             assert(identity_data.propagation_endpoints != null);
-            foreach (string s in identity_data.propagation_endpoints[lvl])
+            foreach (string endpoint in identity_data.propagation_endpoints[lvl])
             {
-                string send_pathname = s;
+                string send_pathname = @"conn_$(endpoint)";
                 // TODO
             }
             error("not implemented yet");

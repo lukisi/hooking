@@ -20,6 +20,58 @@ namespace SystemPeer
 
     //...
 
+
+    public class NullSourceID : Object, ISourceID
+    {
+    }
+
+    public class NullUnicastID : Object, IUnicastID
+    {
+    }
+
+    public class ClientAddressSrcNic : Object, ISrcNic
+    {
+        public ClientAddressSrcNic(string client_address)
+        {
+            this.client_address = client_address;
+        }
+        public string client_address {get; set;}
+    }
+
+    public class ArgBeginEnter : Object
+    {
+        public ArgBeginEnter(int lvl, Object begin_enter_data)
+        {
+            this.lvl = lvl;
+            this.begin_enter_data = begin_enter_data;
+        }
+        public int lvl {get; set;}
+        public Object begin_enter_data {get; set;}
+    }
+
+    public class ArgCompletedEnter : Object
+    {
+        public ArgCompletedEnter(int lvl, Object completed_enter_data)
+        {
+            this.lvl = lvl;
+            this.completed_enter_data = completed_enter_data;
+        }
+        public int lvl {get; set;}
+        public Object completed_enter_data {get; set;}
+    }
+
+    public class ArgAbortEnter : Object
+    {
+        public ArgAbortEnter(int lvl, Object abort_enter_data)
+        {
+            this.lvl = lvl;
+            this.abort_enter_data = abort_enter_data;
+        }
+        public int lvl {get; set;}
+        public Object abort_enter_data {get; set;}
+    }
+
+
     internal interface IJsonBuilderElement : Object {
         public abstract void execute(Json.Builder b);
     }
