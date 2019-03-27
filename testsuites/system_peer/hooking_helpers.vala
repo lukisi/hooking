@@ -221,7 +221,11 @@ namespace SystemPeer
 
         public IHookingManagerStub gateway(int level, int pos)
         {
-            error("not implemented yet");
+            assert(identity_data.gateways.has_key(level));
+            assert(identity_data.gateways[level].has_key(pos));
+            IdentityArc ia = identity_data.gateways[level][pos][0];
+            IAddressManagerStub addrstub = stub_factory.get_stub_identity_aware_unicast_from_ia(ia, false);
+            return new HookingManagerStubHolder(addrstub, ia);
         }
 
         public int get_eldership(int level, int pos)
