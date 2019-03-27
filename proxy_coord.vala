@@ -98,6 +98,7 @@ namespace Netsukuku.Hooking.ProxyCoord
                 if (memory.evaluate_enter_status == null)
                 {
                     // first evaluation
+                    debug(@"ProxyCoord.evaluate_enter: first evaluation.");
                     assert(memory.evaluate_enter_evaluation_list.is_empty);
                     int max_lvl = subnetlevel;
                     for (int i = subnetlevel; i < levels-1; i++)
@@ -148,6 +149,7 @@ namespace Netsukuku.Hooking.ProxyCoord
                 // or is it new?
                 if (v == null)
                 {
+                    debug(@"ProxyCoord.evaluate_enter: another evaluation same network.");
                     v = new EvaluateEnterEvaluation();
                     v.client_address = new ArrayList<int>();
                     v.client_address.add_all(client_address);
@@ -158,6 +160,7 @@ namespace Netsukuku.Hooking.ProxyCoord
                     ! memory.evaluate_enter_timeout.is_expired())
                 {
                     // set memory
+                    debug(@"ProxyCoord.evaluate_enter: evaluation not yet expired.");
                     set_hooking_memory(lock_id, levels, memory);
                     // ask again
                     throw new AskAgainError.GENERIC("");
@@ -166,6 +169,7 @@ namespace Netsukuku.Hooking.ProxyCoord
                     memory.evaluate_enter_timeout.is_expired())
                 {
                     // elect evaluation
+                    debug(@"ProxyCoord.evaluate_enter: elect evaluation among $(memory.evaluate_enter_evaluation_list.size) candidates.");
                     Gee.List<EvaluateEnterEvaluation> candidates = new ArrayList<EvaluateEnterEvaluation>();
                     // if max_lvl < levels-1 then we should evaluate in which host gnode we could go.
                     if (max_lvl < levels-1)
@@ -189,6 +193,7 @@ namespace Netsukuku.Hooking.ProxyCoord
                         }
                     } // otherwise, if max_lvl = levels-1, any arc will do.
                     else candidates.add_all(memory.evaluate_enter_evaluation_list);
+                    debug(@"ProxyCoord.evaluate_enter: elect evaluation among $(candidates.size) candidates.");
                     assert(candidates.size > 0);
                     // choose the one with the lowest possible lvl.
                     int elected_i = -1;
@@ -209,6 +214,7 @@ namespace Netsukuku.Hooking.ProxyCoord
                         if (j >= candidates.size) break;
                     }
                     assert(elected_i >= 0);
+                    debug(@"ProxyCoord.evaluate_enter: elected one request.");
                     EvaluateEnterEvaluation elected = candidates[elected_i];
                     // update memory
                     memory.evaluate_enter_elected = elected;
@@ -216,8 +222,19 @@ namespace Netsukuku.Hooking.ProxyCoord
                     memory.evaluate_enter_status = EvaluationStatus.TO_BE_NOTIFIED;
                     if (elected == v)
                     {
-                        remove_and_check(lock_id, memory, v);
-                        memory.evaluate_enter_status = EvaluationStatus.NOTIFIED;
+                        debug(@"ProxyCoord.evaluate_enter: elected this request at level $(max_lvl).");
+                        memory.evaluate_enter_evaluation_list.remove(v);
+                        if (memory.evaluate_enter_evaluation_list.is_empty)
+                        {
+                            memory.evaluate_enter_timeout = null;
+                            memory.evaluate_enter_elected = null;
+                            memory.evaluate_enter_first_ask_lvl = -1;
+                            memory.evaluate_enter_status = null;
+                        }
+                        else
+                        {
+                            memory.evaluate_enter_status = EvaluationStatus.NOTIFIED;
+                        }
                         // set memory
                         set_hooking_memory(lock_id, levels, memory);
                         // return
@@ -225,6 +242,7 @@ namespace Netsukuku.Hooking.ProxyCoord
                     }
                     else
                     {
+                        debug(@"ProxyCoord.evaluate_enter: elected one request, but not this one.");
                         // set memory
                         set_hooking_memory(lock_id, levels, memory);
                         // ask again
@@ -235,18 +253,43 @@ namespace Netsukuku.Hooking.ProxyCoord
                 {
                     if (memory.evaluate_enter_elected == v)
                     {
-                        remove_and_check(lock_id, memory, v);
-                        memory.evaluate_enter_status = EvaluationStatus.NOTIFIED;
+                        memory.evaluate_enter_evaluation_list.remove(v);
+                        if (memory.evaluate_enter_evaluation_list.is_empty)
+                        {
+                            memory.evaluate_enter_timeout = null;
+                            memory.evaluate_enter_elected = null;
+                            memory.evaluate_enter_first_ask_lvl = -1;
+                            memory.evaluate_enter_status = null;
+                        }
+                        else
+                        {
+                            memory.evaluate_enter_status = EvaluationStatus.NOTIFIED;
+                        }
                         // set memory
                         set_hooking_memory(lock_id, levels, memory);
                         // return
+                        debug(@"ProxyCoord.evaluate_enter: elected this request at level $(max_lvl).");
                         return max_lvl;
                     }
                     else if (memory.evaluate_enter_timeout.is_expired())
                     {
-                        remove_and_check(lock_id, memory, memory.evaluate_enter_elected);
-                        memory.evaluate_enter_elected = null;
-                        memory.evaluate_enter_status = EvaluationStatus.PENDING;
+                        memory.evaluate_enter_evaluation_list.remove(memory.evaluate_enter_elected);
+                        if (memory.evaluate_enter_evaluation_list.is_empty)
+                        {
+                            memory.evaluate_enter_timeout = null;
+                            memory.evaluate_enter_elected = null;
+                            memory.evaluate_enter_first_ask_lvl = -1;
+                            memory.evaluate_enter_status = null;
+                            // set memory
+                            set_hooking_memory(lock_id, levels, memory);
+                            // ignore network
+                            throw new IgnoreNetworkError.GENERIC("");
+                        }
+                        else
+                        {
+                            memory.evaluate_enter_elected = null;
+                            memory.evaluate_enter_status = EvaluationStatus.PENDING;
+                        }
                         // redo_from_start
                         continue;
                     }
@@ -260,8 +303,15 @@ namespace Netsukuku.Hooking.ProxyCoord
                 }
                 if (memory.evaluate_enter_status == EvaluationStatus.NOTIFIED)
                 {
-                    remove_and_check(lock_id, memory, v);
-                    if (memory.evaluate_enter_timeout.is_expired())
+                    memory.evaluate_enter_evaluation_list.remove(v);
+                    if (memory.evaluate_enter_evaluation_list.is_empty)
+                    {
+                        memory.evaluate_enter_timeout = null;
+                        memory.evaluate_enter_elected = null;
+                        memory.evaluate_enter_first_ask_lvl = -1;
+                        memory.evaluate_enter_status = null;
+                    }
+                    else if (memory.evaluate_enter_timeout.is_expired())
                     {
                         memory.evaluate_enter_evaluation_list.clear();
                         memory.evaluate_enter_timeout = null;
@@ -275,22 +325,6 @@ namespace Netsukuku.Hooking.ProxyCoord
                     throw new IgnoreNetworkError.GENERIC("");
                 }
                 assert_not_reached();
-            }
-        }
-        private void remove_and_check(int lock_id, HookingMemory memory, EvaluateEnterEvaluation v)
-        throws IgnoreNetworkError
-        {
-            memory.evaluate_enter_evaluation_list.remove(v);
-            if (memory.evaluate_enter_evaluation_list.is_empty)
-            {
-                memory.evaluate_enter_timeout = null;
-                memory.evaluate_enter_elected = null;
-                memory.evaluate_enter_first_ask_lvl = -1;
-                memory.evaluate_enter_status = null;
-                // set memory
-                set_hooking_memory(lock_id, levels, memory);
-                // ignore network
-                throw new IgnoreNetworkError.GENERIC("");
             }
         }
 
