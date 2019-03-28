@@ -24,6 +24,8 @@ namespace SystemPeer
     string[] arcs;
     [CCode (array_length = false, array_null_terminated = true)]
     string[] _tasks;
+    [CCode (array_length = false, array_null_terminated = true)]
+    string[] _reserve_req;
 
     ITasklet tasklet;
     HashMap<int,IdentityData> local_identities;
@@ -31,6 +33,7 @@ namespace SystemPeer
     StubFactory stub_factory;
     HashMap<string,PseudoNetworkInterface> pseudonic_map;
     ArrayList<PseudoArc> arc_list;
+    ArrayList<string> reserve_req;
     int next_local_identity_index = 0;
     ArrayList<int> gsizes;
     ArrayList<int> g_exp;
@@ -75,13 +78,14 @@ namespace SystemPeer
         topology = "1,1,1,2"; // default
         firstaddr = ""; // default
         OptionContext oc = new OptionContext("<options>");
-        OptionEntry[] entries = new OptionEntry[7];
+        OptionEntry[] entries = new OptionEntry[8];
         int index = 0;
         entries[index++] = {"topology", '\0', 0, OptionArg.STRING, ref topology, "Topology in bits. Default: 1,1,1,2", null};
         entries[index++] = {"firstaddr", '\0', 0, OptionArg.STRING, ref firstaddr, "First address. E.g. '0,0,1,3'. Default is random.", null};
         entries[index++] = {"pid", 'p', 0, OptionArg.INT, ref pid, "Fake PID (e.g. -p 1234).", null};
         entries[index++] = {"interfaces", 'i', 0, OptionArg.STRING_ARRAY, ref interfaces, "Interface (e.g. -i eth1). You can use it multiple times.", null};
         entries[index++] = {"arcs", 'a', 0, OptionArg.STRING_ARRAY, ref arcs, "Arc my_dev,peer_pid,peer_dev,cost (e.g. -a eth1,5678,eth0,300). You can use it multiple times.", null};
+        entries[index++] = {"reserve-req", '\0', 0, OptionArg.STRING_ARRAY, ref _reserve_req, "Expected request for Coord.reserve()", null};
         entries[index++] = {"tasks", 't', 0, OptionArg.STRING_ARRAY, ref _tasks,
                 "Task. You can use it multiple times.\n\t\t\t " +
                 "E.g.: -t add_idarc,2000,1,0,1 means: after 2000 ms add an identity-arc\n\t\t\t " +
@@ -161,6 +165,9 @@ namespace SystemPeer
 
         ArrayList<string> tasks = new ArrayList<string>();
         foreach (string task in _tasks) tasks.add(task);
+
+        reserve_req = new ArrayList<string>();
+        foreach (string rr in _reserve_req) reserve_req.add(rr);
 
         if (pid == 0) error("Bad usage");
         if (devs.is_empty) error("Bad usage");

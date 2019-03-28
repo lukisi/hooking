@@ -204,7 +204,25 @@ namespace SystemPeer
 
         public void reserve(int host_lvl, int reserve_request_id, out int new_pos, out int new_eldership) throws CoordReserveError
         {
-            error("not implemented yet");
+            assert(host_lvl != 0);
+            debug(@"HookingCoordinator.reserve: started (host_lvl=$(host_lvl), reserve_request_id=$(reserve_request_id)) => int new_pos, int new_eldership.");
+            assert(reserve_req.size > 0);
+            string rr = reserve_req.remove_at(0);
+            string[] args = rr.split(",");
+            if (args.length != 4) error("bad args num in reserve-req");
+            int64 expected_my_id;
+            if (! int64.try_parse(args[0], out expected_my_id)) error("bad args expected_my_id in reserve-req");
+            int64 expected_host_lvl;
+            if (! int64.try_parse(args[1], out expected_host_lvl)) error("bad args expected_host_lvl in reserve-req");
+            int64 returning_new_pos;
+            if (! int64.try_parse(args[2], out returning_new_pos)) error("bad args returning_new_pos in reserve-req");
+            int64 returning_new_eldership;
+            if (! int64.try_parse(args[3], out returning_new_eldership)) error("bad args returning_new_eldership in reserve-req");
+            assert(identity_data.local_identity_index == (int)expected_my_id);
+            assert(host_lvl == (int)expected_host_lvl);
+            new_pos = (int)returning_new_pos;
+            new_eldership = (int)returning_new_eldership;
+            debug(@"HookingCoordinator.reserve: returning new_pos=$(new_pos), new_eldership=$(new_eldership).");
         }
 
         public void delete_reserve(int host_lvl, int reserve_request_id)
@@ -251,12 +269,12 @@ namespace SystemPeer
 
         public int get_epsilon(int level)
         {
-            int delta_levels = 0;
-            int delta_exp = g_exp[delta_levels+level];
-            while (delta_exp < 6 && delta_levels+level < levels) // TODO or levels-1?
+            int delta_levels = 1;
+            int delta_exp = g_exp[level+delta_levels-1];
+            while (delta_exp < 6 && level+delta_levels < levels)
             {
                 delta_levels++;
-                delta_exp += g_exp[delta_levels+level];
+                delta_exp += g_exp[level+delta_levels-1];
             }
             return delta_levels;
         }

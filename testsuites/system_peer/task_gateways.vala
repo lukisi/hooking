@@ -13,25 +13,25 @@ namespace SystemPeer
             string[] args = remain.split(",");
             if (args.length != 6) error("bad args num in task 'add_gateway'");
             int64 ms_wait;
-            if (! int64.try_parse(args[0], out ms_wait)) error("bad args ms_wait in task 'add_identity'");
+            if (! int64.try_parse(args[0], out ms_wait)) error("bad args ms_wait in task 'add_gateway'");
             int64 my_id;
-            if (! int64.try_parse(args[1], out my_id)) error("bad args my_id in task 'add_identity'");
+            if (! int64.try_parse(args[1], out my_id)) error("bad args my_id in task 'add_gateway'");
             int64 arc_num;
             int64 peer_id_num;
             string[] parts = args[2].split("+");
-            if (parts.length != 2) error("bad identity_arc in task 'add_identity'");
+            if (parts.length != 2) error("bad identity_arc in task 'add_gateway'");
             {
-                if (! int64.try_parse(parts[0], out arc_num)) error("bad arc_num in identity_arc in task 'add_identity'");
+                if (! int64.try_parse(parts[0], out arc_num)) error("bad arc_num in identity_arc in task 'add_gateway'");
             }
             {
-                if (! int64.try_parse(parts[1], out peer_id_num)) error("bad peer_id_num in identity_arc in task 'add_identity'");
+                if (! int64.try_parse(parts[1], out peer_id_num)) error("bad peer_id_num in identity_arc in task 'add_gateway'");
             }
             int64 lvl;
-            if (! int64.try_parse(args[3], out lvl)) error("bad args lvl in task 'add_identity'");
+            if (! int64.try_parse(args[3], out lvl)) error("bad args lvl in task 'add_gateway'");
             int64 pos;
-            if (! int64.try_parse(args[4], out pos)) error("bad args pos in task 'add_identity'");
+            if (! int64.try_parse(args[4], out pos)) error("bad args pos in task 'add_gateway'");
             int64 insert_at;
-            if (! int64.try_parse(args[5], out insert_at)) error("bad args insert_at in task 'add_identity'");
+            if (! int64.try_parse(args[5], out insert_at)) error("bad args insert_at in task 'add_gateway'");
             print(@"INFO: in $(ms_wait) ms will add gateway(lvl=$(lvl),pos=$(pos),index=$(insert_at)) to identity #$(my_id): identity_arc '$(arc_num)+$(peer_id_num)'.\n");
             AddGatewayTasklet s = new AddGatewayTasklet(
                 (int)ms_wait,

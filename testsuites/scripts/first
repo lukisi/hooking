@@ -31,8 +31,22 @@ echo Starting launches at `date +%T.%N`
               > test_first_pid100_out.txt 2>&1 &
 PEER_100_PID=$!
 
+#  Esempio di uso di reserve_req:
+#    --reserve-req 0,1,1,1 --reserve-req 0,1,3,2
+#  Significa che la mia identità 0 si aspetta di ricevere ad un certo
+#  punto una richiesta 'coord.reserve' con 'host_lvl=1'. Su questa richiesta
+#  fingerà di contattare il Coord del suo g-nodo di livello 1 e di ricevere
+#  una risposta che riserva la posizione 1 con anzianità 1.
+#  In seguito la mia identità 0 si aspetta di ricevere
+#  una richiesta 'coord.reserve' con 'host_lvl=1'. Su questa richiesta
+#  fingerà di contattare il Coord del suo g-nodo di livello 1 e di ricevere
+#  una risposta che riserva la posizione 3 con anzianità 2.
+
 ./system_peer --topology 2,2,2 --firstaddr 2,0,0 \
               -p 200 -i wl0 -a wl0,100,wl0,2000 \
+              \
+              --reserve-req 0,1,1,1 \
+              \
               -t addtag,300,300 \
               \
               -t update_proxy_endpoint,305,0,3,200_0 \
