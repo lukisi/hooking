@@ -273,7 +273,9 @@ namespace Netsukuku.Hooking.ArcHandler
                     {
                         IEntryData resp2;
                         try {
+                            debug(@"ArcHandler.add_arc_tasklet: calling stub search_migration_path");
                             resp2 = st.search_migration_path(ask_lvl);
+                            debug(@"ArcHandler.add_arc_tasklet: stub search_migration_path returns a IEntryData");
                         } catch (StubError e) {
                             warning(@"Hooking.ArcHandler.tasklet: StubError: bad arc. Terminating.");
                             signal_and_exit(ia);
@@ -285,6 +287,7 @@ namespace Netsukuku.Hooking.ArcHandler
                             warning(@"Hooking.ArcHandler.tasklet: NotBootstrappedError should not happen there: bad arc. Terminating.");
                             signal_and_exit(ia);
                         } catch (NoMigrationPathFoundError e) {
+                            debug(@"ArcHandler.add_arc_tasklet: stub search_migration_path returns a NoMigrationPathFoundError");
                             // ask to coordinator of g-node of level ask_lvl to abort enter
                             AbortEnterData abort_enter_data = new AbortEnterData();
                             // call abort_enter
@@ -314,6 +317,7 @@ namespace Netsukuku.Hooking.ArcHandler
                                 break;
                             }
                         } catch (MigrationPathExecuteFailureError e) {
+                            debug(@"ArcHandler.add_arc_tasklet: stub search_migration_path returns a MigrationPathExecuteFailureError");
                             // retry immediately same lvl
                             continue;
                         }
@@ -322,7 +326,8 @@ namespace Netsukuku.Hooking.ArcHandler
                             warning(@"Hooking.ArcHandler.tasklet: Not instance of EntryData: bad arc response. Terminating.");
                             signal_and_exit(ia);
                         }
-                        else entry_data = (EntryData)resp2;
+                        entry_data = (EntryData)resp2;
+                        break;
                     }
                     if (redo_from_begin_enter) continue;
                     break;

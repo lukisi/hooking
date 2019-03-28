@@ -155,6 +155,7 @@ namespace Netsukuku.Hooking
         out int min_host_lvl, out int final_host_lvl, out int real_new_pos, out int real_new_eldership,
         out Gee.List<PairTupleGNodeInt>? set_adjacent, out int new_conn_vir_pos, out int new_eldership)
         {
+            debug(@"HookingManager.execute_search: started.");
             // Assert (I am in visiting_gnode) AND (I am real). Else, ignore message.
             if (! i_am_inside(visiting_gnode, map_paths)) tasklet.exit_tasklet(null);
             if (tuple_has_virtual_pos(make_tuple_from_level(0, map_paths))) tasklet.exit_tasklet(null);
@@ -320,6 +321,7 @@ namespace Netsukuku.Hooking
 
         private Gee.List<Solution> find_shortest_mig(int reserve_request_id, int first_host_lvl, int ok_host_lvl)
         {
+            debug(@"HookingManager.find_shortest_mig: started. (reserve_request_id=$(reserve_request_id), first_host_lvl=$(first_host_lvl) ok_host_lvl=$(ok_host_lvl))");
             if (first_host_lvl <= subnetlevel) first_host_lvl = subnetlevel + 1;
             if (ok_host_lvl < first_host_lvl) ok_host_lvl = first_host_lvl;
             TupleGNode v = make_tuple_from_level(first_host_lvl, map_paths);
@@ -513,9 +515,11 @@ namespace Netsukuku.Hooking
             int first_host_lvl = lvl + 1;
             int ok_host_lvl = lvl + epsilon;
             int reserve_request_id = PRNGen.int_range(0, int.MAX);
+            debug(@"HookingManager.search_migration_path: calling find_shortest_mig");
             Gee.List<Solution> solutions = find_shortest_mig(reserve_request_id, first_host_lvl, ok_host_lvl);
             if (solutions.is_empty) throw new NoMigrationPathFoundError.GENERIC("You might try at lower level.");
             Solution sol = solutions.remove_at(solutions.size-1);
+            debug(@"HookingManager.search_migration_path: find_shortest_mig returns a/some solution");
             foreach (Solution s in solutions)
             {
                 // spawn tasklet
@@ -543,6 +547,7 @@ namespace Netsukuku.Hooking
             }
             else
             {
+                debug(@"HookingManager.search_migration_path: calling execute_shortest_mig");
                 execute_shortest_mig(sol); // may throw MigrationPathExecuteFailureError
                 // if it succeeds
                 SolutionStep root = sol.leaf.parent;
