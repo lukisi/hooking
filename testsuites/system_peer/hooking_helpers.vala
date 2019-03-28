@@ -52,10 +52,7 @@ namespace SystemPeer
 
         public Object begin_enter(int lvl, Object begin_enter_data) throws CoordProxyError
         {
-            if (lvl == 0)
-            {
-                return identity_data.hook_mgr.begin_enter(lvl, begin_enter_data, new ArrayList<int>());
-            }
+            assert(lvl != 0);
             assert(identity_data.proxy_endpoints != null);
             string endpoint = identity_data.proxy_endpoints[lvl];
             string send_pathname = @"conn_$(endpoint)";
@@ -85,10 +82,7 @@ namespace SystemPeer
 
         public Object completed_enter(int lvl, Object completed_enter_data) throws CoordProxyError
         {
-            if (lvl == 0)
-            {
-                return identity_data.hook_mgr.completed_enter(lvl, completed_enter_data, new ArrayList<int>());
-            }
+            assert(lvl != 0);
             assert(identity_data.proxy_endpoints != null);
             string endpoint = identity_data.proxy_endpoints[lvl];
             string send_pathname = @"conn_$(endpoint)";
@@ -118,10 +112,7 @@ namespace SystemPeer
 
         public Object abort_enter(int lvl, Object abort_enter_data) throws CoordProxyError
         {
-            if (lvl == 0)
-            {
-                return identity_data.hook_mgr.abort_enter(lvl, abort_enter_data, new ArrayList<int>());
-            }
+            assert(lvl != 0);
             assert(identity_data.proxy_endpoints != null);
             string endpoint = identity_data.proxy_endpoints[lvl];
             string send_pathname = @"conn_$(endpoint)";

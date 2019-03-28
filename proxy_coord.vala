@@ -331,6 +331,11 @@ namespace Netsukuku.Hooking.ProxyCoord
         internal void begin_enter(int lvl, BeginEnterData begin_enter_data)
         throws AlreadyEnteringError, CoordProxyError, UnknownResultError
         {
+            if (lvl == 0)
+            {
+                mgr.begin_enter(lvl, begin_enter_data, new ArrayList<int>());
+                return;
+            }
             Object _ret = coord.begin_enter(lvl, begin_enter_data);
             if (! (_ret is BeginEnterResult)) throw new UnknownResultError.GENERIC("");
             BeginEnterResult ret = (BeginEnterResult)_ret;
@@ -368,6 +373,11 @@ namespace Netsukuku.Hooking.ProxyCoord
         internal void completed_enter(int lvl, CompletedEnterData completed_enter_data)
         throws CoordProxyError, UnknownResultError
         {
+            if (lvl == 0)
+            {
+                mgr.completed_enter(lvl, completed_enter_data, new ArrayList<int>());
+                return;
+            }
             Object _ret = coord.completed_enter(lvl, completed_enter_data);
             if (! (_ret is CompletedEnterResult)) throw new UnknownResultError.GENERIC("");
         }
@@ -394,6 +404,11 @@ namespace Netsukuku.Hooking.ProxyCoord
         internal void abort_enter(int lvl, AbortEnterData abort_enter_data)
         throws CoordProxyError, UnknownResultError
         {
+            if (lvl == 0)
+            {
+                mgr.abort_enter(lvl, abort_enter_data, new ArrayList<int>());
+                return;
+            }
             Object _ret = coord.abort_enter(lvl, abort_enter_data);
             if (! (_ret is AbortEnterResult)) throw new UnknownResultError.GENERIC("");
         }
