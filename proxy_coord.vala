@@ -88,6 +88,7 @@ namespace Netsukuku.Hooking.ProxyCoord
         internal int execute_evaluate_enter(int lock_id, EvaluateEnterData evaluate_enter_data, Gee.List<int> client_address)
         throws AskAgainError, IgnoreNetworkError
         {
+            debug(@"ProxyCoord: as coordinator of the entire network, executing evaluate_enter.");
             // enable a redo_from_start
             while (true)
             {
@@ -359,6 +360,7 @@ namespace Netsukuku.Hooking.ProxyCoord
         internal void execute_begin_enter(int lock_id, int lvl, BeginEnterData begin_enter_data, Gee.List<int> client_address)
         throws AlreadyEnteringError
         {
+            debug(@"ProxyCoord: as coordinator of g-node of level $(lvl), executing begin_enter.");
             // get memory
             HookingMemory memory = get_hooking_memory(lock_id, lvl);
             if (memory.begin_enter_timeout == null || memory.begin_enter_timeout.is_expired())
@@ -394,6 +396,7 @@ namespace Netsukuku.Hooking.ProxyCoord
 
         internal void execute_completed_enter(int lock_id, int lvl, CompletedEnterData completed_enter_data, Gee.List<int> client_address)
         {
+            debug(@"ProxyCoord: as coordinator of g-node of level $(lvl), executing completed_enter.");
             // get memory
             HookingMemory memory = get_hooking_memory(lock_id, lvl);
             memory.begin_enter_timeout = null;
@@ -425,6 +428,7 @@ namespace Netsukuku.Hooking.ProxyCoord
 
         internal void execute_abort_enter(int lock_id, int lvl, AbortEnterData abort_enter_data, Gee.List<int> client_address)
         {
+            debug(@"ProxyCoord: as coordinator of g-node of level $(lvl), executing abort_enter.");
             // get memory
             HookingMemory memory = get_hooking_memory(lock_id, lvl);
             memory.begin_enter_timeout = null;

@@ -45,8 +45,10 @@ namespace Netsukuku.Hooking.PropagationCoord
 
         internal void prepare_enter(int lvl, PrepareEnterData prepare_enter_data)
         {
+            debug(@"PropagationCoord: as the initiator, to all the members of g-node of level $(lvl): execute prepare_enter!");
             coord.prepare_enter(lvl, prepare_enter_data);
             // This will return only when all the nodes in the cluster have completed.
+            debug(@"PropagationCoord: as the initiator, to my knowledge all the members of g-node of level $(lvl) have executed prepare_enter.");
         }
 
         internal void execute_propagate_prepare_enter(int lvl, Object prepare_enter_data)
@@ -57,13 +59,16 @@ namespace Netsukuku.Hooking.PropagationCoord
 
         internal void execute_prepare_enter(int lvl, PrepareEnterData prepare_enter_data)
         {
+            debug(@"PropagationCoord: as member of g-node of level $(lvl), executing prepare_enter.");
             mgr.do_prepare_enter(prepare_enter_data.enter_id);
         }
 
         internal void finish_enter(int lvl, FinishEnterData finish_enter_data)
         {
+            debug(@"PropagationCoord: as the initiator, to all the members of g-node of level $(lvl): execute finish_enter!");
             coord.finish_enter(lvl, finish_enter_data);
             // This will return quite soon, cause the real stuff is done in a tasklet by the Coord.
+            debug(@"PropagationCoord: as the initiator, the propagation started to all the members of g-node of level $(lvl) to execute finish_enter.");
         }
 
         internal void execute_propagate_finish_enter(int lvl, Object finish_enter_data)
@@ -74,6 +79,7 @@ namespace Netsukuku.Hooking.PropagationCoord
 
         internal void execute_finish_enter(int lvl, FinishEnterData finish_enter_data)
         {
+            debug(@"PropagationCoord: as member of g-node of level $(lvl), executing finish_enter.");
             mgr.do_finish_enter
                 (finish_enter_data.enter_id, lvl /*guest_gnode_level*/,
                 finish_enter_data.entry_data, finish_enter_data.go_connectivity_position);
@@ -81,8 +87,10 @@ namespace Netsukuku.Hooking.PropagationCoord
 
         internal void prepare_migration(int lvl, PrepareMigrationData prepare_migration_data)
         {
+            debug(@"PropagationCoord: as the initiator, to all the members of g-node of level $(lvl): execute prepare_migration!");
             coord.prepare_migration(lvl, prepare_migration_data);
             // This will return only when all the nodes in the cluster have completed.
+            debug(@"PropagationCoord: as the initiator, to my knowledge all the members of g-node of level $(lvl) have executed prepare_migration.");
         }
 
         internal void execute_propagate_prepare_migration(int lvl, Object prepare_migration_data)
@@ -93,13 +101,16 @@ namespace Netsukuku.Hooking.PropagationCoord
 
         internal void execute_prepare_migration(int lvl, PrepareMigrationData prepare_migration_data)
         {
+            debug(@"PropagationCoord: as member of g-node of level $(lvl), executing prepare_migration.");
             mgr.do_prepare_migration(prepare_migration_data.migration_id);
         }
 
         internal void finish_migration(int lvl, FinishMigrationData finish_migration_data)
         {
+            debug(@"PropagationCoord: as the initiator, to all the members of g-node of level $(lvl): execute finish_migration!");
             coord.finish_migration(lvl, finish_migration_data);
             // This will return quite soon, cause the real stuff is done in a tasklet by the Coord.
+            debug(@"PropagationCoord: as the initiator, the propagation started to all the members of g-node of level $(lvl) to execute finish_migration.");
         }
 
         internal void execute_propagate_finish_migration(int lvl, Object finish_migration_data)
@@ -110,6 +121,7 @@ namespace Netsukuku.Hooking.PropagationCoord
 
         internal void execute_finish_migration(int lvl, FinishMigrationData finish_migration_data)
         {
+            debug(@"PropagationCoord: as member of g-node of level $(lvl), executing finish_migration.");
             mgr.do_finish_migration
                 (finish_migration_data.migration_id, lvl /*guest_gnode_level*/,
                 finish_migration_data.migration_data, finish_migration_data.go_connectivity_position);

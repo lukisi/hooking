@@ -147,8 +147,10 @@ namespace SystemPeer
             {
                 string send_pathname = @"conn_$(endpoint)";
                 // TODO
+                error("not implemented yet");
             }
-            error("not implemented yet");
+            // Finally the module Coordinator will call on this node. So this class will simulate it.
+            identity_data.hook_mgr.prepare_enter(lvl, prepare_enter_data);
         }
 
         public void finish_enter(int lvl, Object finish_enter_data)
@@ -156,10 +158,14 @@ namespace SystemPeer
             assert(identity_data.propagation_endpoints != null);
             foreach (string endpoint in identity_data.propagation_endpoints[lvl])
             {
+                // For a more correct simulation of this broadcast propagation, the inner part
+                //  of this foreach-loop should be done in a new tasklet.
                 string send_pathname = @"conn_$(endpoint)";
                 // TODO
+                error("not implemented yet");
             }
-            error("not implemented yet");
+            // Finally (or, in the same time) the module Coordinator will call on this node.
+            identity_data.hook_mgr.finish_enter(lvl, finish_enter_data);
         }
 
         public void prepare_migration(int lvl, Object prepare_migration_data)
@@ -169,8 +175,10 @@ namespace SystemPeer
             {
                 string send_pathname = @"conn_$(endpoint)";
                 // TODO
+                error("not implemented yet");
             }
-            error("not implemented yet");
+            // Finally the module Coordinator will call on this node. So this class will simulate it.
+            identity_data.hook_mgr.prepare_migration(lvl, prepare_migration_data);
         }
 
         public void finish_migration(int lvl, Object finish_migration_data)
@@ -178,10 +186,14 @@ namespace SystemPeer
             assert(identity_data.propagation_endpoints != null);
             foreach (string endpoint in identity_data.propagation_endpoints[lvl])
             {
+                // For a more correct simulation of this broadcast propagation, the inner part
+                //  of this foreach-loop should be done in a new tasklet.
                 string send_pathname = @"conn_$(endpoint)";
                 // TODO
+                error("not implemented yet");
             }
-            error("not implemented yet");
+            // Finally (or, in the same time) the module Coordinator will call on this node.
+            identity_data.hook_mgr.finish_migration(lvl, finish_migration_data);
         }
 
         public Object? get_hooking_memory(int lvl) throws CoordProxyError
