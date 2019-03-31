@@ -285,7 +285,7 @@ namespace SystemPeer
             fp = @"$(fp),$(first_identity_data.get_fp_of_my_gnode(i))";
         }
         print(@"INFO: $(first_identity_name) has address $(addr) and fp $(fp).\n");
-        tester_events.add(@"PeersManager:$(first_identity_data.local_identity_index):create_net:addr[$(addr)]:fp[$(fp)]");
+        tester_events.add(@"HookingManager:$(first_identity_data.local_identity_index):create_net:addr[$(addr)]:fp[$(fp)]");
         // immediately after creation, connect to signals.
         first_identity_data.hook_mgr.same_network.connect(first_identity_data.same_network);
         first_identity_data.hook_mgr.another_network.connect(first_identity_data.another_network);
@@ -312,6 +312,7 @@ namespace SystemPeer
             else if (schedule_task_update_coord_n_nodes(task)) {}
             else if (schedule_task_update_proxy_endpoint(task)) {}
             else if (schedule_task_update_propagation_endpoint(task)) {}
+            else if (schedule_task_check_two_nodes_meet(task)) {}
             else error(@"unknown task $(task)");
         }
 
@@ -612,7 +613,7 @@ namespace SystemPeer
             return null;
         }
 
-        // handle signals from hooking_manager
+        // handle signals from HookingManager
 
         public void same_network(IIdentityArc ia)
         {

@@ -26,6 +26,8 @@ namespace SystemPeer
         throws HookingNotPrincipalError, NotBootstrappedError, StubError, DeserializeError
         {
             log_call("retrieve_network_data");
+            print(@"   with ask_coord=$(ask_coord).\n");
+            tester_events.add(@"HookingManager:$(ia.identity_data.local_identity_index):call_retrieve_network_data(ask_coord=$(ask_coord))");
             return addr.hooking_manager.retrieve_network_data(ask_coord);
         }
 

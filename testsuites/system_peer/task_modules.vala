@@ -174,7 +174,7 @@ namespace SystemPeer
             {
                 fp = @"$(fp),$(new_identity_data.get_fp_of_my_gnode(i))";
             }
-            tester_events.add(@"PeersManager:$(new_identity_data.local_identity_index):enter_net:addr[$(addr)]:fp[$(fp)]");
+            tester_events.add(@"HookingManager:$(new_identity_data.local_identity_index):enter_net:addr[$(addr)]:fp[$(fp)]");
             // immediately after creation, connect to signals.
             new_identity_data.hook_mgr.same_network.connect(new_identity_data.same_network);
             new_identity_data.hook_mgr.another_network.connect(new_identity_data.another_network);

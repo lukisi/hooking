@@ -217,7 +217,8 @@ namespace SystemPeer
         public void reserve(int host_lvl, int reserve_request_id, out int new_pos, out int new_eldership) throws CoordReserveError
         {
             assert(host_lvl != 0);
-            debug(@"HookingCoordinator.reserve: started (host_lvl=$(host_lvl), reserve_request_id=$(reserve_request_id)) => int new_pos, int new_eldership.");
+            debug(@"HookingCoordinator[$(identity_data.local_identity_index)].reserve: "
+                + @"started (host_lvl=$(host_lvl), reserve_request_id=$(reserve_request_id))...");
             assert(reserve_req.size > 0);
             string rr = reserve_req.remove_at(0);
             string[] args = rr.split(",");
@@ -234,7 +235,10 @@ namespace SystemPeer
             assert(host_lvl == (int)expected_host_lvl);
             new_pos = (int)returning_new_pos;
             new_eldership = (int)returning_new_eldership;
-            debug(@"HookingCoordinator.reserve: returning new_pos=$(new_pos), new_eldership=$(new_eldership).");
+            debug(@"                               "
+                + @"returning new_pos=$(new_pos), new_eldership=$(new_eldership).");
+            tester_events.add(@"HookingCoordinator:$(identity_data.local_identity_index):"
+                + @"reserve($(host_lvl),$(reserve_request_id)):new_pos[$(new_pos)]:new_eldership[$(new_eldership)]");
         }
 
         public void delete_reserve(int host_lvl, int reserve_request_id)
