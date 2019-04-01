@@ -50,6 +50,8 @@ namespace SystemPeer
                 HookingManager:0:StreamSystemCommStub:calling_evaluate_enter
                 HookingManager:0:ICommSkeleton:executing_evaluate_enter
                 ...
+                HookingManager:0:call_search_migration_path(lvl=0)
+                HookingManager:0:response_search_migration_path:ret={netid:79330,pos:[1,0,0],elderships:[1,0,0]}
                 HookingManager:0:Signal:do_prepare_enter:777380291
                 HookingManager:0:Signal:do_finish_enter:777380291
                 Tester:Tag:5300
@@ -64,6 +66,8 @@ namespace SystemPeer
                 int retrieve_ask_coord = -1;
                 int myid_calling_evaluate_enter = -1;
                 int myid_executing_evaluate_enter = -1;
+                int myid_calling_search_migration_path_0 = -1;
+                int myid_search_migration_path_0_returns = -1;
                 int signal_do_prepare_enter = -1;
                 int signal_do_finish_enter = -1;
                 for (int i = 0; i < tester_events.size; i++)
@@ -77,6 +81,10 @@ namespace SystemPeer
                         myid_calling_evaluate_enter == -1 && signal_do_prepare_enter == -1) myid_calling_evaluate_enter = i;
                     if ("HookingManager:0:ICommSkeleton:executing_evaluate_enter" in tester_events[i] &&
                         myid_executing_evaluate_enter == -1 && signal_do_prepare_enter == -1) myid_executing_evaluate_enter = i;
+                    if ("HookingManager:0:call_search_migration_path(lvl=0)" in tester_events[i] &&
+                        myid_calling_search_migration_path_0 == -1) myid_calling_search_migration_path_0 = i;
+                    if ("HookingManager:0:response_search_migration_path:ret={" in tester_events[i] &&
+                        myid_search_migration_path_0_returns == -1) myid_search_migration_path_0_returns = i;
                     if ("HookingManager:0:Signal:do_prepare_enter" in tester_events[i]) signal_do_prepare_enter = i;
                     if ("HookingManager:0:Signal:do_finish_enter" in tester_events[i]) signal_do_finish_enter = i;
                 }
@@ -87,7 +95,9 @@ namespace SystemPeer
                 assert(retrieve_ask_coord > signal_another_network);
                 assert(myid_calling_evaluate_enter > retrieve_ask_coord);
                 assert(myid_executing_evaluate_enter > myid_calling_evaluate_enter);
-                assert(signal_do_prepare_enter > myid_executing_evaluate_enter);
+                assert(myid_calling_search_migration_path_0 > myid_executing_evaluate_enter);
+                assert(myid_search_migration_path_0_returns > myid_calling_search_migration_path_0);
+                assert(signal_do_prepare_enter > myid_search_migration_path_0_returns);
                 assert(signal_do_finish_enter > signal_do_prepare_enter);
                 // TODO
             }
