@@ -266,7 +266,7 @@ namespace SystemPeer
 
         // Start listen stream on pid_id for proxy/propagation communications
         string st_listen_pathname = @"conn_$(pid)_0";
-        comm_skeleton_factory.start_stream_system_listen(st_listen_pathname, first_identity_data);
+        comm_skeleton_factory.start_stream_system_listen(st_listen_pathname, first_identity_data.local_identity_index);
         tasklet.ms_wait(1);
         print(@"started stream_system_listen $(st_listen_pathname).\n");
 

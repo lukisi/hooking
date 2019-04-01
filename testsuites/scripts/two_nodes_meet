@@ -29,6 +29,9 @@ echo Starting launches at `date +%T.%N`
               -t update_n_nodes,5440,1,2 \
               -t update_coord_n_nodes,5440,1,2 \
               -t enter_net,5460,0,1,0,1:0:0,1:0:0,200:200:200 \
+              \
+              -t check_two_nodes_meet,6000 \
+              \
               > test_two_nodes_meet_pid100_out.txt 2>&1 &
 PEER_100_PID=$!
 
@@ -53,6 +56,9 @@ PEER_100_PID=$!
               -t add_gateway,5420,0,0+1,0,1,-1 \
               -t update_n_nodes,5440,0,2 \
               -t update_coord_n_nodes,5440,0,2 \
+              \
+              -t check_two_nodes_meet,6000 \
+              \
               > test_two_nodes_meet_pid200_out.txt 2>&1 &
 PEER_200_PID=$!
 

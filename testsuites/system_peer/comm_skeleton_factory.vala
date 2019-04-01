@@ -15,13 +15,21 @@ namespace SystemPeer
 
     internal class StreamSystemCommunicator : Object, IStreamSystemCommunicator, ICommSkeleton
     {
-        public StreamSystemCommunicator(CommSerialization com_ser, IdentityData identity_data)
+        public StreamSystemCommunicator(CommSerialization com_ser, int local_identity_index)
         {
             this.com_ser = com_ser;
-            this.identity_data = identity_data;
+            this.local_identity_index = local_identity_index;
         }
         private CommSerialization com_ser;
-        private IdentityData identity_data;
+        private int local_identity_index;
+        private IdentityData? _identity_data;
+        public IdentityData identity_data {
+            get {
+                _identity_data = find_local_identity_by_index(local_identity_index);
+                if (_identity_data == null) tasklet.exit_tasklet();
+                return _identity_data;
+            }
+        }
 
         public void communicate(
             string source_id,
@@ -66,6 +74,7 @@ namespace SystemPeer
 
             if (m_name == "comm.evaluate_enter")
             {
+                tester_events.add(@"HookingManager:$(local_identity_index):ICommSkeleton:executing_evaluate_enter");
                 // is client_address mandatory for this method?
                 assert(client_address != null);
                 // argument:
@@ -150,9 +159,9 @@ namespace SystemPeer
             com_soc = new CommSockets();
         }
 
-        public void start_stream_system_listen(string listen_pathname, IdentityData identity_data)
+        public void start_stream_system_listen(string listen_pathname, int local_identity_index)
         {
-            IStreamSystemCommunicator communicator = new StreamSystemCommunicator(com_ser, identity_data);
+            IStreamSystemCommunicator communicator = new StreamSystemCommunicator(com_ser, local_identity_index);
             com_soc.start_stream_system_listen(listen_pathname, communicator);
         }
         public void stop_stream_system_listen(string listen_pathname)

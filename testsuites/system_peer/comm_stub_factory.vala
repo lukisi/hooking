@@ -14,13 +14,14 @@ namespace SystemPeer
     }
 
     public ICommStub get_comm_stream_system(
+        int local_identity_index,
         string send_pathname,
         ISrcNic src_nic,
         bool wait_reply)
     {
         ISourceID source_id = new NullSourceID();
         IUnicastID unicast_id = new NullUnicastID();
-        return new StreamSystemCommStub(send_pathname,
+        return new StreamSystemCommStub(local_identity_index, send_pathname,
             source_id, unicast_id, src_nic,
             wait_reply);
     }
@@ -34,8 +35,9 @@ namespace SystemPeer
         private string s_src_nic;
         private string send_pathname;
         private bool wait_reply;
+        private int local_identity_index;
         public StreamSystemCommStub(
-            string send_pathname,
+            int local_identity_index, string send_pathname,
             ISourceID source_id, IUnicastID unicast_id, ISrcNic src_nic,
             bool wait_reply)
         {
@@ -46,6 +48,7 @@ namespace SystemPeer
             s_src_nic = com_ser.prepare_direct_object(src_nic);
             this.send_pathname = send_pathname;
             this.wait_reply = wait_reply;
+            this.local_identity_index = local_identity_index;
         }
 
         private string call(string m_name, string arg) throws StubError, StreamSystemError
@@ -83,21 +86,25 @@ namespace SystemPeer
 
         public Object evaluate_enter(Object arg0) throws StubError, StreamSystemError, DeserializeError
         {
+            tester_events.add(@"HookingManager:$(local_identity_index):StreamSystemCommStub:calling_evaluate_enter");
             return process_comm("comm.evaluate_enter", arg0);
         }
 
         public Object begin_enter(Object arg0) throws StubError, StreamSystemError, DeserializeError
         {
+            tester_events.add(@"HookingManager:$(local_identity_index):StreamSystemCommStub:calling_begin_enter");
             return process_comm("comm.begin_enter", arg0);
         }
 
         public Object completed_enter(Object arg0) throws StubError, StreamSystemError, DeserializeError
         {
+            tester_events.add(@"HookingManager:$(local_identity_index):StreamSystemCommStub:calling_completed_enter");
             return process_comm("comm.completed_enter", arg0);
         }
 
         public Object abort_enter(Object arg0) throws StubError, StreamSystemError, DeserializeError
         {
+            tester_events.add(@"HookingManager:$(local_identity_index):StreamSystemCommStub:calling_abort_enter");
             return process_comm("comm.abort_enter", arg0);
         }
     }

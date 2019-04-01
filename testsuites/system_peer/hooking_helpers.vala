@@ -33,7 +33,7 @@ namespace SystemPeer
                 next = ",";
             }
             var src_nic = new ClientAddressSrcNic(client_address);
-            ICommStub st = get_comm_stream_system(send_pathname, src_nic, true);
+            ICommStub st = get_comm_stream_system(local_identity_index, send_pathname, src_nic, true);
             Object ret;
             try {
                 ret = st.evaluate_enter(evaluate_enter_data);
@@ -63,7 +63,7 @@ namespace SystemPeer
                 next = ",";
             }
             var src_nic = new ClientAddressSrcNic(client_address);
-            ICommStub st = get_comm_stream_system(send_pathname, src_nic, true);
+            ICommStub st = get_comm_stream_system(local_identity_index, send_pathname, src_nic, true);
             Object ret;
             try {
                 ret = st.begin_enter(new ArgBeginEnter(lvl, begin_enter_data));
@@ -93,7 +93,7 @@ namespace SystemPeer
                 next = ",";
             }
             var src_nic = new ClientAddressSrcNic(client_address);
-            ICommStub st = get_comm_stream_system(send_pathname, src_nic, true);
+            ICommStub st = get_comm_stream_system(local_identity_index, send_pathname, src_nic, true);
             Object ret;
             try {
                 ret = st.completed_enter(new ArgCompletedEnter(lvl, completed_enter_data));
@@ -123,7 +123,7 @@ namespace SystemPeer
                 next = ",";
             }
             var src_nic = new ClientAddressSrcNic(client_address);
-            ICommStub st = get_comm_stream_system(send_pathname, src_nic, true);
+            ICommStub st = get_comm_stream_system(local_identity_index, send_pathname, src_nic, true);
             Object ret;
             try {
                 ret = st.abort_enter(new ArgAbortEnter(lvl, abort_enter_data));
