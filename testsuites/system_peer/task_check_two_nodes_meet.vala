@@ -54,7 +54,7 @@ namespace SystemPeer
                 HookingManager:0:response_search_migration_path:ret={netid:79330,pos:[1,0,0],elderships:[1,0,0]}
                 HookingManager:0:Signal:do_prepare_enter:777380291
                 HookingManager:0:Signal:do_finish_enter:777380291
-                Tester:Tag:5300
+                Tester:Tag:2390
                 HookingManager:1:enter_net:addr[1,0,0]:fp[54802,79330,79330,79330]
                 HookingManager:1:call_retrieve_network_data(ask_coord=false)
                 HookingManager:1:Signal:same_network:0+0
@@ -111,7 +111,7 @@ namespace SystemPeer
                 HookingManager:0:Signal:another_network:0+0,54802
                 HookingManager:0:call_retrieve_network_data(ask_coord=true)
                 HookingCoordinator:0:reserve(1,261318919):new_pos[1]:new_eldership[1]
-                Tester:Tag:5300
+                Tester:Tag:2390
                 HookingManager:0:call_retrieve_network_data(ask_coord=false)
                 HookingManager:0:Signal:same_network:0+1
                 */
