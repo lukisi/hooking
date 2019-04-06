@@ -70,6 +70,7 @@ namespace SystemPeer
                 int myid_search_migration_path_0_returns = -1;
                 int signal_do_prepare_enter = -1;
                 int signal_do_finish_enter = -1;
+                int signal_same_network = -1;
                 for (int i = 0; i < tester_events.size; i++)
                 {
                     if ("HookingManager:0:create_net" in tester_events[i]) create_net_0 = i;
@@ -87,6 +88,7 @@ namespace SystemPeer
                         myid_search_migration_path_0_returns == -1) myid_search_migration_path_0_returns = i;
                     if ("HookingManager:0:Signal:do_prepare_enter" in tester_events[i]) signal_do_prepare_enter = i;
                     if ("HookingManager:0:Signal:do_finish_enter" in tester_events[i]) signal_do_finish_enter = i;
+                    if ("HookingManager:1:Signal:same_network:0+0" in tester_events[i]) signal_same_network = i;
                 }
                 assert(create_net_0 >= 0);
                 assert(id0_ready > create_net_0);
@@ -99,7 +101,7 @@ namespace SystemPeer
                 assert(myid_search_migration_path_0_returns > myid_calling_search_migration_path_0);
                 assert(signal_do_prepare_enter > myid_search_migration_path_0_returns);
                 assert(signal_do_finish_enter > signal_do_prepare_enter);
-                // TODO
+                assert(signal_same_network > signal_do_finish_enter);
             }
             else if (pid == 200)
             {
@@ -121,6 +123,7 @@ namespace SystemPeer
                 int signal_another_network = -1;
                 int retrieve_ask_coord = -1;
                 int myid_reserve = -1;
+                int signal_same_network = -1;
                 for (int i = 0; i < tester_events.size; i++)
                 {
                     if ("HookingManager:0:create_net" in tester_events[i]) create_net_0 = i;
@@ -131,6 +134,7 @@ namespace SystemPeer
                     if ("HookingManager:0:call_retrieve_network_data(ask_coord=true)" in tester_events[i] &&
                         myid_reserve == -1) retrieve_ask_coord = i;
                     if ("HookingCoordinator:0:reserve(1," in tester_events[i]) myid_reserve = i;
+                    if ("HookingManager:0:Signal:same_network:0+1" in tester_events[i]) signal_same_network = i;
                 }
                 assert(create_net_0 >= 0);
                 assert(id0_ready > create_net_0);
@@ -138,7 +142,7 @@ namespace SystemPeer
                 assert(signal_another_network > retrieve_no_coord);
                 assert(retrieve_ask_coord > signal_another_network);
                 assert(myid_reserve > retrieve_ask_coord);
-                // TODO
+                assert(signal_same_network > myid_reserve);
             }
 
             return null;
