@@ -4,10 +4,25 @@ radio_domain -i 100_wl0 -o 200_wl0 &
 RADIO_100_PID=$!
 radio_domain -i 200_wl0 -o 100_wl0 &
 RADIO_200_PID=$!
+radio_domain -i 110_wl0 -o 210_wl0 &
+RADIO_110_PID=$!
+radio_domain -i 210_wl0 -o 110_wl0 &
+RADIO_210_PID=$!
 
 sleep 0.3
 
 echo Starting launches at `date +%T.%N`
+
+#  Esempio di uso di reserve_req:
+#    --reserve-req 0,1,1,1 --reserve-req 0,1,3,2
+#  Significa che la mia identità 0 si aspetta di ricevere ad un certo
+#  punto una richiesta 'coord.reserve' con 'host_lvl=1'. Su questa richiesta
+#  fingerà di contattare il Coord del suo g-nodo di livello 1 e di ricevere
+#  una risposta che riserva la posizione 1 con anzianità 1.
+#  In seguito la mia identità 0 si aspetta di ricevere
+#  una richiesta 'coord.reserve' con 'host_lvl=1'. Su questa richiesta
+#  fingerà di contattare il Coord del suo g-nodo di livello 1 e di ricevere
+#  una risposta che riserva la posizione 3 con anzianità 2.
 
 ./system_peer --topology 2,2,2 --firstaddr 3,3,3 \
               -p 100 -i wl0 -a wl0,200,wl0,2000 \
@@ -31,17 +46,6 @@ echo Starting launches at `date +%T.%N`
               -t enter_net,2460,0,1,0,1:0:0,1:0:0,200:200:200 \
               > test_first_pid100_out.txt 2>&1 &
 PEER_100_PID=$!
-
-#  Esempio di uso di reserve_req:
-#    --reserve-req 0,1,1,1 --reserve-req 0,1,3,2
-#  Significa che la mia identità 0 si aspetta di ricevere ad un certo
-#  punto una richiesta 'coord.reserve' con 'host_lvl=1'. Su questa richiesta
-#  fingerà di contattare il Coord del suo g-nodo di livello 1 e di ricevere
-#  una risposta che riserva la posizione 1 con anzianità 1.
-#  In seguito la mia identità 0 si aspetta di ricevere
-#  una richiesta 'coord.reserve' con 'host_lvl=1'. Su questa richiesta
-#  fingerà di contattare il Coord del suo g-nodo di livello 1 e di ricevere
-#  una risposta che riserva la posizione 3 con anzianità 2.
 
 ./system_peer --topology 2,2,2 --firstaddr 2,0,0 \
               -p 200 -i wl0 -a wl0,100,wl0,2000 \
@@ -67,6 +71,53 @@ PEER_100_PID=$!
               > test_first_pid200_out.txt 2>&1 &
 PEER_200_PID=$!
 
+./system_peer --topology 2,2,2 --firstaddr 3,3,3 \
+              -p 110 -i wl0 -a wl0,210,wl0,2000 \
+              --reserve-req 0,1,1,1 \
+              \
+              -t addtag,300,300_id0_ready \
+              \
+              -t update_proxy_endpoint,305,0,3,110_0 \
+              -t update_proxy_endpoint,305,0,2,110_0 \
+              -t update_proxy_endpoint,305,0,1,110_0 \
+              -t update_propagation_endpoint,305,0,3, \
+              -t update_propagation_endpoint,305,0,2, \
+              -t update_propagation_endpoint,305,0,1, \
+              \
+              -t add_identityarc,400,0,0+0 \
+              -t addtag,400,400_identityarc_added \
+              \
+              -t addtag,2390,2390 \
+              -t add_identityarc,2400,0,0+1 \
+              -t add_gateway,2420,0,0+1,0,2,-1 \
+              -t update_n_nodes,2440,0,2 \
+              -t update_coord_n_nodes,2440,0,2 \
+              > test_first_pid110_out.txt 2>&1 &
+PEER_110_PID=$!
+
+./system_peer --topology 2,2,2 --firstaddr 2,0,0 \
+              -p 210 -i wl0 -a wl0,110,wl0,2000 \
+              -t addtag,300,300_id0_ready \
+              \
+              -t update_proxy_endpoint,305,0,3,210_0 \
+              -t update_proxy_endpoint,305,0,2,210_0 \
+              -t update_proxy_endpoint,305,0,1,210_0 \
+              -t update_propagation_endpoint,305,0,3, \
+              -t update_propagation_endpoint,305,0,2, \
+              -t update_propagation_endpoint,305,0,1, \
+              \
+              -t add_identityarc,400,0,0+0 \
+              -t addtag,400,400_identityarc_added \
+              \
+              -t addtag,2390,2390 \
+              -t add_identity,2400,0,1,3,0+0 \
+              -t add_gateway,2420,1,0+0,0,1,-1 \
+              -t update_n_nodes,2440,1,2 \
+              -t update_coord_n_nodes,2440,1,2 \
+              -t enter_net,2460,0,1,0,2:0:0,1:0:0,110:110:110 \
+              > test_first_pid210_out.txt 2>&1 &
+PEER_210_PID=$!
+
 echo Done launches at `date +%T.%N`
 
 sleep 8
@@ -75,12 +126,14 @@ echo checking status...
 PEER_ABORT=0
 kill -0 $PEER_100_PID || { wait $PEER_100_PID; echo system_peer 100 prematurely exited with $?; PEER_ABORT=1; }
 kill -0 $PEER_200_PID || { wait $PEER_200_PID; echo system_peer 200 prematurely exited with $?; PEER_ABORT=1; }
+kill -0 $PEER_110_PID || { wait $PEER_110_PID; echo system_peer 110 prematurely exited with $?; PEER_ABORT=1; }
+kill -0 $PEER_210_PID || { wait $PEER_210_PID; echo system_peer 210 prematurely exited with $?; PEER_ABORT=1; }
 
 echo killing...
 # interrupt peers
-kill $PEER_100_PID $PEER_200_PID
+kill $PEER_100_PID $PEER_200_PID $PEER_110_PID $PEER_210_PID
 
-wait $PEER_100_PID $PEER_200_PID
+wait $PEER_100_PID $PEER_200_PID $PEER_110_PID $PEER_210_PID
 
 # Ignore errors in this shutdown. Remove any remaining local socket.
 rm -f conn_169.254.*
@@ -88,9 +141,9 @@ rm -f conn_???_?
 rm -f recv_???_wl0
 
 # kill proxy demons
-kill $RADIO_100_PID $RADIO_200_PID
+kill $RADIO_100_PID $RADIO_200_PID $RADIO_110_PID $RADIO_210_PID
 
-wait $RADIO_100_PID $RADIO_200_PID
+wait $RADIO_100_PID $RADIO_200_PID $RADIO_110_PID $RADIO_210_PID
 
 # delay for removal of local sockets (e.g. send_100_wl0)
 sleep 0.3
