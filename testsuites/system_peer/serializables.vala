@@ -224,4 +224,27 @@ namespace SystemPeer
     {
         return serialize_list_object(lst);
     }
+
+    internal int deserialize_int(Json.Node property_node)
+    throws HelperDeserializeError
+    {
+        Json.Reader r = new Json.Reader(property_node.copy());
+        if (r.get_null_value())
+            throw new HelperDeserializeError.GENERIC("element is not nullable");
+        if (!r.is_value())
+            throw new HelperDeserializeError.GENERIC("element must be a int");
+        if (r.get_value().get_value_type() != typeof(int64))
+            throw new HelperDeserializeError.GENERIC("element must be a int");
+        int64 val = r.get_int_value();
+        if (val > int.MAX || val < int.MIN)
+            throw new HelperDeserializeError.GENERIC("element overflows size of int");
+        return (int)val;
+    }
+
+    internal Json.Node serialize_int(int i)
+    {
+        Json.Node ret = new Json.Node(Json.NodeType.VALUE);
+        ret.set_int(i);
+        return ret;
+    }
 }
