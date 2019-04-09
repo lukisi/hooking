@@ -65,6 +65,7 @@ PEER_100_PID=$!
               -a wl0,100,wl0,2000 \
               -a wl0,210,wl0,2000 \
               --reserve-req 0,1,1,1 \
+              --reserve-req 0,2,1,1 \
               \
               -t addtag,300,300_id0_ready \
               \
