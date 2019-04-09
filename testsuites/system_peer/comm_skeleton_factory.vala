@@ -93,10 +93,68 @@ namespace SystemPeer
                 Object result = evaluate_enter(arg0, client_address);
                 resp = com_ser.prepare_return_value_object(result);
             }
-            else if (m_name == "TODO")
+            else if (m_name == "comm.begin_enter")
             {
-                error(@"Unknown method: \"$(m_name)\"");
-                // TODO
+                tester_events.add(@"HookingManager:$(local_identity_index):ICommSkeleton:executing_begin_enter");
+                // is client_address mandatory for this method?
+                assert(client_address != null);
+                // argument:
+                Object arg0;
+                try {
+                    arg0 = com_ser.read_argument_object_notnull(typeof(Object), arg);
+                    if (arg0 is ISerializable)
+                        if (!((ISerializable)arg0).check_deserialization())
+                            error(@"Reading argument for $(m_name): instance of $(arg0.get_type().name()) has not been fully deserialized");
+                } catch (HelperNotJsonError e) {
+                    error(@"Reading argument for $(m_name): HelperNotJsonError $(e.message)");
+                } catch (CommDeserializeError e) {
+                    error(@"Reading argument for $(m_name): CommDeserializeError $(e.message)");
+                }
+
+                Object result = begin_enter(arg0, client_address);
+                resp = com_ser.prepare_return_value_object(result);
+            }
+            else if (m_name == "comm.completed_enter")
+            {
+                tester_events.add(@"HookingManager:$(local_identity_index):ICommSkeleton:executing_completed_enter");
+                // is client_address mandatory for this method?
+                assert(client_address != null);
+                // argument:
+                Object arg0;
+                try {
+                    arg0 = com_ser.read_argument_object_notnull(typeof(Object), arg);
+                    if (arg0 is ISerializable)
+                        if (!((ISerializable)arg0).check_deserialization())
+                            error(@"Reading argument for $(m_name): instance of $(arg0.get_type().name()) has not been fully deserialized");
+                } catch (HelperNotJsonError e) {
+                    error(@"Reading argument for $(m_name): HelperNotJsonError $(e.message)");
+                } catch (CommDeserializeError e) {
+                    error(@"Reading argument for $(m_name): CommDeserializeError $(e.message)");
+                }
+
+                Object result = completed_enter(arg0, client_address);
+                resp = com_ser.prepare_return_value_object(result);
+            }
+            else if (m_name == "comm.abort_enter")
+            {
+                tester_events.add(@"HookingManager:$(local_identity_index):ICommSkeleton:executing_abort_enter");
+                // is client_address mandatory for this method?
+                assert(client_address != null);
+                // argument:
+                Object arg0;
+                try {
+                    arg0 = com_ser.read_argument_object_notnull(typeof(Object), arg);
+                    if (arg0 is ISerializable)
+                        if (!((ISerializable)arg0).check_deserialization())
+                            error(@"Reading argument for $(m_name): instance of $(arg0.get_type().name()) has not been fully deserialized");
+                } catch (HelperNotJsonError e) {
+                    error(@"Reading argument for $(m_name): HelperNotJsonError $(e.message)");
+                } catch (CommDeserializeError e) {
+                    error(@"Reading argument for $(m_name): CommDeserializeError $(e.message)");
+                }
+
+                Object result = abort_enter(arg0, client_address);
+                resp = com_ser.prepare_return_value_object(result);
             }
             else
             {
