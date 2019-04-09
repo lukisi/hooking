@@ -54,6 +54,9 @@ echo Starting launches at `date +%T.%N`
               -t update_propagation_endpoint,2465,1,2,200_0 \
               -t update_propagation_endpoint,2465,1,1,200_0 \
               \
+              -t add_identityarc,2500,1,1+0 \
+              -t addtag,2500,2500_identityarc_added \
+              \
               > test_first_pid100_out.txt 2>&1 &
 PEER_100_PID=$!
 
@@ -87,6 +90,9 @@ PEER_100_PID=$!
               -t update_propagation_endpoint,2465,0,3,100_1 \
               -t update_propagation_endpoint,2465,0,2,100_1 \
               -t update_propagation_endpoint,2465,0,1,100_1 \
+              \
+              -t add_identityarc,2500,0,1+1 \
+              -t addtag,2500,2500_identityarc_added \
               \
               > test_first_pid200_out.txt 2>&1 &
 PEER_200_PID=$!
@@ -122,6 +128,9 @@ PEER_200_PID=$!
               -t update_propagation_endpoint,2465,0,2,210_1 \
               -t update_propagation_endpoint,2465,0,1,210_1 \
               \
+              -t add_identityarc,2500,0,1+1 \
+              -t addtag,2500,2500_identityarc_added \
+              \
               > test_first_pid110_out.txt 2>&1 &
 PEER_110_PID=$!
 
@@ -155,12 +164,15 @@ PEER_110_PID=$!
               -t update_propagation_endpoint,2465,1,2,110_0 \
               -t update_propagation_endpoint,2465,1,1,110_0 \
               \
+              -t add_identityarc,2500,1,1+0 \
+              -t addtag,2500,2500_identityarc_added \
+              \
               > test_first_pid210_out.txt 2>&1 &
 PEER_210_PID=$!
 
 echo Done launches at `date +%T.%N`
 
-sleep 8
+sleep 13
 
 echo checking status...
 PEER_ABORT=0
