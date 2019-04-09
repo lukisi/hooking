@@ -200,22 +200,25 @@ namespace Netsukuku.Hooking.ProxyCoord
                     int elected_i = -1;
                     int j = 0;
                     int min_lvl = levels;
+                    int max_evaluate_enter_id = -1;
                     while (true)
                     {
                         EvaluateEnterEvaluation jj = candidates[j];
                         int jj_min_lvl = jj.evaluate_enter_data.min_lvl;
+                        int jj_evaluate_enter_id = jj.evaluate_enter_data.evaluate_enter_id;
                         if (jj_min_lvl > jj.evaluate_enter_data.neighbor_min_lvl) jj_min_lvl = jj.evaluate_enter_data.neighbor_min_lvl;
-                        if (jj_min_lvl < min_lvl)
+                        if (jj_min_lvl < min_lvl ||
+                            (jj_min_lvl == min_lvl && jj_evaluate_enter_id > max_evaluate_enter_id))
                         {
                             min_lvl = jj_min_lvl;
+                            max_evaluate_enter_id = jj_evaluate_enter_id;
                             elected_i = j;
-                            if (min_lvl == 0) break;
                         }
                         j++;
                         if (j >= candidates.size) break;
                     }
                     assert(elected_i >= 0);
-                    debug(@"ProxyCoord.evaluate_enter: elected one request.");
+                    debug(@"ProxyCoord.evaluate_enter: elected request #$(max_evaluate_enter_id).");
                     EvaluateEnterEvaluation elected = candidates[elected_i];
                     // update memory
                     memory.evaluate_enter_elected = elected;
