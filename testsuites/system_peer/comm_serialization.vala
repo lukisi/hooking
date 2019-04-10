@@ -29,6 +29,10 @@ namespace SystemPeer
     {
     }
 
+    public class NullSrcNic : Object, ISrcNic
+    {
+    }
+
     public class ClientAddressSrcNic : Object, ISrcNic
     {
         public ClientAddressSrcNic(string client_address)
@@ -224,6 +228,66 @@ namespace SystemPeer
         }
     }
 
+    public class ArgLevelObj : Object, Json.Serializable
+    {
+        public ArgLevelObj(int lvl, Object obj)
+        {
+            this.lvl = lvl;
+            this.obj = obj;
+        }
+        public int lvl {get; set;}
+        public Object obj {get; set;}
+
+        public bool deserialize_property
+        (string property_name,
+         out GLib.Value @value,
+         GLib.ParamSpec pspec,
+         Json.Node property_node)
+        {
+            @value = 0;
+            switch (property_name) {
+            case "lvl":
+                try {
+                    @value = deserialize_int(property_node);
+                } catch (HelperDeserializeError e) {
+                    return false;
+                }
+                break;
+            case "obj":
+                try {
+                    @value = deserialize_object(typeof(Object), true, property_node);
+                } catch (HelperDeserializeError e) {
+                    return false;
+                }
+                break;
+            default:
+                return false;
+            }
+            return true;
+        }
+
+        public unowned GLib.ParamSpec? find_property
+        (string name)
+        {
+            return get_class().find_property(name);
+        }
+
+        public Json.Node serialize_property
+        (string property_name,
+         GLib.Value @value,
+         GLib.ParamSpec pspec)
+        {
+            switch (property_name) {
+            case "lvl":
+                return serialize_int((int)@value);
+            case "obj":
+                return serialize_object((Object?)@value);
+            default:
+                error(@"wrong param $(property_name)");
+            }
+        }
+    }
+
 
     internal interface IJsonBuilderElement : Object {
         public abstract void execute(Json.Builder b);
@@ -236,6 +300,27 @@ namespace SystemPeer
     internal delegate unowned Json.Node JsonExecPath(Json.Node root);
 
     internal delegate void JsonReadElement(Json.Reader r, int index) throws CommDeserializeError;
+
+    internal class JsonBuilderNull : Object, IJsonBuilderElement
+    {
+        public JsonBuilderNull() {}
+        public void execute(Json.Builder b) {
+            b.add_null_value();
+        }
+    }
+
+    internal class JsonReaderVoid : Object, IJsonReaderElement
+    {
+        public bool ret_ok;
+        public JsonReaderVoid() {
+            ret_ok = false;
+        }
+        public void execute(Json.Reader r) throws CommDeserializeError {
+            if (!r.get_null_value())
+                throw new CommDeserializeError.GENERIC("element must be void");
+            ret_ok = true;
+        }
+    }
 
     internal class JsonBuilderObject : Object, IJsonBuilderElement
     {
@@ -337,11 +422,26 @@ namespace SystemPeer
             return prepare_return_value(new JsonBuilderObject(obj));
         }
 
+        public string prepare_return_value_null()
+        {
+            return prepare_return_value(new JsonBuilderNull());
+        }
+
         public Object read_return_value_object_notnull
             (Type expected_type, string js)
             throws CommDeserializeError, HelperNotJsonError
         {
             return read_return_value_object(expected_type, js, false);
+        }
+
+        public void read_return_value_void
+            (string js)
+            throws CommDeserializeError, HelperNotJsonError
+        {
+            JsonReaderVoid cb = new JsonReaderVoid();
+            read_return_value(js, cb);
+            assert(cb.ret_ok);
+            return;
         }
 
         //...

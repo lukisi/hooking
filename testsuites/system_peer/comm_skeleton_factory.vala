@@ -10,6 +10,7 @@ namespace SystemPeer
         public abstract Object begin_enter(Object arg0, ArrayList<int> client_address);
         public abstract Object completed_enter(Object arg0, ArrayList<int> client_address);
         public abstract Object abort_enter(Object arg0, ArrayList<int> client_address);
+        public abstract void prepare_enter(Object arg0);
         // ... TODO
     }
 
@@ -50,7 +51,6 @@ namespace SystemPeer
             } catch (HelperNotJsonError e) {
                 error(@"HelperNotJsonError $(e.message)");
             }
-            _src_nic = com_ser.read_direct_object_notnull(typeof(Object), src_nic);
             if (_src_nic is ClientAddressSrcNic)
             {
                 string s_total_client_address;
@@ -156,6 +156,25 @@ namespace SystemPeer
                 Object result = abort_enter(arg0, client_address);
                 resp = com_ser.prepare_return_value_object(result);
             }
+            else if (m_name == "comm.prepare_enter")
+            {
+                tester_events.add(@"HookingManager:$(local_identity_index):ICommSkeleton:executing_prepare_enter");
+                // argument:
+                Object arg0;
+                try {
+                    arg0 = com_ser.read_argument_object_notnull(typeof(Object), arg);
+                    if (arg0 is ISerializable)
+                        if (!((ISerializable)arg0).check_deserialization())
+                            error(@"Reading argument for $(m_name): instance of $(arg0.get_type().name()) has not been fully deserialized");
+                } catch (HelperNotJsonError e) {
+                    error(@"Reading argument for $(m_name): HelperNotJsonError $(e.message)");
+                } catch (CommDeserializeError e) {
+                    error(@"Reading argument for $(m_name): CommDeserializeError $(e.message)");
+                }
+
+                prepare_enter(arg0);
+                resp = com_ser.prepare_return_value_null();
+            }
             else
             {
                 error(@"Unknown method: \"$(m_name)\"");
@@ -172,6 +191,11 @@ namespace SystemPeer
             }
             if (client_address.size == 0) s_client_address = "myself";
             debug(@"StreamSystemCommunicator: calling $(m_name) per request from $(s_client_address).");
+        }
+
+        private void log_call_per_propagation(string m_name)
+        {
+            debug(@"StreamSystemCommunicator: calling $(m_name) per propagation.");
         }
 
         public Object evaluate_enter(Object arg0, ArrayList<int> client_address)
@@ -202,6 +226,14 @@ namespace SystemPeer
             assert(arg0 is ArgAbortEnter);
             ArgAbortEnter _arg0 = (ArgAbortEnter)arg0;
             return identity_data.hook_mgr.abort_enter(_arg0.lvl, _arg0.abort_enter_data, client_address);
+        }
+
+        void prepare_enter(Object arg0)
+        {
+            log_call_per_propagation("prepare_enter");
+            assert(arg0 is ArgLevelObj);
+            ArgLevelObj _arg0 = (ArgLevelObj)arg0;
+            identity_data.hook_mgr.prepare_enter(_arg0.lvl, _arg0.obj);
         }
     }
 

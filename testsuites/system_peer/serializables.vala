@@ -87,48 +87,6 @@ namespace SystemPeer
         GENERIC
     }
 
-/*
-    internal Gee.List<int> deserialize_list_int(Json.Node property_node)
-    throws HelperDeserializeError
-    {
-        ArrayList<int> ret = new ArrayList<int>();
-        Json.Reader r = new Json.Reader(property_node.copy());
-        if (r.get_null_value())
-            throw new HelperDeserializeError.GENERIC("element is not nullable");
-        if (!r.is_array())
-            throw new HelperDeserializeError.GENERIC("element must be an array");
-        int l = r.count_elements();
-        for (int j = 0; j < l; j++)
-        {
-            r.read_element(j);
-            if (r.get_null_value())
-                throw new HelperDeserializeError.GENERIC("element is not nullable");
-            if (!r.is_value())
-                throw new HelperDeserializeError.GENERIC("element must be a int");
-            if (r.get_value().get_value_type() != typeof(int64))
-                throw new HelperDeserializeError.GENERIC("element must be a int");
-            int64 val = r.get_int_value();
-            if (val > int.MAX || val < int.MIN)
-                throw new HelperDeserializeError.GENERIC("element overflows size of int");
-            ret.add((int)val);
-            r.end_element();
-        }
-        return ret;
-    }
-
-    internal Json.Node serialize_list_int(Gee.List<int> lst)
-    {
-        Json.Builder b = new Json.Builder();
-        b.begin_array();
-        foreach (int i in lst)
-        {
-            b.add_int_value(i);
-        }
-        b.end_array();
-        return b.get_root();
-    }
-*/
-
     internal Object? deserialize_object(Type expected_type, bool nullable, Json.Node property_node)
     throws HelperDeserializeError
     {

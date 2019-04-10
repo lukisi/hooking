@@ -10,6 +10,7 @@ namespace SystemPeer
         public abstract Object begin_enter(Object arg0) throws StubError, StreamSystemError, DeserializeError;
         public abstract Object completed_enter(Object arg0) throws StubError, StreamSystemError, DeserializeError;
         public abstract Object abort_enter(Object arg0) throws StubError, StreamSystemError, DeserializeError;
+        public abstract void prepare_enter(Object arg0) throws StubError, StreamSystemError, DeserializeError;
         // ... TODO
     }
 
@@ -84,6 +85,30 @@ namespace SystemPeer
             return ret;
         }
 
+        private void process_comm_void(string m_name, Object arg0) throws StubError, StreamSystemError, DeserializeError
+        {
+            string arg = com_ser.prepare_argument_object(arg0);
+
+            string resp;
+            try {
+                resp = this.call(m_name, arg);
+            }
+            // The following catch is to be added only for methods that return void.
+            catch (StubError.DID_NOT_WAIT_REPLY e) {return;}
+
+            // deserialize response
+            string doing = @"Reading return-value of $(m_name)";
+            try {
+                com_ser.read_return_value_void(resp);
+            } catch (HelperNotJsonError e) {
+                error(@"Error parsing JSON for return-value of $(m_name): $(e.message)");
+            } catch (CommDeserializeError e) {
+                throw new DeserializeError.GENERIC(@"$(doing): $(e.message)");
+            }
+            return;
+        }
+
+
         public Object evaluate_enter(Object arg0) throws StubError, StreamSystemError, DeserializeError
         {
             tester_events.add(@"HookingManager:$(local_identity_index):StreamSystemCommStub:calling_evaluate_enter");
@@ -106,6 +131,12 @@ namespace SystemPeer
         {
             tester_events.add(@"HookingManager:$(local_identity_index):StreamSystemCommStub:calling_abort_enter");
             return process_comm("comm.abort_enter", arg0);
+        }
+
+        public void prepare_enter(Object arg0) throws StubError, StreamSystemError, DeserializeError
+        {
+            tester_events.add(@"HookingManager:$(local_identity_index):StreamSystemCommStub:calling_prepare_enter");
+            process_comm_void("comm.prepare_enter", arg0);
         }
     }
 }

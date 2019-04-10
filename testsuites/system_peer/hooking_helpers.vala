@@ -38,13 +38,13 @@ namespace SystemPeer
             try {
                 ret = st.evaluate_enter(evaluate_enter_data);
             } catch (StubError e) {
-                warning(@"StubError: $(e.message)");
+                warning(@"HookingCoordinator.evaluate_enter: StubError: $(e.message)");
                 throw new CoordProxyError.GENERIC(@"StubError: $(e.message)");
             } catch (StreamSystemError e) {
-                warning(@"StreamSystemError: $(e.message)");
+                warning(@"HookingCoordinator.evaluate_enter: StreamSystemError: $(e.message)");
                 throw new CoordProxyError.GENERIC(@"StreamSystemError: $(e.message)");
             } catch (DeserializeError e) {
-                warning(@"DeserializeError: $(e.message)");
+                warning(@"HookingCoordinator.evaluate_enter: DeserializeError: $(e.message)");
                 throw new CoordProxyError.GENERIC(@"DeserializeError: $(e.message)");
             }
             return ret;
@@ -68,13 +68,13 @@ namespace SystemPeer
             try {
                 ret = st.begin_enter(new ArgBeginEnter(lvl, begin_enter_data));
             } catch (StubError e) {
-                warning(@"StubError: $(e.message)");
+                warning(@"HookingCoordinator.begin_enter: StubError: $(e.message)");
                 throw new CoordProxyError.GENERIC(@"StubError: $(e.message)");
             } catch (StreamSystemError e) {
-                warning(@"StreamSystemError: $(e.message)");
+                warning(@"HookingCoordinator.begin_enter: StreamSystemError: $(e.message)");
                 throw new CoordProxyError.GENERIC(@"StreamSystemError: $(e.message)");
             } catch (DeserializeError e) {
-                warning(@"DeserializeError: $(e.message)");
+                warning(@"HookingCoordinator.begin_enter: DeserializeError: $(e.message)");
                 throw new CoordProxyError.GENERIC(@"DeserializeError: $(e.message)");
             }
             return ret;
@@ -98,13 +98,13 @@ namespace SystemPeer
             try {
                 ret = st.completed_enter(new ArgCompletedEnter(lvl, completed_enter_data));
             } catch (StubError e) {
-                warning(@"StubError: $(e.message)");
+                warning(@"HookingCoordinator.completed_enter: StubError: $(e.message)");
                 throw new CoordProxyError.GENERIC(@"StubError: $(e.message)");
             } catch (StreamSystemError e) {
-                warning(@"StreamSystemError: $(e.message)");
+                warning(@"HookingCoordinator.completed_enter: StreamSystemError: $(e.message)");
                 throw new CoordProxyError.GENERIC(@"StreamSystemError: $(e.message)");
             } catch (DeserializeError e) {
-                warning(@"DeserializeError: $(e.message)");
+                warning(@"HookingCoordinator.completed_enter: DeserializeError: $(e.message)");
                 throw new CoordProxyError.GENERIC(@"DeserializeError: $(e.message)");
             }
             return ret;
@@ -128,13 +128,13 @@ namespace SystemPeer
             try {
                 ret = st.abort_enter(new ArgAbortEnter(lvl, abort_enter_data));
             } catch (StubError e) {
-                warning(@"StubError: $(e.message)");
+                warning(@"HookingCoordinator.abort_enter: StubError: $(e.message)");
                 throw new CoordProxyError.GENERIC(@"StubError: $(e.message)");
             } catch (StreamSystemError e) {
-                warning(@"StreamSystemError: $(e.message)");
+                warning(@"HookingCoordinator.abort_enter: StreamSystemError: $(e.message)");
                 throw new CoordProxyError.GENERIC(@"StreamSystemError: $(e.message)");
             } catch (DeserializeError e) {
-                warning(@"DeserializeError: $(e.message)");
+                warning(@"HookingCoordinator.abort_enter: DeserializeError: $(e.message)");
                 throw new CoordProxyError.GENERIC(@"DeserializeError: $(e.message)");
             }
             return ret;
@@ -146,8 +146,16 @@ namespace SystemPeer
             foreach (string endpoint in identity_data.propagation_endpoints[lvl])
             {
                 string send_pathname = @"conn_$(endpoint)";
-                // TODO
-                error("not implemented yet");
+                ICommStub st = get_comm_stream_system(local_identity_index, send_pathname, new NullSrcNic(), true);
+                try {
+                    st.prepare_enter(new ArgLevelObj(lvl, prepare_enter_data));
+                } catch (StubError e) {
+                    warning(@"HookingCoordinator.prepare_enter: StubError: $(e.message)");
+                } catch (StreamSystemError e) {
+                    warning(@"HookingCoordinator.prepare_enter: StreamSystemError: $(e.message)");
+                } catch (DeserializeError e) {
+                    warning(@"HookingCoordinator.prepare_enter: DeserializeError: $(e.message)");
+                }
             }
             // Finally the module Coordinator will call on this node. So this class will simulate it.
             identity_data.hook_mgr.prepare_enter(lvl, prepare_enter_data);
