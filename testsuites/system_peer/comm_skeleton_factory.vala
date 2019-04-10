@@ -12,6 +12,8 @@ namespace SystemPeer
         public abstract Object abort_enter(Object arg0, ArrayList<int> client_address);
         public abstract void prepare_enter(Object arg0);
         public abstract void finish_enter(Object arg0);
+        public abstract void prepare_migration(Object arg0);
+        public abstract void finish_migration(Object arg0);
         // ... TODO
     }
 
@@ -195,6 +197,44 @@ namespace SystemPeer
                 finish_enter(arg0);
                 resp = com_ser.prepare_return_value_null();
             }
+            else if (m_name == "comm.prepare_migration")
+            {
+                tester_events.add(@"HookingManager:$(local_identity_index):ICommSkeleton:executing_prepare_migration");
+                // argument:
+                Object arg0;
+                try {
+                    arg0 = com_ser.read_argument_object_notnull(typeof(Object), arg);
+                    if (arg0 is ISerializable)
+                        if (!((ISerializable)arg0).check_deserialization())
+                            error(@"Reading argument for $(m_name): instance of $(arg0.get_type().name()) has not been fully deserialized");
+                } catch (HelperNotJsonError e) {
+                    error(@"Reading argument for $(m_name): HelperNotJsonError $(e.message)");
+                } catch (CommDeserializeError e) {
+                    error(@"Reading argument for $(m_name): CommDeserializeError $(e.message)");
+                }
+
+                prepare_migration(arg0);
+                resp = com_ser.prepare_return_value_null();
+            }
+            else if (m_name == "comm.finish_migration")
+            {
+                tester_events.add(@"HookingManager:$(local_identity_index):ICommSkeleton:executing_finish_migration");
+                // argument:
+                Object arg0;
+                try {
+                    arg0 = com_ser.read_argument_object_notnull(typeof(Object), arg);
+                    if (arg0 is ISerializable)
+                        if (!((ISerializable)arg0).check_deserialization())
+                            error(@"Reading argument for $(m_name): instance of $(arg0.get_type().name()) has not been fully deserialized");
+                } catch (HelperNotJsonError e) {
+                    error(@"Reading argument for $(m_name): HelperNotJsonError $(e.message)");
+                } catch (CommDeserializeError e) {
+                    error(@"Reading argument for $(m_name): CommDeserializeError $(e.message)");
+                }
+
+                finish_migration(arg0);
+                resp = com_ser.prepare_return_value_null();
+            }
             else
             {
                 error(@"Unknown method: \"$(m_name)\"");
@@ -262,6 +302,22 @@ namespace SystemPeer
             assert(arg0 is ArgLevelObj);
             ArgLevelObj _arg0 = (ArgLevelObj)arg0;
             identity_data.hook_mgr.finish_enter(_arg0.lvl, _arg0.obj);
+        }
+
+        void prepare_migration(Object arg0)
+        {
+            log_call_per_propagation("prepare_migration");
+            assert(arg0 is ArgLevelObj);
+            ArgLevelObj _arg0 = (ArgLevelObj)arg0;
+            identity_data.hook_mgr.prepare_migration(_arg0.lvl, _arg0.obj);
+        }
+
+        void finish_migration(Object arg0)
+        {
+            log_call_per_propagation("finish_migration");
+            assert(arg0 is ArgLevelObj);
+            ArgLevelObj _arg0 = (ArgLevelObj)arg0;
+            identity_data.hook_mgr.finish_migration(_arg0.lvl, _arg0.obj);
         }
     }
 

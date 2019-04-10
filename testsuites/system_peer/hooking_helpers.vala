@@ -190,8 +190,16 @@ namespace SystemPeer
             foreach (string endpoint in identity_data.propagation_endpoints[lvl])
             {
                 string send_pathname = @"conn_$(endpoint)";
-                // TODO
-                error("not implemented yet");
+                ICommStub st = get_comm_stream_system(local_identity_index, send_pathname, new NullSrcNic(), true);
+                try {
+                    st.prepare_migration(new ArgLevelObj(lvl, prepare_migration_data));
+                } catch (StubError e) {
+                    warning(@"HookingCoordinator.prepare_migration: StubError: $(e.message)");
+                } catch (StreamSystemError e) {
+                    warning(@"HookingCoordinator.prepare_migration: StreamSystemError: $(e.message)");
+                } catch (DeserializeError e) {
+                    warning(@"HookingCoordinator.prepare_migration: DeserializeError: $(e.message)");
+                }
             }
             // Finally the module Coordinator will call on this node. So this class will simulate it.
             identity_data.hook_mgr.prepare_migration(lvl, prepare_migration_data);
@@ -205,8 +213,16 @@ namespace SystemPeer
                 // For a more correct simulation of this broadcast propagation, the inner part
                 //  of this foreach-loop should be done in a new tasklet.
                 string send_pathname = @"conn_$(endpoint)";
-                // TODO
-                error("not implemented yet");
+                ICommStub st = get_comm_stream_system(local_identity_index, send_pathname, new NullSrcNic(), false);
+                try {
+                    st.finish_migration(new ArgLevelObj(lvl, finish_migration_data));
+                } catch (StubError e) {
+                    warning(@"HookingCoordinator.finish_migration: StubError: $(e.message)");
+                } catch (StreamSystemError e) {
+                    warning(@"HookingCoordinator.finish_migration: StreamSystemError: $(e.message)");
+                } catch (DeserializeError e) {
+                    warning(@"HookingCoordinator.finish_migration: DeserializeError: $(e.message)");
+                }
             }
             // Finally (or, in the same time) the module Coordinator will call on this node.
             identity_data.hook_mgr.finish_migration(lvl, finish_migration_data);
