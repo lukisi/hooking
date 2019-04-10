@@ -11,6 +11,7 @@ namespace SystemPeer
         public abstract Object completed_enter(Object arg0, ArrayList<int> client_address);
         public abstract Object abort_enter(Object arg0, ArrayList<int> client_address);
         public abstract void prepare_enter(Object arg0);
+        public abstract void finish_enter(Object arg0);
         // ... TODO
     }
 
@@ -175,6 +176,25 @@ namespace SystemPeer
                 prepare_enter(arg0);
                 resp = com_ser.prepare_return_value_null();
             }
+            else if (m_name == "comm.finish_enter")
+            {
+                tester_events.add(@"HookingManager:$(local_identity_index):ICommSkeleton:executing_finish_enter");
+                // argument:
+                Object arg0;
+                try {
+                    arg0 = com_ser.read_argument_object_notnull(typeof(Object), arg);
+                    if (arg0 is ISerializable)
+                        if (!((ISerializable)arg0).check_deserialization())
+                            error(@"Reading argument for $(m_name): instance of $(arg0.get_type().name()) has not been fully deserialized");
+                } catch (HelperNotJsonError e) {
+                    error(@"Reading argument for $(m_name): HelperNotJsonError $(e.message)");
+                } catch (CommDeserializeError e) {
+                    error(@"Reading argument for $(m_name): CommDeserializeError $(e.message)");
+                }
+
+                finish_enter(arg0);
+                resp = com_ser.prepare_return_value_null();
+            }
             else
             {
                 error(@"Unknown method: \"$(m_name)\"");
@@ -207,25 +227,25 @@ namespace SystemPeer
         public Object begin_enter(Object arg0, ArrayList<int> client_address)
         {
             log_call_with_client_address("begin_enter", client_address);
-            assert(arg0 is ArgBeginEnter);
-            ArgBeginEnter _arg0 = (ArgBeginEnter)arg0;
-            return identity_data.hook_mgr.begin_enter(_arg0.lvl, _arg0.begin_enter_data, client_address);
+            assert(arg0 is ArgLevelObj);
+            ArgLevelObj _arg0 = (ArgLevelObj)arg0;
+            return identity_data.hook_mgr.begin_enter(_arg0.lvl, _arg0.obj, client_address);
         }
 
         public Object completed_enter(Object arg0, ArrayList<int> client_address)
         {
             log_call_with_client_address("completed_enter", client_address);
-            assert(arg0 is ArgCompletedEnter);
-            ArgCompletedEnter _arg0 = (ArgCompletedEnter)arg0;
-            return identity_data.hook_mgr.completed_enter(_arg0.lvl, _arg0.completed_enter_data, client_address);
+            assert(arg0 is ArgLevelObj);
+            ArgLevelObj _arg0 = (ArgLevelObj)arg0;
+            return identity_data.hook_mgr.completed_enter(_arg0.lvl, _arg0.obj, client_address);
         }
 
         public Object abort_enter(Object arg0, ArrayList<int> client_address)
         {
             log_call_with_client_address("abort_enter", client_address);
-            assert(arg0 is ArgAbortEnter);
-            ArgAbortEnter _arg0 = (ArgAbortEnter)arg0;
-            return identity_data.hook_mgr.abort_enter(_arg0.lvl, _arg0.abort_enter_data, client_address);
+            assert(arg0 is ArgLevelObj);
+            ArgLevelObj _arg0 = (ArgLevelObj)arg0;
+            return identity_data.hook_mgr.abort_enter(_arg0.lvl, _arg0.obj, client_address);
         }
 
         void prepare_enter(Object arg0)
@@ -234,6 +254,14 @@ namespace SystemPeer
             assert(arg0 is ArgLevelObj);
             ArgLevelObj _arg0 = (ArgLevelObj)arg0;
             identity_data.hook_mgr.prepare_enter(_arg0.lvl, _arg0.obj);
+        }
+
+        void finish_enter(Object arg0)
+        {
+            log_call_per_propagation("finish_enter");
+            assert(arg0 is ArgLevelObj);
+            ArgLevelObj _arg0 = (ArgLevelObj)arg0;
+            identity_data.hook_mgr.finish_enter(_arg0.lvl, _arg0.obj);
         }
     }
 

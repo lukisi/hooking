@@ -66,7 +66,7 @@ namespace SystemPeer
             ICommStub st = get_comm_stream_system(local_identity_index, send_pathname, src_nic, true);
             Object ret;
             try {
-                ret = st.begin_enter(new ArgBeginEnter(lvl, begin_enter_data));
+                ret = st.begin_enter(new ArgLevelObj(lvl, begin_enter_data));
             } catch (StubError e) {
                 warning(@"HookingCoordinator.begin_enter: StubError: $(e.message)");
                 throw new CoordProxyError.GENERIC(@"StubError: $(e.message)");
@@ -96,7 +96,7 @@ namespace SystemPeer
             ICommStub st = get_comm_stream_system(local_identity_index, send_pathname, src_nic, true);
             Object ret;
             try {
-                ret = st.completed_enter(new ArgCompletedEnter(lvl, completed_enter_data));
+                ret = st.completed_enter(new ArgLevelObj(lvl, completed_enter_data));
             } catch (StubError e) {
                 warning(@"HookingCoordinator.completed_enter: StubError: $(e.message)");
                 throw new CoordProxyError.GENERIC(@"StubError: $(e.message)");
@@ -126,7 +126,7 @@ namespace SystemPeer
             ICommStub st = get_comm_stream_system(local_identity_index, send_pathname, src_nic, true);
             Object ret;
             try {
-                ret = st.abort_enter(new ArgAbortEnter(lvl, abort_enter_data));
+                ret = st.abort_enter(new ArgLevelObj(lvl, abort_enter_data));
             } catch (StubError e) {
                 warning(@"HookingCoordinator.abort_enter: StubError: $(e.message)");
                 throw new CoordProxyError.GENERIC(@"StubError: $(e.message)");
@@ -169,8 +169,16 @@ namespace SystemPeer
                 // For a more correct simulation of this broadcast propagation, the inner part
                 //  of this foreach-loop should be done in a new tasklet.
                 string send_pathname = @"conn_$(endpoint)";
-                // TODO
-                error("not implemented yet");
+                ICommStub st = get_comm_stream_system(local_identity_index, send_pathname, new NullSrcNic(), false);
+                try {
+                    st.finish_enter(new ArgLevelObj(lvl, finish_enter_data));
+                } catch (StubError e) {
+                    warning(@"HookingCoordinator.finish_enter: StubError: $(e.message)");
+                } catch (StreamSystemError e) {
+                    warning(@"HookingCoordinator.finish_enter: StreamSystemError: $(e.message)");
+                } catch (DeserializeError e) {
+                    warning(@"HookingCoordinator.finish_enter: DeserializeError: $(e.message)");
+                }
             }
             // Finally (or, in the same time) the module Coordinator will call on this node.
             identity_data.hook_mgr.finish_enter(lvl, finish_enter_data);

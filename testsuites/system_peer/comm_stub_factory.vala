@@ -11,6 +11,7 @@ namespace SystemPeer
         public abstract Object completed_enter(Object arg0) throws StubError, StreamSystemError, DeserializeError;
         public abstract Object abort_enter(Object arg0) throws StubError, StreamSystemError, DeserializeError;
         public abstract void prepare_enter(Object arg0) throws StubError, StreamSystemError, DeserializeError;
+        public abstract void finish_enter(Object arg0) throws StubError, StreamSystemError, DeserializeError;
         // ... TODO
     }
 
@@ -137,6 +138,12 @@ namespace SystemPeer
         {
             tester_events.add(@"HookingManager:$(local_identity_index):StreamSystemCommStub:calling_prepare_enter");
             process_comm_void("comm.prepare_enter", arg0);
+        }
+
+        public void finish_enter(Object arg0) throws StubError, StreamSystemError, DeserializeError
+        {
+            tester_events.add(@"HookingManager:$(local_identity_index):StreamSystemCommStub:calling_finish_enter");
+            process_comm_void("comm.finish_enter", arg0);
         }
     }
 }
