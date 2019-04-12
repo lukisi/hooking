@@ -57,6 +57,20 @@ echo Starting launches at `date +%T.%N`
               -t add_identityarc,2500,1,1+0 \
               -t addtag,2500,2500_identityarc_added \
               \
+              -t addtag,4390,4390 \
+              -t add_identityarc,4400,1,1+1 \
+              \
+              -t add_gateway,4420,1,1+1,1,1,-1 \
+              -t add_gateway,4420,1,0+0,1,1,-1 \
+              -t update_n_nodes,4440,1,4 \
+              -t update_coord_n_nodes,4440,1,4 \
+              -t update_proxy_endpoint,4465,1,3,100_1 \
+              -t update_proxy_endpoint,4465,1,2,100_1 \
+              -t update_proxy_endpoint,4465,1,1,100_1 \
+              -t update_propagation_endpoint,4465,1,3,210_2+110_1+200_0 \
+              -t update_propagation_endpoint,4465,1,2,210_2+110_1+200_0 \
+              -t update_propagation_endpoint,4465,1,1,200_0 \
+              \
               > test_first_pid100_out.txt 2>&1 &
 PEER_100_PID=$!
 
@@ -95,6 +109,20 @@ PEER_100_PID=$!
               -t add_identityarc,2500,0,1+1 \
               -t addtag,2500,2500_identityarc_added \
               \
+              -t addtag,4390,4390 \
+              -t add_identityarc,4400,0,1+2 \
+              \
+              -t add_gateway,4420,0,1+1,1,1,-1 \
+              -t add_gateway,4420,0,0+1,1,1,-1 \
+              -t update_n_nodes,4440,0,4 \
+              -t update_coord_n_nodes,4440,0,4 \
+              -t update_proxy_endpoint,4465,0,3,100_1 \
+              -t update_proxy_endpoint,4465,0,2,100_1 \
+              -t update_proxy_endpoint,4465,0,1,100_1 \
+              -t update_propagation_endpoint,4465,0,3,210_2+110_1+100_1 \
+              -t update_propagation_endpoint,4465,0,2,210_2+110_1+100_1 \
+              -t update_propagation_endpoint,4465,0,1,100_1 \
+              \
               > test_first_pid200_out.txt 2>&1 &
 PEER_200_PID=$!
 
@@ -132,6 +160,22 @@ PEER_200_PID=$!
               -t add_identityarc,2500,0,1+1 \
               -t addtag,2500,2500_identityarc_added \
               \
+              -t addtag,4390,4390 \
+              -t add_identity,4400,0,2,3,0+2_1+1 \
+              \
+              -t add_gateway,4420,1,0+2,0,2,-1 \
+              -t add_gateway,4420,1,1+1,1,0,-1 \
+              -t add_gateway,4422,1,0+2,1,0,-1 \
+              -t update_n_nodes,4440,1,4 \
+              -t update_coord_n_nodes,4440,1,4 \
+              -t enter_net,4460,0,1,1,1:0,1:0,200:200 \
+              -t update_proxy_endpoint,4465,1,3,100_1 \
+              -t update_proxy_endpoint,4465,1,2,100_1 \
+              -t update_proxy_endpoint,4465,1,1,110_1 \
+              -t update_propagation_endpoint,4465,1,3,200_0+100_1+210_2 \
+              -t update_propagation_endpoint,4465,1,2,200_0+100_1+210_2 \
+              -t update_propagation_endpoint,4465,1,1,210_2 \
+              \
               > test_first_pid110_out.txt 2>&1 &
 PEER_110_PID=$!
 
@@ -167,6 +211,22 @@ PEER_110_PID=$!
               \
               -t add_identityarc,2500,1,1+0 \
               -t addtag,2500,2500_identityarc_added \
+              \
+              -t addtag,4390,4390 \
+              -t add_identity,4400,1,2,3,0+1_1+0 \
+              \
+              -t add_gateway,4420,2,0+1,0,1,-1 \
+              -t add_gateway,4420,2,1+0,1,0,-1 \
+              -t add_gateway,4422,2,0+1,1,0,-1 \
+              -t update_n_nodes,4440,2,4 \
+              -t update_coord_n_nodes,4440,2,4 \
+              -t enter_net,4460,1,2,1,1:0,1:0,200:200 \
+              -t update_proxy_endpoint,4465,2,3,100_1 \
+              -t update_proxy_endpoint,4465,2,2,100_1 \
+              -t update_proxy_endpoint,4465,2,1,110_1 \
+              -t update_propagation_endpoint,4465,2,3,200_0+100_1+110_1 \
+              -t update_propagation_endpoint,4465,2,2,200_0+100_1+110_1 \
+              -t update_propagation_endpoint,4465,2,1,110_1 \
               \
               > test_first_pid210_out.txt 2>&1 &
 PEER_210_PID=$!
