@@ -53,7 +53,7 @@ namespace SystemPeer
                 HookingManager:0:call_search_migration_path(lvl=0)
                 HookingManager:0:response_search_migration_path:ret={netid:79330,pos:[1,0,0],elderships:[1,0,0]}
                 HookingManager:0:Signal:do_prepare_enter:777380291
-                HookingManager:0:Signal:do_finish_enter:777380291
+                HookingManager:0:Signal:do_finish_enter:enter_id=777380291:guest_gnode_level=0:entry_data={"network-id":79330,"pos":[1,0,0],"elderships":[1,0,0]}:go_connectivity_position=1290880946
                 Tester:Tag:2390
                 HookingManager:1:enter_net:addr[1,0,0]:fp[54802,79330,79330,79330]
                 HookingManager:1:call_retrieve_network_data(ask_coord=false)

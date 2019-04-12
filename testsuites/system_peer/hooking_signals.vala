@@ -79,7 +79,9 @@ namespace SystemPeer
         int enter_id, int guest_gnode_level, EntryData entry_data, int go_connectivity_position)
     {
         print(@"INFO: Identity #$(id.local_identity_index): signal do_finish_enter: $(enter_id).\n");
-        tester_events.add(@"HookingManager:$(id.local_identity_index):Signal:do_finish_enter:$(enter_id)");
+        tester_events.add(@"HookingManager:$(id.local_identity_index):Signal:do_finish_enter:" +
+        @"enter_id=$(enter_id):guest_gnode_level=$(guest_gnode_level):" +
+        @"entry_data=$(json_string_object(entry_data)):go_connectivity_position=$(go_connectivity_position)");
     }
 
     void per_identity_hooking_do_prepare_migration(IdentityData id, int migration_id)
@@ -92,7 +94,9 @@ namespace SystemPeer
         int migration_id, int guest_gnode_level, EntryData migration_data, int go_connectivity_position)
     {
         print(@"INFO: Identity #$(id.local_identity_index): signal do_finish_migration: $(migration_id).\n");
-        tester_events.add(@"HookingManager:$(id.local_identity_index):Signal:do_finish_migration:$(migration_id)");
+        tester_events.add(@"HookingManager:$(id.local_identity_index):Signal:do_finish_migration:" +
+        @"migration_id=$(migration_id):guest_gnode_level=$(guest_gnode_level):" +
+        @"migration_data=$(json_string_object(migration_data)):go_connectivity_position=$(go_connectivity_position)");
     }
 
     void per_identity_hooking_failing_arc(IdentityData id, IIdentityArc _ia)
