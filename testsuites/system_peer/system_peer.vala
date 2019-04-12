@@ -315,6 +315,7 @@ namespace SystemPeer
             else if (schedule_task_update_proxy_endpoint(task)) {}
             else if (schedule_task_update_propagation_endpoint(task)) {}
             else if (schedule_task_check_two_nodes_meet(task)) {}
+            else if (schedule_task_check_two_gnodes_meet(task)) {}
             else error(@"unknown task $(task)");
         }
 

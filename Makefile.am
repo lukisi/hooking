@@ -9,6 +9,7 @@ noinst_LTLIBRARIES = \
 TESTS = \
 	test_serializables \
 	two_nodes_meet \
+	two_gnodes_meet \
 	$(NULL)
 
 # manually check scripts: first, graph
@@ -109,6 +110,7 @@ system_peer_SOURCES =  \
 	testsuites/system_peer/task_modules.vala \
 	testsuites/system_peer/task_gateways.vala \
 	testsuites/system_peer/task_check_two_nodes_meet.vala \
+	testsuites/system_peer/task_check_two_gnodes_meet.vala \
 	hooking.vapi \
 	$(NULL)
 
