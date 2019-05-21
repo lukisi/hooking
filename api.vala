@@ -44,7 +44,9 @@ namespace Netsukuku.Hooking
         public abstract Gee.List<IPairHCoordInt> adjacent_to_my_gnode(int level_adjacent_gnodes, int level_my_gnode);
 
         // My Gateways
-        public abstract IHookingManagerStub gateway(int level, int pos);
+        public abstract IHookingManagerStub? gateway(int level, int pos,
+            CallerInfo? received_from=null,
+            IHookingManagerStub? failed=null);
     }
 
     public interface IPairHCoordInt : Object

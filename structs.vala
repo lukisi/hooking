@@ -163,12 +163,6 @@ namespace Netsukuku.Hooking
         }
     }
 
-    internal IHookingManagerStub best_gw_to(TupleGNode a, IHookingMapPaths map_paths)
-    {
-        HCoord hc = tuple_to_hc(a, map_paths);
-        return map_paths.gateway(hc.lvl, hc.pos);
-    }
-
     // PathHop is in file serializables
 
     internal Gee.List<PathHop> get_path_hops(SolutionStep current)

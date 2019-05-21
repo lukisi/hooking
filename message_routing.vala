@@ -115,13 +115,30 @@ namespace Netsukuku.Hooking.MessageRouting
             IChannel ch = tasklet.get_channel();
             request_id_map[p0.pkt_id] = ch;
             // send request
-            IHookingManagerStub st = best_gw_to(p0.path_hops[1].visiting_gnode, map_paths);
-            try {
-                st.route_search_request(p0);
-            } catch (StubError e) {
-                // nop.
-            } catch (DeserializeError e) {
-                // nop.
+            HCoord hc = tuple_to_hc(p0.path_hops[1].visiting_gnode, map_paths);
+            IHookingManagerStub? gwstub;
+            IHookingManagerStub? failed = null;
+            bool unreachable = false;
+            while (true)
+            {
+                gwstub = map_paths.gateway(hc.lvl, hc.pos, null, failed);
+                if (gwstub == null) {
+                    unreachable = true;
+                    break;
+                }
+                try {
+                    gwstub.route_search_request(p0);
+                } catch (StubError e) {
+                    failed = gwstub;
+                    continue;
+                } catch (DeserializeError e) {
+                    assert_not_reached();
+                }
+                break;
+            }
+            if (unreachable)
+            {
+                throw new SearchMigrationPathError.GENERIC("Could not send to visiting_gnode.");
             }
             // wait response with timeout
             Object resp;
@@ -163,7 +180,12 @@ namespace Netsukuku.Hooking.MessageRouting
                     SearchMigrationPathErrorPkt p1 = new SearchMigrationPathErrorPkt();
                     p1.origin = p0.origin;
                     p1.pkt_id = p0.pkt_id;
-                    IHookingManagerStub st = best_gw_to(p1.origin, map_paths);
+                    HCoord hc = tuple_to_hc(p1.origin, map_paths);
+                    IHookingManagerStub? st = map_paths.gateway(hc.lvl, hc.pos);
+                    if (st == null)
+                    {
+                        error("not implemented yet");
+                    }
                     try {
                         st.route_search_error(p1);
                     } catch (StubError e) {
@@ -178,7 +200,12 @@ namespace Netsukuku.Hooking.MessageRouting
                     p0.caller = make_tuple_from_level(0, map_paths);
                     p0.path_hops.remove_at(0);
                     // route request
-                    IHookingManagerStub st = best_gw_to(p0.path_hops[1].visiting_gnode, map_paths);
+                    HCoord hc = tuple_to_hc(p0.path_hops[1].visiting_gnode, map_paths);
+                    IHookingManagerStub? st = map_paths.gateway(hc.lvl, hc.pos);
+                    if (st == null)
+                    {
+                        error("not implemented yet");
+                    }
                     try {
                         st.route_search_request(p0);
                     } catch (StubError e) {
@@ -215,7 +242,12 @@ namespace Netsukuku.Hooking.MessageRouting
                     p1.new_conn_vir_pos = p1_new_conn_vir_pos;
                     p1.new_eldership = p1_new_eldership;
                     // send response
-                    IHookingManagerStub st = best_gw_to(p1.origin, map_paths);
+                    HCoord hc = tuple_to_hc(p1.origin, map_paths);
+                    IHookingManagerStub? st = map_paths.gateway(hc.lvl, hc.pos);
+                    if (st == null)
+                    {
+                        error("not implemented yet");
+                    }
                     try {
                         st.route_search_response(p1);
                     } catch (StubError e) {
@@ -256,7 +288,12 @@ namespace Netsukuku.Hooking.MessageRouting
                     SearchMigrationPathErrorPkt p1 = new SearchMigrationPathErrorPkt();
                     p1.origin = p0.origin;
                     p1.pkt_id = p0.pkt_id;
-                    IHookingManagerStub st = best_gw_to(p1.origin, map_paths);
+                    HCoord hc = tuple_to_hc(p1.origin, map_paths);
+                    IHookingManagerStub? st = map_paths.gateway(hc.lvl, hc.pos);
+                    if (st == null)
+                    {
+                        error("not implemented yet");
+                    }
                     try {
                         st.route_search_error(p1);
                     } catch (StubError e) {
@@ -268,7 +305,12 @@ namespace Netsukuku.Hooking.MessageRouting
                 }
                 p0.caller = make_tuple_from_level(0, map_paths);
                 // route request
-                IHookingManagerStub st = best_gw_to(p0.path_hops[1].visiting_gnode, map_paths);
+                HCoord hc = tuple_to_hc(p0.path_hops[1].visiting_gnode, map_paths);
+                IHookingManagerStub? st = map_paths.gateway(hc.lvl, hc.pos);
+                if (st == null)
+                {
+                    error("not implemented yet");
+                }
                 try {
                     st.route_search_request(p0);
                 } catch (StubError e) {
@@ -291,7 +333,12 @@ namespace Netsukuku.Hooking.MessageRouting
                 return;
             }
             // route error
-            IHookingManagerStub st = best_gw_to(p.origin, map_paths);
+            HCoord hc = tuple_to_hc(p.origin, map_paths);
+            IHookingManagerStub? st = map_paths.gateway(hc.lvl, hc.pos);
+            if (st == null)
+            {
+                error("not implemented yet");
+            }
             try {
                 st.route_search_error(p);
             } catch (StubError e) {
@@ -313,7 +360,12 @@ namespace Netsukuku.Hooking.MessageRouting
                 return;
             }
             // route error
-            IHookingManagerStub st = best_gw_to(p.origin, map_paths);
+            HCoord hc = tuple_to_hc(p.origin, map_paths);
+            IHookingManagerStub? st = map_paths.gateway(hc.lvl, hc.pos);
+            if (st == null)
+            {
+                error("not implemented yet");
+            }
             try {
                 st.route_search_response(p);
             } catch (StubError e) {
@@ -344,7 +396,12 @@ namespace Netsukuku.Hooking.MessageRouting
             IChannel ch = tasklet.get_channel();
             request_id_map[p0.pkt_id] = ch;
             // send request
-            IHookingManagerStub st = best_gw_to(p0.path_hops[1].visiting_gnode, map_paths);
+            HCoord hc = tuple_to_hc(p0.path_hops[1].visiting_gnode, map_paths);
+            IHookingManagerStub? st = map_paths.gateway(hc.lvl, hc.pos);
+            if (st == null)
+            {
+                error("not implemented yet");
+            }
             try {
                 st.route_explore_request(p0);
             } catch (StubError e) {
@@ -375,7 +432,12 @@ namespace Netsukuku.Hooking.MessageRouting
                 {
                     p0.path_hops.remove_at(0);
                     // route request
-                    IHookingManagerStub st = best_gw_to(p0.path_hops[1].visiting_gnode, map_paths);
+                    HCoord hc = tuple_to_hc(p0.path_hops[1].visiting_gnode, map_paths);
+                    IHookingManagerStub? st = map_paths.gateway(hc.lvl, hc.pos);
+                    if (st == null)
+                    {
+                        error("not implemented yet");
+                    }
                     try {
                         st.route_explore_request(p0);
                     } catch (StubError e) {
@@ -398,7 +460,12 @@ namespace Netsukuku.Hooking.MessageRouting
                     execute_explore(p0.requested_lvl, out p1_result);
                     p1.result = p1_result;
                     // send response
-                    IHookingManagerStub st = best_gw_to(p1.origin, map_paths);
+                    HCoord hc = tuple_to_hc(p1.origin, map_paths);
+                    IHookingManagerStub? st = map_paths.gateway(hc.lvl, hc.pos);
+                    if (st == null)
+                    {
+                        error("not implemented yet");
+                    }
                     try {
                         st.route_explore_response(p1);
                     } catch (StubError e) {
@@ -434,7 +501,12 @@ namespace Netsukuku.Hooking.MessageRouting
             else
             {
                     // route request
-                    IHookingManagerStub st = best_gw_to(p0.path_hops[1].visiting_gnode, map_paths);
+                    HCoord hc = tuple_to_hc(p0.path_hops[1].visiting_gnode, map_paths);
+                    IHookingManagerStub? st = map_paths.gateway(hc.lvl, hc.pos);
+                    if (st == null)
+                    {
+                        error("not implemented yet");
+                    }
                     try {
                         st.route_explore_request(p0);
                     } catch (StubError e) {
@@ -457,7 +529,12 @@ namespace Netsukuku.Hooking.MessageRouting
                 return;
             }
             // route response
-            IHookingManagerStub st = best_gw_to(p.origin, map_paths);
+            HCoord hc = tuple_to_hc(p.origin, map_paths);
+            IHookingManagerStub? st = map_paths.gateway(hc.lvl, hc.pos);
+            if (st == null)
+            {
+                error("not implemented yet");
+            }
             try {
                 st.route_explore_response(p);
             } catch (StubError e) {
@@ -487,7 +564,12 @@ namespace Netsukuku.Hooking.MessageRouting
             p0.dest_gnode = dest_gnode;
             p0.reserve_request_id = reserve_request_id;
             // send request
-            IHookingManagerStub st = best_gw_to(p0.dest_gnode, map_paths);
+            HCoord hc = tuple_to_hc(p0.dest_gnode, map_paths);
+            IHookingManagerStub? st = map_paths.gateway(hc.lvl, hc.pos);
+            if (st == null)
+            {
+                error("not implemented yet");
+            }
             try {
                 st.route_delete_reserve_request(p0);
             } catch (StubError e) {
@@ -525,7 +607,12 @@ namespace Netsukuku.Hooking.MessageRouting
             else
             {
                 // route request
-                IHookingManagerStub st = best_gw_to(p0.dest_gnode, map_paths);
+                HCoord hc = tuple_to_hc(p0.dest_gnode, map_paths);
+                IHookingManagerStub? st = map_paths.gateway(hc.lvl, hc.pos);
+                if (st == null)
+                {
+                    error("not implemented yet");
+                }
                 try {
                     st.route_delete_reserve_request(p0);
                 } catch (StubError e) {
@@ -553,7 +640,12 @@ namespace Netsukuku.Hooking.MessageRouting
             IChannel ch = tasklet.get_channel();
             request_id_map[p0.pkt_id] = ch;
             // send request
-            IHookingManagerStub st = best_gw_to(p0.dest, map_paths);
+            HCoord hc = tuple_to_hc(p0.dest, map_paths);
+            IHookingManagerStub? st = map_paths.gateway(hc.lvl, hc.pos);
+            if (st == null)
+            {
+                error("not implemented yet");
+            }
             try {
                 st.route_mig_request(p0);
             } catch (StubError e) {
@@ -581,7 +673,12 @@ namespace Netsukuku.Hooking.MessageRouting
                 ResponsePacket p1 = new ResponsePacket();
                 p1.pkt_id = p0.pkt_id;
                 p1.dest = p0.src;
-                IHookingManagerStub st = best_gw_to(p1.dest, map_paths);
+                HCoord hc = tuple_to_hc(p1.dest, map_paths);
+                IHookingManagerStub? st = map_paths.gateway(hc.lvl, hc.pos);
+                if (st == null)
+                {
+                    error("not implemented yet");
+                }
                 try {
                     st.route_mig_response(p1);
                 } catch (StubError e) {
@@ -593,7 +690,12 @@ namespace Netsukuku.Hooking.MessageRouting
             else
             {
                 // route request
-                IHookingManagerStub st = best_gw_to(p0.dest, map_paths);
+                HCoord hc = tuple_to_hc(p0.dest, map_paths);
+                IHookingManagerStub? st = map_paths.gateway(hc.lvl, hc.pos);
+                if (st == null)
+                {
+                    error("not implemented yet");
+                }
                 try {
                     st.route_mig_request(p0);
                 } catch (StubError e) {
@@ -614,7 +716,12 @@ namespace Netsukuku.Hooking.MessageRouting
             }
             else
             {
-                IHookingManagerStub st = best_gw_to(p.dest, map_paths);
+                HCoord hc = tuple_to_hc(p.dest, map_paths);
+                IHookingManagerStub? st = map_paths.gateway(hc.lvl, hc.pos);
+                if (st == null)
+                {
+                    error("not implemented yet");
+                }
                 try {
                     st.route_mig_response(p);
                 } catch (StubError e) {

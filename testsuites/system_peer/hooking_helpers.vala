@@ -354,13 +354,46 @@ namespace SystemPeer
             return false;
         }
 
-        public IHookingManagerStub gateway(int level, int pos)
+        public IHookingManagerStub? gateway(int level, int pos,
+            CallerInfo? received_from=null,
+            IHookingManagerStub? failed=null)
         {
+            // If there is a (previous) failed stub, remove the physical arc it was based on.
+            if (failed != null)
+            {
+                IdentityArc ia = ((HookingManagerStubHolder)failed).ia;
+                assert(identity_data.gateways.has_key(level));
+                if (identity_data.gateways[level].has_key(pos))
+                    identity_data.gateways[level][pos].remove(ia);
+                identity_data.identity_arcs.remove(ia);
+            }
+            // Search a gateway to reach (level, pos) excluding received_from
+            NodeID? received_from_nodeid = null;
+            if (received_from != null)
+            {
+                IdentityArc? caller_ia = skeleton_factory.from_caller_get_identityarc(received_from, identity_data);
+                if (caller_ia != null) received_from_nodeid = caller_ia.peer_nodeid;
+            }
+            ArrayList<IdentityArc> available_gw = new ArrayList<IdentityArc>();
             assert(identity_data.gateways.has_key(level));
-            assert(identity_data.gateways[level].has_key(pos));
-            IdentityArc ia = identity_data.gateways[level][pos][0];
-            IAddressManagerStub addrstub = stub_factory.get_stub_identity_aware_unicast_from_ia(ia, false);
-            return new HookingManagerStubHolder(addrstub, ia);
+            if (identity_data.gateways[level].has_key(pos))
+                available_gw.add_all(identity_data.gateways[level][pos]);
+            while (! available_gw.is_empty)
+            {
+                IdentityArc gw = available_gw[0];
+                NodeID gw_nodeid = gw.peer_nodeid;
+                if (received_from_nodeid != null && received_from_nodeid.equals(gw_nodeid))
+                {
+                    available_gw.remove_at(0);
+                    continue;
+                }
+                // found a gateway, excluding received_from
+                break;
+            }
+            if (available_gw.is_empty) return null; // no more paths.
+            IdentityArc gw_ia = available_gw[0];
+            IAddressManagerStub addrstub = stub_factory.get_stub_identity_aware_unicast_from_ia(gw_ia, false);
+            return new HookingManagerStubHolder(addrstub, gw_ia);
         }
 
         public int get_eldership(int level, int pos)
