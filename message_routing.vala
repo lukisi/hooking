@@ -163,7 +163,8 @@ namespace Netsukuku.Hooking.MessageRouting
             new_eldership = response.new_eldership;
         }
 
-        public void route_search_request(SearchMigrationPathRequest p0)
+        public void route_search_request(SearchMigrationPathRequest p0,
+                    CallerInfo caller)
         {
             // check pkt
             if (p0.path_hops.size < 2) return; // ignore bad pkt
@@ -181,18 +182,7 @@ namespace Netsukuku.Hooking.MessageRouting
                     p1.origin = p0.origin;
                     p1.pkt_id = p0.pkt_id;
                     HCoord hc = tuple_to_hc(p1.origin, map_paths);
-                    IHookingManagerStub? st = map_paths.gateway(hc.lvl, hc.pos);
-                    if (st == null)
-                    {
-                        error("not implemented yet");
-                    }
-                    try {
-                        st.route_search_error(p1);
-                    } catch (StubError e) {
-                        // nop.
-                    } catch (DeserializeError e) {
-                        // nop.
-                    }
+                    send_search_error(hc, p1);
                     return;
                 }
                 if (p0.path_hops.size > 2)
@@ -201,17 +191,35 @@ namespace Netsukuku.Hooking.MessageRouting
                     p0.path_hops.remove_at(0);
                     // route request
                     HCoord hc = tuple_to_hc(p0.path_hops[1].visiting_gnode, map_paths);
-                    IHookingManagerStub? st = map_paths.gateway(hc.lvl, hc.pos);
-                    if (st == null)
+                    IHookingManagerStub? gwstub;
+                    IHookingManagerStub? failed = null;
+                    bool unreachable = false;
+                    while (true)
                     {
-                        error("not implemented yet");
+                        gwstub = map_paths.gateway(hc.lvl, hc.pos, caller, failed);
+                        if (gwstub == null) {
+                            unreachable = true;
+                            break;
+                        }
+                        try {
+                            gwstub.route_search_request(p0);
+                        } catch (StubError e) {
+                            failed = gwstub;
+                            continue;
+                        } catch (DeserializeError e) {
+                            assert_not_reached();
+                        }
+                        break;
                     }
-                    try {
-                        st.route_search_request(p0);
-                    } catch (StubError e) {
-                        // nop.
-                    } catch (DeserializeError e) {
-                        // nop.
+                    if (unreachable)
+                    {
+                        // send error in routing
+                        SearchMigrationPathErrorPkt p1 = new SearchMigrationPathErrorPkt();
+                        p1.origin = p0.origin;
+                        p1.pkt_id = p0.pkt_id;
+                        hc = tuple_to_hc(p1.origin, map_paths);
+                        send_search_error(hc, p1);
+                        return;
                     }
                     return;
                 }
@@ -265,7 +273,11 @@ namespace Netsukuku.Hooking.MessageRouting
                         if (map_paths.exists(lvl_next, pos_next))
                         {
                             // route request
-                            IHookingManagerStub st = map_paths.gateway(lvl_next, pos_next);
+                            IHookingManagerStub? st = map_paths.gateway(lvl_next, pos_next);
+                            if (st == null)
+                            {
+                                error("not implemented yet");
+                            }
                             try {
                                 st.route_search_request(p0);
                             } catch (StubError e) {
@@ -322,7 +334,36 @@ namespace Netsukuku.Hooking.MessageRouting
             }
         }
 
-        public void route_search_error(SearchMigrationPathErrorPkt p)
+        public void send_search_error(HCoord hc, SearchMigrationPathErrorPkt p)
+        {
+            IHookingManagerStub? gwstub;
+            IHookingManagerStub? failed = null;
+            bool unreachable = false;
+            while (true)
+            {
+                gwstub = map_paths.gateway(hc.lvl, hc.pos, null, failed);
+                if (gwstub == null) {
+                    unreachable = true;
+                    break;
+                }
+                try {
+                    gwstub.route_search_error(p);
+                } catch (StubError e) {
+                    failed = gwstub;
+                    continue;
+                } catch (DeserializeError e) {
+                    assert_not_reached();
+                }
+                break;
+            }
+            if (unreachable)
+            {
+                // do nothing
+            }
+        }
+
+        public void route_search_error(SearchMigrationPathErrorPkt p,
+                    CallerInfo caller)
         {
             if (positions_equal(make_tuple_from_level(0, map_paths), p.origin))
             {
@@ -349,7 +390,14 @@ namespace Netsukuku.Hooking.MessageRouting
             return;
         }
 
-        public void route_search_response(SearchMigrationPathResponse p)
+        public void send_search_response(HCoord hc, SearchMigrationPathResponse p)
+        {
+            // TODO
+            error("not implemented yet");
+        }
+
+        public void route_search_response(SearchMigrationPathResponse p,
+                    CallerInfo caller)
         {
             if (positions_equal(make_tuple_from_level(0, map_paths), p.origin))
             {
@@ -424,7 +472,8 @@ namespace Netsukuku.Hooking.MessageRouting
             result = response.result;
         }
 
-        public void route_explore_request(ExploreGNodeRequest p0)
+        public void route_explore_request(ExploreGNodeRequest p0,
+                    CallerInfo caller)
         {
             if (i_am_inside(p0.path_hops[1].visiting_gnode, map_paths))
             {
@@ -483,7 +532,11 @@ namespace Netsukuku.Hooking.MessageRouting
                         if (map_paths.exists(lvl_next, pos_next))
                         {
                             // route request
-                            IHookingManagerStub st = map_paths.gateway(lvl_next, pos_next);
+                            IHookingManagerStub? st = map_paths.gateway(lvl_next, pos_next);
+                            if (st == null)
+                            {
+                                error("not implemented yet");
+                            }
                             try {
                                 st.route_explore_request(p0);
                             } catch (StubError e) {
@@ -518,7 +571,8 @@ namespace Netsukuku.Hooking.MessageRouting
             }
         }
 
-        public void route_explore_response(ExploreGNodeResponse p)
+        public void route_explore_response(ExploreGNodeResponse p,
+                    CallerInfo caller)
         {
             if (positions_equal(make_tuple_from_level(0, map_paths), p.origin))
             {
@@ -596,7 +650,8 @@ namespace Netsukuku.Hooking.MessageRouting
             execute_delete_reserve(dest_gnode, reserve_request_id);
         }
 
-        public void route_delete_reserve_request(DeleteReservationRequest p0)
+        public void route_delete_reserve_request(DeleteReservationRequest p0,
+                    CallerInfo caller)
         {
             if (i_am_inside(p0.dest_gnode, map_paths))
             {
@@ -664,7 +719,8 @@ namespace Netsukuku.Hooking.MessageRouting
             return;
         }
 
-        public void route_mig_request(RequestPacket p0)
+        public void route_mig_request(RequestPacket p0,
+                    CallerInfo caller)
         {
             if (i_am_inside(p0.dest, map_paths))
             {
@@ -706,7 +762,8 @@ namespace Netsukuku.Hooking.MessageRouting
             }
         }
 
-        public void route_mig_response(ResponsePacket p)
+        public void route_mig_response(ResponsePacket p,
+                    CallerInfo caller)
         {
             if (i_am_inside(p.dest, map_paths))
             {

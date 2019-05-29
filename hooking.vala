@@ -590,7 +590,7 @@ namespace Netsukuku.Hooking
                     CallerInfo? _rpc_caller=null)
         {
             if (! (p0 is SearchMigrationPathRequest)) return; // ignore bad pkt.
-            message_routing.route_search_request((SearchMigrationPathRequest)p0);
+            message_routing.route_search_request((SearchMigrationPathRequest)p0, _rpc_caller);
         }
 
         public void
@@ -598,7 +598,7 @@ namespace Netsukuku.Hooking
                     CallerInfo? _rpc_caller=null)
         {
             if (! (p2 is SearchMigrationPathErrorPkt)) return; // ignore bad pkt.
-            message_routing.route_search_error((SearchMigrationPathErrorPkt)p2);
+            message_routing.route_search_error((SearchMigrationPathErrorPkt)p2, _rpc_caller);
         }
 
         public void
@@ -606,7 +606,7 @@ namespace Netsukuku.Hooking
                     CallerInfo? _rpc_caller=null)
         {
             if (! (p1 is SearchMigrationPathResponse)) return; // ignore bad pkt.
-            message_routing.route_search_response((SearchMigrationPathResponse)p1);
+            message_routing.route_search_response((SearchMigrationPathResponse)p1, _rpc_caller);
         }
 
         public void
@@ -614,7 +614,7 @@ namespace Netsukuku.Hooking
                     CallerInfo? _rpc_caller=null)
         {
             if (! (p0 is ExploreGNodeRequest)) return; // ignore bad pkt.
-            message_routing.route_explore_request((ExploreGNodeRequest)p0);
+            message_routing.route_explore_request((ExploreGNodeRequest)p0, _rpc_caller);
         }
 
         public void
@@ -622,7 +622,7 @@ namespace Netsukuku.Hooking
                     CallerInfo? _rpc_caller=null)
         {
             if (! (p1 is ExploreGNodeResponse)) return; // ignore bad pkt.
-            message_routing.route_explore_response((ExploreGNodeResponse)p1);
+            message_routing.route_explore_response((ExploreGNodeResponse)p1, _rpc_caller);
         }
 
         public void
@@ -630,7 +630,7 @@ namespace Netsukuku.Hooking
                     CallerInfo? _rpc_caller=null)
         {
             if (! (p0 is RequestPacket)) return; // ignore bad pkt.
-            message_routing.route_mig_request((RequestPacket)p0);
+            message_routing.route_mig_request((RequestPacket)p0, _rpc_caller);
         }
 
         public void
@@ -638,7 +638,7 @@ namespace Netsukuku.Hooking
                     CallerInfo? _rpc_caller=null)
         {
             if (! (p1 is ResponsePacket)) return; // ignore bad pkt.
-            message_routing.route_mig_response((ResponsePacket)p1);
+            message_routing.route_mig_response((ResponsePacket)p1, _rpc_caller);
         }
 
         public void
@@ -646,7 +646,7 @@ namespace Netsukuku.Hooking
                     CallerInfo? _rpc_caller=null)
         {
             if (! (p0 is DeleteReservationRequest)) return; // ignore bad pkt.
-            message_routing.route_delete_reserve_request((DeleteReservationRequest)p0);
+            message_routing.route_delete_reserve_request((DeleteReservationRequest)p0, _rpc_caller);
         }
 
     }
