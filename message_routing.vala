@@ -605,17 +605,29 @@ namespace Netsukuku.Hooking.MessageRouting
                         if (map_paths.exists(lvl_next, pos_next))
                         {
                             // route request
-                            IHookingManagerStub? st = map_paths.gateway(lvl_next, pos_next);
-                            if (st == null)
+                            IHookingManagerStub? gwstub;
+                            IHookingManagerStub? failed = null;
+                            bool unreachable = false;
+                            while (true)
                             {
-                                error("not implemented yet");
+                                gwstub = map_paths.gateway(lvl_next, pos_next, caller, failed);
+                                if (gwstub == null) {
+                                    unreachable = true;
+                                    break;
+                                }
+                                try {
+                                    gwstub.route_explore_request(p0);
+                                } catch (StubError e) {
+                                    failed = gwstub;
+                                    continue;
+                                } catch (DeserializeError e) {
+                                    assert_not_reached();
+                                }
+                                break;
                             }
-                            try {
-                                st.route_explore_request(p0);
-                            } catch (StubError e) {
-                                // nop.
-                            } catch (DeserializeError e) {
-                                // nop.
+                            if (unreachable)
+                            {
+                                // do nothing
                             }
                             return;
                         }
@@ -628,17 +640,29 @@ namespace Netsukuku.Hooking.MessageRouting
             {
                     // route request
                     HCoord hc = tuple_to_hc(p0.path_hops[1].visiting_gnode, map_paths);
-                    IHookingManagerStub? st = map_paths.gateway(hc.lvl, hc.pos);
-                    if (st == null)
+                    IHookingManagerStub? gwstub;
+                    IHookingManagerStub? failed = null;
+                    bool unreachable = false;
+                    while (true)
                     {
-                        error("not implemented yet");
+                        gwstub = map_paths.gateway(hc.lvl, hc.pos, caller, failed);
+                        if (gwstub == null) {
+                            unreachable = true;
+                            break;
+                        }
+                        try {
+                            gwstub.route_explore_request(p0);
+                        } catch (StubError e) {
+                            failed = gwstub;
+                            continue;
+                        } catch (DeserializeError e) {
+                            assert_not_reached();
+                        }
+                        break;
                     }
-                    try {
-                        st.route_explore_request(p0);
-                    } catch (StubError e) {
-                        // nop.
-                    } catch (DeserializeError e) {
-                        // nop.
+                    if (unreachable)
+                    {
+                        // do nothing
                     }
                     return;
             }
@@ -685,17 +709,29 @@ namespace Netsukuku.Hooking.MessageRouting
             }
             // route response
             HCoord hc = tuple_to_hc(p.origin, map_paths);
-            IHookingManagerStub? st = map_paths.gateway(hc.lvl, hc.pos);
-            if (st == null)
+            IHookingManagerStub? gwstub;
+            IHookingManagerStub? failed = null;
+            bool unreachable = false;
+            while (true)
             {
-                error("not implemented yet");
+                gwstub = map_paths.gateway(hc.lvl, hc.pos, caller, failed);
+                if (gwstub == null) {
+                    unreachable = true;
+                    break;
+                }
+                try {
+                    gwstub.route_explore_response(p);
+                } catch (StubError e) {
+                    failed = gwstub;
+                    continue;
+                } catch (DeserializeError e) {
+                    assert_not_reached();
+                }
+                break;
             }
-            try {
-                st.route_explore_response(p);
-            } catch (StubError e) {
-                // nop.
-            } catch (DeserializeError e) {
-                // nop.
+            if (unreachable)
+            {
+                // do nothing
             }
             return;
         }
@@ -831,35 +867,64 @@ namespace Netsukuku.Hooking.MessageRouting
                 p1.pkt_id = p0.pkt_id;
                 p1.dest = p0.src;
                 HCoord hc = tuple_to_hc(p1.dest, map_paths);
-                IHookingManagerStub? st = map_paths.gateway(hc.lvl, hc.pos);
-                if (st == null)
-                {
-                    error("not implemented yet");
-                }
-                try {
-                    st.route_mig_response(p1);
-                } catch (StubError e) {
-                    // nop.
-                } catch (DeserializeError e) {
-                    // nop.
-                }
+                send_mig_response(hc, p1);
             }
             else
             {
                 // route request
                 HCoord hc = tuple_to_hc(p0.dest, map_paths);
-                IHookingManagerStub? st = map_paths.gateway(hc.lvl, hc.pos);
-                if (st == null)
+                IHookingManagerStub? gwstub;
+                IHookingManagerStub? failed = null;
+                bool unreachable = false;
+                while (true)
                 {
-                    error("not implemented yet");
+                    gwstub = map_paths.gateway(hc.lvl, hc.pos, caller, failed);
+                    if (gwstub == null) {
+                        unreachable = true;
+                        break;
+                    }
+                    try {
+                        gwstub.route_mig_request(p0);
+                    } catch (StubError e) {
+                        failed = gwstub;
+                        continue;
+                    } catch (DeserializeError e) {
+                        assert_not_reached();
+                    }
+                    break;
+                }
+                if (unreachable)
+                {
+                    // do nothing
+                }
+            }
+        }
+
+        public void send_mig_response(HCoord hc, ResponsePacket p)
+        {
+            IHookingManagerStub? gwstub;
+            IHookingManagerStub? failed = null;
+            bool unreachable = false;
+            while (true)
+            {
+                gwstub = map_paths.gateway(hc.lvl, hc.pos, null, failed);
+                if (gwstub == null) {
+                    unreachable = true;
+                    break;
                 }
                 try {
-                    st.route_mig_request(p0);
+                    gwstub.route_mig_response(p);
                 } catch (StubError e) {
-                    // nop.
+                    failed = gwstub;
+                    continue;
                 } catch (DeserializeError e) {
-                    // nop.
+                    assert_not_reached();
                 }
+                break;
+            }
+            if (unreachable)
+            {
+                // do nothing
             }
         }
 
@@ -875,17 +940,29 @@ namespace Netsukuku.Hooking.MessageRouting
             else
             {
                 HCoord hc = tuple_to_hc(p.dest, map_paths);
-                IHookingManagerStub? st = map_paths.gateway(hc.lvl, hc.pos);
-                if (st == null)
+                IHookingManagerStub? gwstub;
+                IHookingManagerStub? failed = null;
+                bool unreachable = false;
+                while (true)
                 {
-                    error("not implemented yet");
+                    gwstub = map_paths.gateway(hc.lvl, hc.pos, caller, failed);
+                    if (gwstub == null) {
+                        unreachable = true;
+                        break;
+                    }
+                    try {
+                        gwstub.route_mig_response(p);
+                    } catch (StubError e) {
+                        failed = gwstub;
+                        continue;
+                    } catch (DeserializeError e) {
+                        assert_not_reached();
+                    }
+                    break;
                 }
-                try {
-                    st.route_mig_response(p);
-                } catch (StubError e) {
-                    // nop.
-                } catch (DeserializeError e) {
-                    // nop.
+                if (unreachable)
+                {
+                    // do nothing
                 }
             }
         }
