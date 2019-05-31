@@ -505,17 +505,29 @@ namespace Netsukuku.Hooking.MessageRouting
             request_id_map[p0.pkt_id] = ch;
             // send request
             HCoord hc = tuple_to_hc(p0.path_hops[1].visiting_gnode, map_paths);
-            IHookingManagerStub? st = map_paths.gateway(hc.lvl, hc.pos);
-            if (st == null)
+            IHookingManagerStub? gwstub;
+            IHookingManagerStub? failed = null;
+            bool unreachable = false;
+            while (true)
             {
-                error("not implemented yet");
+                gwstub = map_paths.gateway(hc.lvl, hc.pos, null, failed);
+                if (gwstub == null) {
+                    unreachable = true;
+                    break;
+                }
+                try {
+                    gwstub.route_explore_request(p0);
+                } catch (StubError e) {
+                    failed = gwstub;
+                    continue;
+                } catch (DeserializeError e) {
+                    assert_not_reached();
+                }
+                break;
             }
-            try {
-                st.route_explore_request(p0);
-            } catch (StubError e) {
-                // nop.
-            } catch (DeserializeError e) {
-                // nop.
+            if (unreachable)
+            {
+                throw new ExploreGNodeError.GENERIC("Could not send to visiting_gnode.");
             }
             // wait response with timeout
             Object resp;
@@ -542,17 +554,29 @@ namespace Netsukuku.Hooking.MessageRouting
                     p0.path_hops.remove_at(0);
                     // route request
                     HCoord hc = tuple_to_hc(p0.path_hops[1].visiting_gnode, map_paths);
-                    IHookingManagerStub? st = map_paths.gateway(hc.lvl, hc.pos);
-                    if (st == null)
+                    IHookingManagerStub? gwstub;
+                    IHookingManagerStub? failed = null;
+                    bool unreachable = false;
+                    while (true)
                     {
-                        error("not implemented yet");
+                        gwstub = map_paths.gateway(hc.lvl, hc.pos, caller, failed);
+                        if (gwstub == null) {
+                            unreachable = true;
+                            break;
+                        }
+                        try {
+                            gwstub.route_explore_request(p0);
+                        } catch (StubError e) {
+                            failed = gwstub;
+                            continue;
+                        } catch (DeserializeError e) {
+                            assert_not_reached();
+                        }
+                        break;
                     }
-                    try {
-                        st.route_explore_request(p0);
-                    } catch (StubError e) {
-                        // nop.
-                    } catch (DeserializeError e) {
-                        // nop.
+                    if (unreachable)
+                    {
+                        // do nothing
                     }
                     return;
                 }
@@ -570,18 +594,7 @@ namespace Netsukuku.Hooking.MessageRouting
                     p1.result = p1_result;
                     // send response
                     HCoord hc = tuple_to_hc(p1.origin, map_paths);
-                    IHookingManagerStub? st = map_paths.gateway(hc.lvl, hc.pos);
-                    if (st == null)
-                    {
-                        error("not implemented yet");
-                    }
-                    try {
-                        st.route_explore_response(p1);
-                    } catch (StubError e) {
-                        // nop.
-                    } catch (DeserializeError e) {
-                        // nop.
-                    }
+                    send_explore_response(hc, p1);
                     return;
                 }
                 else
@@ -628,6 +641,34 @@ namespace Netsukuku.Hooking.MessageRouting
                         // nop.
                     }
                     return;
+            }
+        }
+
+        public void send_explore_response(HCoord hc, ExploreGNodeResponse p)
+        {
+            IHookingManagerStub? gwstub;
+            IHookingManagerStub? failed = null;
+            bool unreachable = false;
+            while (true)
+            {
+                gwstub = map_paths.gateway(hc.lvl, hc.pos, null, failed);
+                if (gwstub == null) {
+                    unreachable = true;
+                    break;
+                }
+                try {
+                    gwstub.route_explore_response(p);
+                } catch (StubError e) {
+                    failed = gwstub;
+                    continue;
+                } catch (DeserializeError e) {
+                    assert_not_reached();
+                }
+                break;
+            }
+            if (unreachable)
+            {
+                // do nothing
             }
         }
 
