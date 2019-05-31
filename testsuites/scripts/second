@@ -17,6 +17,17 @@ RADIO_3312_PID=$!
 radio_domain -i 2312_wl0 -o 3312_wl0 -o 2122_wl0 &
 RADIO_2312_PID=$!
 
+radio_domain -i 1333_wl0 -o 2233_wl0 &
+RADIO_1333_PID=$!
+radio_domain -i 2233_wl0 -o 1333_wl0 -o 1233_wl0 &
+RADIO_2233_PID=$!
+radio_domain -i 1233_wl0 -o 2233_wl0 -o 2133_wl0 &
+RADIO_1233_PID=$!
+radio_domain -i 2133_wl0 -o 1233_wl0 -o 1133_wl0 &
+RADIO_2133_PID=$!
+radio_domain -i 1133_wl0 -o 2133_wl0 &
+RADIO_1133_PID=$!
+
 sleep 0.3
 
 echo Starting launches at `date +%T.%N`
@@ -138,6 +149,29 @@ PEER_3312_PID=$!
               > test_second_pid2312_out.txt 2>&1 &
 PEER_2312_PID=$!
 
+
+
+./system_peer --topology 2,2,2,2 --firstaddr 1,3,3,3 \
+              \
+              -p 1333 -i wl0 \
+              -a wl0,2233,wl0,2000 \
+              \
+              -t add_identityarc,200,0,0+1 \
+              \
+              > test_second_pid1333_out.txt 2>&1 &
+PEER_1333_PID=$!
+
+./system_peer --topology 2,2,2,2 --firstaddr 2,2,3,3 \
+              \
+              -p 2233 -i wl0 \
+              -a wl0,1333,wl0,2000 \
+              \
+              -t add_identity,100,0,1,4,0+0 \
+              -t enter_net,300,0,1,0,2:3:3,1:0:0,1333:1333:1333 \
+              \
+              > test_second_pid2233_out.txt 2>&1 &
+PEER_2233_PID=$!
+
 echo Done launches at `date +%T.%N`
 
 sleep 5
@@ -152,14 +186,19 @@ kill -0 $PEER_2122_PID || { wait $PEER_2122_PID; echo system_peer 2122 premature
 kill -0 $PEER_2012_PID || { wait $PEER_2012_PID; echo system_peer 2012 prematurely exited with $?; PEER_ABORT=1; }
 kill -0 $PEER_3312_PID || { wait $PEER_3312_PID; echo system_peer 3312 prematurely exited with $?; PEER_ABORT=1; }
 kill -0 $PEER_2312_PID || { wait $PEER_2312_PID; echo system_peer 2312 prematurely exited with $?; PEER_ABORT=1; }
+#===
+kill -0 $PEER_1333_PID || { wait $PEER_1333_PID; echo system_peer 1333 prematurely exited with $?; PEER_ABORT=1; }
+kill -0 $PEER_2233_PID || { wait $PEER_2233_PID; echo system_peer 2233 prematurely exited with $?; PEER_ABORT=1; }
 
 echo killing...
 # interrupt peers
 kill $PEER_2232_PID $PEER_3122_PID $PEER_2322_PID $PEER_1012_PID $PEER_2122_PID $PEER_2012_PID \
      $PEER_3312_PID $PEER_2312_PID
+kill $PEER_1333_PID $PEER_2233_PID
 
 wait $PEER_2232_PID $PEER_3122_PID $PEER_2322_PID $PEER_1012_PID $PEER_2122_PID $PEER_2012_PID \
      $PEER_3312_PID $PEER_2312_PID
+wait $PEER_1333_PID $PEER_2233_PID
 
 # Ignore errors in this shutdown. Remove any remaining local socket.
 rm -f conn_169.254.*
@@ -169,9 +208,11 @@ rm -f recv_????_wl0
 # kill proxy demons
 kill $RADIO_2232_PID $RADIO_3122_PID $RADIO_2322_PID $RADIO_1012_PID $RADIO_2122_PID $RADIO_2012_PID \
      $RADIO_3312_PID $RADIO_2312_PID
+kill $RADIO_1333_PID $RADIO_2233_PID $RADIO_1233_PID $RADIO_2133_PID $RADIO_1133_PID
 
 wait $RADIO_2232_PID $RADIO_3122_PID $RADIO_2322_PID $RADIO_1012_PID $RADIO_2122_PID $RADIO_2012_PID \
      $RADIO_3312_PID $RADIO_2312_PID
+wait $RADIO_1333_PID $RADIO_2233_PID $RADIO_1233_PID $RADIO_2133_PID $RADIO_1133_PID
 
 # delay for removal of local sockets (e.g. send_2232_wl0)
 sleep 0.3
