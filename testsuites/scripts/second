@@ -109,6 +109,22 @@ PEER_3122_PID=$!
               \
               -t add_identityarc,800,1,2+1 \
               \
+              -t add_gateway,2000,1,1+1,1,1,-1 \
+              -t add_gateway,2000,1,0+0,2,3,-1 \
+              -t add_gateway,2002,1,1+1,2,3,-1 \
+              -t add_gateway,2000,1,2+1,2,1,-1 \
+              -t add_gateway,2002,1,1+1,2,1,-1 \
+              -t update_n_nodes,2000,1,8 \
+              -t update_coord_n_nodes,2000,1,8 \
+              -t update_proxy_endpoint,2000,1,4,1012_1 \
+              -t update_proxy_endpoint,2000,1,3,1012_1 \
+              -t update_proxy_endpoint,2000,1,2,2122_1 \
+              -t update_proxy_endpoint,2000,1,1,2322_1 \
+              -t update_propagation_endpoint,2000,1,4,3122_1+2122_1+1012_1+2012_1+3312_1+2312_1+2232_0 \
+              -t update_propagation_endpoint,2000,1,3,3122_1+2122_1+1012_1+2012_1+3312_1+2312_1+2232_0 \
+              -t update_propagation_endpoint,2000,1,2,3122_1+2122 \
+              -t update_propagation_endpoint,2000,1,1, \
+              \
               > test_second_pid2322_out.txt 2>&1 &
 PEER_2322_PID=$!
 
@@ -137,6 +153,22 @@ PEER_1012_PID=$!
               -t enter_net,900,0,1,0,2:1:2:2,1:0:1:0,3122:3122:2232:2232 \
               \
               -t add_identityarc,1700,1,1+1 \
+              \
+              -t add_gateway,2000,1,0+1,0,3,-1 \
+              -t add_gateway,2000,1,0+1,1,3,-1 \
+              -t add_gateway,2000,1,0+1,2,3,-1 \
+              -t add_gateway,2000,1,1+1,2,1,-1 \
+              -t add_gateway,2002,1,0+1,2,1,-1 \
+              -t update_n_nodes,2000,1,8 \
+              -t update_coord_n_nodes,2000,1,8 \
+              -t update_proxy_endpoint,2000,1,4,1012_1 \
+              -t update_proxy_endpoint,2000,1,3,1012_1 \
+              -t update_proxy_endpoint,2000,1,2,2122_1 \
+              -t update_proxy_endpoint,2000,1,1,2122_1 \
+              -t update_propagation_endpoint,2000,1,4,3122_1+2322_1+1012_1+2012_1+3312_1+2312_1+2232_0 \
+              -t update_propagation_endpoint,2000,1,3,3122_1+2322_1+1012_1+2012_1+3312_1+2312_1+2232_0 \
+              -t update_propagation_endpoint,2000,1,2,3122_1+2322 \
+              -t update_propagation_endpoint,2000,1,1,3122_1 \
               \
               > test_second_pid2122_out.txt 2>&1 &
 PEER_2122_PID=$!
