@@ -332,6 +332,7 @@ namespace SystemPeer
         }
 
         // TODO
+        print(@"INFO: [$(printabletime())] Shutting down node.\n");
 
         // Remove connectivity identities.
         ArrayList<IdentityData> local_identities_copy = new ArrayList<IdentityData>();

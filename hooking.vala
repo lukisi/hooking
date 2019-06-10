@@ -47,7 +47,11 @@ namespace Netsukuku.Hooking
     {
         // based on size of my network
         // TODO
+        // These are really just for scripted debugging:
         if (size < 5) return 1000;
+        if (size < 15) return 2000;
+        if (size < 25) return 3000;
+        // For real cases I don't know what's suited.
         if (size < 100) return 5000;
         return 10000;
     }

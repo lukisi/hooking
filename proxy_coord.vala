@@ -242,6 +242,7 @@ namespace Netsukuku.Hooking.ProxyCoord
                         // set memory
                         set_hooking_memory(lock_id, levels, memory);
                         // return
+                        debug(@"ProxyCoord.evaluate_enter: return max_lvl=$(max_lvl).");
                         return max_lvl;
                     }
                     else
@@ -250,6 +251,7 @@ namespace Netsukuku.Hooking.ProxyCoord
                         // set memory
                         set_hooking_memory(lock_id, levels, memory);
                         // ask again
+                        debug(@"ProxyCoord.evaluate_enter: throw ask_again.");
                         throw new AskAgainError.GENERIC("");
                     }
                 }
@@ -272,7 +274,8 @@ namespace Netsukuku.Hooking.ProxyCoord
                         // set memory
                         set_hooking_memory(lock_id, levels, memory);
                         // return
-                        debug(@"ProxyCoord.evaluate_enter: elected this request at level $(max_lvl).");
+                        debug(@"ProxyCoord.evaluate_enter.TO_BE_NOTIFIED: elected this request at level $(max_lvl).");
+                        debug(@"ProxyCoord.evaluate_enter: return max_lvl=$(max_lvl).");
                         return max_lvl;
                     }
                     else if (memory.evaluate_enter_timeout.is_expired())
@@ -287,6 +290,7 @@ namespace Netsukuku.Hooking.ProxyCoord
                             // set memory
                             set_hooking_memory(lock_id, levels, memory);
                             // ignore network
+                            debug(@"ProxyCoord.evaluate_enter.TO_BE_NOTIFIED: throw ignore_network.");
                             throw new IgnoreNetworkError.GENERIC("");
                         }
                         else
@@ -295,6 +299,7 @@ namespace Netsukuku.Hooking.ProxyCoord
                             memory.evaluate_enter_status = EvaluationStatus.PENDING;
                         }
                         // redo_from_start
+                        debug(@"ProxyCoord.evaluate_enter.TO_BE_NOTIFIED: redo_from_start.");
                         continue;
                     }
                     else
@@ -302,6 +307,7 @@ namespace Netsukuku.Hooking.ProxyCoord
                         // set memory
                         set_hooking_memory(lock_id, levels, memory);
                         // ask again
+                        debug(@"ProxyCoord.evaluate_enter.TO_BE_NOTIFIED: throw ask_again.");
                         throw new AskAgainError.GENERIC("");
                     }
                 }
@@ -326,6 +332,7 @@ namespace Netsukuku.Hooking.ProxyCoord
                     // set memory
                     set_hooking_memory(lock_id, levels, memory);
                     // ignore network
+                    debug(@"ProxyCoord.evaluate_enter.NOTIFIED: throw ignore_network.");
                     throw new IgnoreNetworkError.GENERIC("");
                 }
                 assert_not_reached();
@@ -371,8 +378,13 @@ namespace Netsukuku.Hooking.ProxyCoord
                 memory.begin_enter_timeout = new SerTimer(5*60*1000); // TODO verify this time is suited.
                 // set memory
                 set_hooking_memory(lock_id, lvl, memory);
+                debug(@"ProxyCoord.begin_enter: return ok.");
             }
-            else throw new AlreadyEnteringError.GENERIC("");
+            else
+            {
+                debug(@"ProxyCoord.begin_enter: throw already_entering.");
+                throw new AlreadyEnteringError.GENERIC("");
+            }
         }
 
         internal void completed_enter(int lvl, CompletedEnterData completed_enter_data)

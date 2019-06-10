@@ -1,5 +1,10 @@
 #!/bin/bash
 
+# After 2 seconds the nets are formed. Then (2100) nodes 1333 and 2312 meet.
+# Let's assume that node 2312 sees a very big network, so that node 1333 does not repeat the remote
+#  call to retrieve_network_data with ask_coord=true.
+# After few istants (2150) nodes 1333 and 3312 meet too, and nodes 1233 and 3312 meet too.
+
 radio_domain -i 2232_wl0 -o 3122_wl0 -o 2322_wl0 &
 RADIO_2232_PID=$!
 radio_domain -i 3122_wl0 -o 2232_wl0 -o 2322_wl0 -o 1012_wl0 -o 2122_wl0 &
@@ -14,14 +19,14 @@ radio_domain -i 2012_wl0 -o 1012_wl0 -o 3312_wl0 &
 RADIO_2012_PID=$!
 radio_domain -i 3312_wl0 -o 2012_wl0 -o 2312_wl0 &
 RADIO_3312_PID=$!
-radio_domain -i 2312_wl0 -o 3312_wl0 -o 2122_wl0 &
+radio_domain -i 2312_wl0 -o 3312_wl0 -o 2122_wl0 -o 1333_wl0 &
 RADIO_2312_PID=$!
 
-radio_domain -i 1333_wl0 -o 2233_wl0 &
+radio_domain -i 1333_wl0 -o 2233_wl0 -o 2312_wl0 -o 3312_wl0 &
 RADIO_1333_PID=$!
 radio_domain -i 2233_wl0 -o 1333_wl0 -o 1233_wl0 &
 RADIO_2233_PID=$!
-radio_domain -i 1233_wl0 -o 2233_wl0 -o 2133_wl0 &
+radio_domain -i 1233_wl0 -o 2233_wl0 -o 2133_wl0 -o 3312_wl0 &
 RADIO_1233_PID=$!
 radio_domain -i 2133_wl0 -o 1233_wl0 -o 1133_wl0 &
 RADIO_2133_PID=$!
@@ -228,6 +233,8 @@ PEER_2012_PID=$!
               -p 3312 -i wl0 \
               -a wl0,2012,wl0,2000 \
               -a wl0,2312,wl0,2000 \
+              -a wl0,1333,wl0,2000 \
+              -a wl0,1233,wl0,2000 \
               \
               -t add_identity,1300,0,1,4,0+1 \
               -t enter_net,1500,0,1,0,3:1:2,1:2:0,1012:2232:2232 \
@@ -240,7 +247,7 @@ PEER_2012_PID=$!
               -t add_gateway,2002,1,0+1,2,2,-1 \
               -t add_gateway,2000,1,1+1,2,3,-1 \
               -t add_gateway,2002,1,0+1,2,3,-1 \
-              -t update_n_nodes,2000,1,8 \
+              -t update_n_nodes,2000,1,800 \
               -t update_coord_n_nodes,2000,1,8 \
               -t update_proxy_endpoint,2000,1,4,1012_1 \
               -t update_proxy_endpoint,2000,1,3,1012_1 \
@@ -251,6 +258,9 @@ PEER_2012_PID=$!
               -t update_propagation_endpoint,2000,1,2,2312_1+2012_1+1012_1 \
               -t update_propagation_endpoint,2000,1,1,2312_1 \
               \
+              -t add_identityarc,2150,1,2+0 \
+              -t add_identityarc,2150,1,3+1 \
+              \
               > test_second_pid3312_out.txt 2>&1 &
 PEER_3312_PID=$!
 
@@ -259,6 +269,7 @@ PEER_3312_PID=$!
               -p 2312 -i wl0 \
               -a wl0,3312,wl0,2000 \
               -a wl0,2122,wl0,2000 \
+              -a wl0,1333,wl0,2000 \
               \
               -t add_identity,1600,0,1,4,0+1_1+1 \
               -t enter_net,1800,0,1,0,2:3:1:2,1:1:2:0,3312:1012:2232:2232 \
@@ -269,7 +280,7 @@ PEER_3312_PID=$!
               -t add_gateway,2002,1,0+1,2,2,-1 \
               -t add_gateway,2000,1,1+1,2,3,-1 \
               -t add_gateway,2002,1,0+1,2,3,-1 \
-              -t update_n_nodes,2000,1,8 \
+              -t update_n_nodes,2000,1,800 \
               -t update_coord_n_nodes,2000,1,8 \
               -t update_proxy_endpoint,2000,1,4,1012_1 \
               -t update_proxy_endpoint,2000,1,3,1012_1 \
@@ -280,6 +291,8 @@ PEER_3312_PID=$!
               -t update_propagation_endpoint,2000,1,2,3312_1+2012_1+1012_1 \
               -t update_propagation_endpoint,2000,1,1,3312_1 \
               \
+              -t add_identityarc,2100,1,2+0 \
+              \
               > test_second_pid2312_out.txt 2>&1 &
 PEER_2312_PID=$!
 
@@ -289,6 +302,8 @@ PEER_2312_PID=$!
               \
               -p 1333 -i wl0 \
               -a wl0,2233,wl0,2000 \
+              -a wl0,2312,wl0,2000 \
+              -a wl0,3312,wl0,2000 \
               \
               -t add_identityarc,200,0,0+1 \
               \
@@ -304,6 +319,10 @@ PEER_2312_PID=$!
               -t update_propagation_endpoint,2000,0,3,2233_1+1233_1+2133_1+1133_1 \
               -t update_propagation_endpoint,2000,0,2,2233_1+1233_1+2133_1+1133_1 \
               -t update_propagation_endpoint,2000,0,1, \
+              \
+              -t add_identityarc,2100,0,1+1 \
+              \
+              -t add_identityarc,2150,0,2+1 \
               \
               > test_second_pid1333_out.txt 2>&1 &
 PEER_1333_PID=$!
@@ -341,6 +360,7 @@ PEER_2233_PID=$!
               -p 1233 -i wl0 \
               -a wl0,2233,wl0,2000 \
               -a wl0,2133,wl0,2000 \
+              -a wl0,3312,wl0,2000 \
               \
               -t add_identity,400,0,1,4,0+1 \
               -t enter_net,600,0,1,0,1:2:3:3,1:1:0:0,2233:1333:1333:1333 \
@@ -360,6 +380,8 @@ PEER_2233_PID=$!
               -t update_propagation_endpoint,2000,1,3,2233_1+2133_1+1133_1+1333_0 \
               -t update_propagation_endpoint,2000,1,2,2233_1+2133_1+1133_1+1333_0 \
               -t update_propagation_endpoint,2000,1,1,2233_1 \
+              \
+              -t add_identityarc,2150,1,2+1 \
               \
               > test_second_pid1233_out.txt 2>&1 &
 PEER_1233_PID=$!
@@ -419,7 +441,7 @@ PEER_1133_PID=$!
 
 echo Done launches at `date +%T.%N`
 
-sleep 5
+sleep 8
 
 echo checking status...
 PEER_ABORT=0

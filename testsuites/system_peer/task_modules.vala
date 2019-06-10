@@ -206,6 +206,7 @@ namespace SystemPeer
             assert(old_identity_data != null);
 
             // remove old identity.
+            print(@"INFO: [$(printabletime())] Removing old identity $(old_nodeid.id).\n");
             old_identity_data.hook_mgr.same_network.disconnect(old_identity_data.same_network);
             old_identity_data.hook_mgr.another_network.disconnect(old_identity_data.another_network);
             old_identity_data.hook_mgr.do_prepare_enter.disconnect(old_identity_data.do_prepare_enter);
@@ -218,7 +219,7 @@ namespace SystemPeer
             string st_listen_pathname = @"conn_$(pid)_$(old_identity_data.local_identity_index)";
             comm_skeleton_factory.stop_stream_system_listen(st_listen_pathname);
             tasklet.ms_wait(1);
-            print(@"stopped stream_system_listen $(st_listen_pathname).\n");
+            print(@"[$(printabletime())] stopped stream_system_listen $(st_listen_pathname).\n");
 
             remove_local_identity(old_identity_data.nodeid);
 
