@@ -274,6 +274,7 @@ PEER_2012_PID=$!
               \
               > test_second_pid3312_out.txt 2>&1 &
 PEER_3312_PID=$!
+#              -t add_adj,2000,1,border_real_pos,hc_lvl,hc_pos,lvl \
 
 ./system_peer --topology 2,2,2,2 --firstaddr 2,3,1,2 \
               \

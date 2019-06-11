@@ -344,7 +344,13 @@ namespace SystemPeer
 
         public Gee.List<IPairHCoordInt> adjacent_to_my_gnode(int level_adjacent_gnodes, int level_my_gnode)
         {
-            error("not implemented yet");
+            debug(@"HookingMapPaths: adjacent_to_my_gnode(level_adjacent_gnodes=$(level_adjacent_gnodes), level_my_gnode=$(level_my_gnode)).");
+            ArrayList<IPairHCoordInt> ret = new ArrayList<IPairHCoordInt>();
+            if (identity_data.adj.has_key(level_my_gnode))
+                foreach (IPairHCoordInt i in identity_data.adj[level_my_gnode])
+                if (i.get_hc_adjacent().lvl == level_adjacent_gnodes) ret.add(i);
+            debug(@"HookingMapPaths: adjacent_to_my_gnode returning $(ret.size) elements.");
+            return ret;
         }
 
         public bool exists(int level, int pos)
@@ -398,6 +404,7 @@ namespace SystemPeer
 
         public int get_eldership(int level, int pos)
         {
+            debug(@"HookingMapPaths[$(identity_data.local_identity_index)].get_eldership(($(level),$(pos))): started.");
             error("not implemented yet");
         }
     }
@@ -430,33 +437,30 @@ namespace SystemPeer
 
     class HookingPairHCoordInt : Object, IPairHCoordInt
     {
-        public HookingPairHCoordInt(int local_identity_index)
+        public HookingPairHCoordInt(int level_my_gnode, int border_real_pos, HCoord hc)
         {
-            this.local_identity_index = local_identity_index;
+            this.level_my_gnode = level_my_gnode;
+            this.border_real_pos = border_real_pos;
+            this.hc = hc;
         }
-        private int local_identity_index;
-        private IdentityData? _identity_data;
-        public IdentityData identity_data {
-            get {
-                _identity_data = find_local_identity_by_index(local_identity_index);
-                if (_identity_data == null) tasklet.exit_tasklet();
-                return _identity_data;
-            }
-        }
+
+        private int level_my_gnode;
+        private int border_real_pos;
+        private HCoord hc;
 
         public HCoord get_hc_adjacent()
         {
-            error("not implemented yet");
+            return hc;
         }
 
         public int get_level_my_gnode()
         {
-            error("not implemented yet");
+            return level_my_gnode;
         }
 
         public int get_pos_my_border_gnode()
         {
-            error("not implemented yet");
+            return border_real_pos;
         }
     }
 }

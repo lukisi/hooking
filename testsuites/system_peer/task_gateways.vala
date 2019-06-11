@@ -103,6 +103,77 @@ namespace SystemPeer
         }
     }
 
+    bool schedule_task_add_adj(string task)
+    {
+        if (task.has_prefix("add_adj,"))
+        {
+            string remain = task.substring("add_adj,".length);
+            string[] args = remain.split(",");
+            if (args.length != 6) error("bad args num in task 'add_adj'");
+            int64 ms_wait;
+            if (! int64.try_parse(args[0], out ms_wait)) error("bad args ms_wait in task 'add_adj'");
+            int64 my_id;
+            if (! int64.try_parse(args[1], out my_id)) error("bad args my_id in task 'add_adj'");
+            int64 border_real_pos;
+            if (! int64.try_parse(args[2], out border_real_pos)) error("bad args border_real_pos in task 'add_adj'");
+            int64 hc_lvl;
+            if (! int64.try_parse(args[3], out hc_lvl)) error("bad args hc_lvl in task 'add_adj'");
+            int64 hc_pos;
+            if (! int64.try_parse(args[4], out hc_pos)) error("bad args hc_pos in task 'add_adj'");
+            int64 lvl;
+            if (! int64.try_parse(args[5], out lvl)) error("bad args lvl in task 'add_adj'");
+            print(@"INFO: in $(ms_wait) ms will add adj(...).\n");
+            HCoord hc = new HCoord((int)hc_lvl, (int)hc_pos);
+            AddAdjTasklet s = new AddAdjTasklet(
+                (int)ms_wait,
+                (int)my_id,
+                (int)border_real_pos,
+                hc,
+                (int)lvl);
+            tasklet.spawn(s);
+            return true;
+        }
+        else return false;
+    }
+
+    class AddAdjTasklet : Object, ITaskletSpawnable
+    {
+        public AddAdjTasklet(
+            int ms_wait,
+            int my_id,
+            int border_real_pos,
+            HCoord hc,
+            int lvl)
+        {
+            this.ms_wait = ms_wait;
+            this.my_id = my_id;
+            this.border_real_pos = border_real_pos;
+            this.hc = hc;
+            this.lvl = lvl;
+        }
+        private int ms_wait;
+        private int my_id;
+        private int border_real_pos;
+        private HCoord hc;
+        private int lvl;
+
+        public void * func()
+        {
+            tasklet.ms_wait(ms_wait);
+
+            // find identity_data
+            NodeID nodeid = fake_random_nodeid(pid, my_id);
+            IdentityData identity_data = find_local_identity(nodeid);
+            assert(identity_data != null);
+
+            if (! identity_data.adj.has_key(lvl))
+                identity_data.adj[lvl] = new ArrayList<IPairHCoordInt>();
+            identity_data.adj[lvl].add(new HookingPairHCoordInt(lvl, border_real_pos, hc));
+
+            return null;
+        }
+    }
+
     bool schedule_task_update_proxy_endpoint(string task)
     {
         if (task.has_prefix("update_proxy_endpoint,"))

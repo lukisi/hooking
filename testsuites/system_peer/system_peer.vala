@@ -316,6 +316,7 @@ namespace SystemPeer
             else if (schedule_task_update_propagation_endpoint(task)) {}
             else if (schedule_task_check_two_nodes_meet(task)) {}
             else if (schedule_task_check_two_gnodes_meet(task)) {}
+            else if (schedule_task_add_adj(task)) {}
             else error(@"unknown task $(task)");
         }
 
@@ -492,6 +493,7 @@ namespace SystemPeer
             copy_of_identity = null;
             gateways = new HashMap<int,HashMap<int,ArrayList<IdentityArc>>>();
             for (int i = 0; i < levels; i++) gateways[i] = new HashMap<int,ArrayList<IdentityArc>>();
+            adj = new HashMap<int,ArrayList<IPairHCoordInt>>();
             my_naddr_pos = null;
             elderships = null;
             fp_list = null;
@@ -606,6 +608,8 @@ namespace SystemPeer
 
         public HashMap<int,HashMap<int,ArrayList<IdentityArc>>> gateways;
         // gateways[3][2][0] means the best gateway to (3,2).
+        public HashMap<int,ArrayList<IPairHCoordInt>> adj;
+        // adj[2] is a list of gnodes of level 2 or higher that are adjacent to my gnode of level 2.
 
         public ArrayList<IdentityArc> identity_arcs;
         public IdentityArc? identity_arcs_find(PseudoArc arc, NodeID peer_nodeid)
