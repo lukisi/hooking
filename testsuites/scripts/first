@@ -43,7 +43,7 @@ echo Starting launches at `date +%T.%N`
               -t addtag,2390,2390 \
               -t add_identity,2400,0,1,3,0+0 \
               \
-              -t add_gateway,2420,1,0+0,0,2,-1 \
+              -t add_gateway,2420,1,0+0,0,2,0,-1 \
               -t update_n_nodes,2440,1,2 \
               -t update_coord_n_nodes,2440,1,2 \
               -t enter_net,2460,0,1,0,1:0:0,1:0:0,200:200:200 \
@@ -60,8 +60,8 @@ echo Starting launches at `date +%T.%N`
               -t addtag,4390,4390 \
               -t add_identityarc,4400,1,1+1 \
               \
-              -t add_gateway,4420,1,1+1,1,1,-1 \
-              -t add_gateway,4420,1,0+0,1,1,-1 \
+              -t add_gateway,4420,1,1+1,1,1,1,-1 \
+              -t add_gateway,4420,1,0+0,1,1,1,-1 \
               -t update_n_nodes,4440,1,4 \
               -t update_coord_n_nodes,4440,1,4 \
               -t update_proxy_endpoint,4465,1,3,100_1 \
@@ -96,7 +96,7 @@ PEER_100_PID=$!
               -t addtag,2390,2390 \
               -t add_identityarc,2400,0,0+1 \
               \
-              -t add_gateway,2420,0,0+1,0,1,-1 \
+              -t add_gateway,2420,0,0+1,0,1,1,-1 \
               -t update_n_nodes,2440,0,2 \
               -t update_coord_n_nodes,2440,0,2 \
               -t update_proxy_endpoint,2465,0,3,100_1 \
@@ -112,8 +112,8 @@ PEER_100_PID=$!
               -t addtag,4390,4390 \
               -t add_identityarc,4400,0,1+2 \
               \
-              -t add_gateway,4420,0,1+1,1,1,-1 \
-              -t add_gateway,4420,0,0+1,1,1,-1 \
+              -t add_gateway,4420,0,1+1,1,1,1,-1 \
+              -t add_gateway,4420,0,0+1,1,1,1,-1 \
               -t update_n_nodes,4440,0,4 \
               -t update_coord_n_nodes,4440,0,4 \
               -t update_proxy_endpoint,4465,0,3,100_1 \
@@ -147,7 +147,7 @@ PEER_200_PID=$!
               -t addtag,2390,2390 \
               -t add_identityarc,2400,0,0+1 \
               \
-              -t add_gateway,2420,0,0+1,0,2,-1 \
+              -t add_gateway,2420,0,0+1,0,2,1,-1 \
               -t update_n_nodes,2440,0,2 \
               -t update_coord_n_nodes,2440,0,2 \
               -t update_proxy_endpoint,2465,0,3,110_0 \
@@ -163,9 +163,9 @@ PEER_200_PID=$!
               -t addtag,4390,4390 \
               -t add_identity,4400,0,2,3,0+2_1+1 \
               \
-              -t add_gateway,4420,1,0+2,0,2,-1 \
-              -t add_gateway,4420,1,1+1,1,0,-1 \
-              -t add_gateway,4422,1,0+2,1,0,-1 \
+              -t add_gateway,4420,1,0+2,0,2,1,-1 \
+              -t add_gateway,4420,1,1+1,1,0,0,-1 \
+              -t add_gateway,4422,1,0+2,1,0,0,-1 \
               -t update_n_nodes,4440,1,4 \
               -t update_coord_n_nodes,4440,1,4 \
               -t enter_net,4460,0,1,1,1:0,1:0,200:200 \
@@ -198,7 +198,7 @@ PEER_110_PID=$!
               -t addtag,2390,2390 \
               -t add_identity,2400,0,1,3,0+0 \
               \
-              -t add_gateway,2420,1,0+0,0,1,-1 \
+              -t add_gateway,2420,1,0+0,0,1,0,-1 \
               -t update_n_nodes,2440,1,2 \
               -t update_coord_n_nodes,2440,1,2 \
               -t enter_net,2460,0,1,0,2:3:3,1:0:0,110:110:110 \
@@ -215,9 +215,9 @@ PEER_110_PID=$!
               -t addtag,4390,4390 \
               -t add_identity,4400,1,2,3,0+1_1+0 \
               \
-              -t add_gateway,4420,2,0+1,0,1,-1 \
-              -t add_gateway,4420,2,1+0,1,0,-1 \
-              -t add_gateway,4422,2,0+1,1,0,-1 \
+              -t add_gateway,4420,2,0+1,0,1,0,-1 \
+              -t add_gateway,4420,2,1+0,1,0,0,-1 \
+              -t add_gateway,4422,2,0+1,1,0,0,-1 \
               -t update_n_nodes,4440,2,4 \
               -t update_coord_n_nodes,4440,2,4 \
               -t enter_net,4460,1,2,1,1:0,1:0,200:200 \

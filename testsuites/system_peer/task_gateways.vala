@@ -11,7 +11,7 @@ namespace SystemPeer
         {
             string remain = task.substring("add_gateway,".length);
             string[] args = remain.split(",");
-            if (args.length != 6) error("bad args num in task 'add_gateway'");
+            if (args.length != 7) error("bad args num in task 'add_gateway'");
             int64 ms_wait;
             if (! int64.try_parse(args[0], out ms_wait)) error("bad args ms_wait in task 'add_gateway'");
             int64 my_id;
@@ -30,8 +30,10 @@ namespace SystemPeer
             if (! int64.try_parse(args[3], out lvl)) error("bad args lvl in task 'add_gateway'");
             int64 pos;
             if (! int64.try_parse(args[4], out pos)) error("bad args pos in task 'add_gateway'");
+            int64 eldership;
+            if (! int64.try_parse(args[5], out eldership)) error("bad args eldership in task 'add_gateway'");
             int64 insert_at;
-            if (! int64.try_parse(args[5], out insert_at)) error("bad args insert_at in task 'add_gateway'");
+            if (! int64.try_parse(args[6], out insert_at)) error("bad args insert_at in task 'add_gateway'");
             print(@"INFO: in $(ms_wait) ms will add gateway(lvl=$(lvl),pos=$(pos),index=$(insert_at)) to identity #$(my_id): identity_arc '$(arc_num)+$(peer_id_num)'.\n");
             AddGatewayTasklet s = new AddGatewayTasklet(
                 (int)ms_wait,
@@ -40,6 +42,7 @@ namespace SystemPeer
                 (int)peer_id_num,
                 (int)lvl,
                 (int)pos,
+                (int)eldership,
                 (int)insert_at);
             tasklet.spawn(s);
             return true;
@@ -56,6 +59,7 @@ namespace SystemPeer
             int peer_id_num,
             int lvl,
             int pos,
+            int eldership,
             int insert_at)
         {
             this.ms_wait = ms_wait;
@@ -64,6 +68,7 @@ namespace SystemPeer
             this.peer_id_num = peer_id_num;
             this.lvl = lvl;
             this.pos = pos;
+            this.eldership = eldership;
             this.insert_at = insert_at;
         }
         private int ms_wait;
@@ -72,6 +77,7 @@ namespace SystemPeer
         private int peer_id_num;
         private int lvl;
         private int pos;
+        private int eldership;
         private int insert_at;
 
         public void * func()
@@ -98,6 +104,9 @@ namespace SystemPeer
                 identity_data.gateways[lvl][pos].add(ia);
             else
                 identity_data.gateways[lvl][pos].insert(insert_at, ia);
+
+            assert(identity_data.eldership.has_key(lvl));
+            identity_data.eldership[lvl][pos] = eldership;
 
             return null;
         }

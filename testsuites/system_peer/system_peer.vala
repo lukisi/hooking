@@ -493,6 +493,8 @@ namespace SystemPeer
             copy_of_identity = null;
             gateways = new HashMap<int,HashMap<int,ArrayList<IdentityArc>>>();
             for (int i = 0; i < levels; i++) gateways[i] = new HashMap<int,ArrayList<IdentityArc>>();
+            eldership = new HashMap<int,HashMap<int,int>>();
+            for (int i = 0; i < levels; i++) eldership[i] = new HashMap<int,int>();
             adj = new HashMap<int,ArrayList<IPairHCoordInt>>();
             my_naddr_pos = null;
             elderships = null;
@@ -608,6 +610,8 @@ namespace SystemPeer
 
         public HashMap<int,HashMap<int,ArrayList<IdentityArc>>> gateways;
         // gateways[3][2][0] means the best gateway to (3,2).
+        public HashMap<int,HashMap<int,int>> eldership;
+        // eldership[3][2] is the eldership of (3,2), as reported by (we assume) all the paths.
         public HashMap<int,ArrayList<IPairHCoordInt>> adj;
         // adj[2] is a list of gnodes of level 2 or higher that are adjacent to my gnode of level 2.
 

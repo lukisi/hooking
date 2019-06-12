@@ -405,7 +405,7 @@ namespace SystemPeer
         public int get_eldership(int level, int pos)
         {
             debug(@"HookingMapPaths[$(identity_data.local_identity_index)].get_eldership(($(level),$(pos))): started.");
-            error("not implemented yet");
+            return identity_data.eldership[level][pos];
         }
     }
 
