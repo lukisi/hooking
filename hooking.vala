@@ -338,6 +338,7 @@ namespace Netsukuku.Hooking
 
             S.add(v);
             SolutionStep root = new SolutionStep(v);
+            debug(@"HookingManager.find_shortest_mig: BFSearch: offer self $(json_string_object(v))");
             Q.offer(root);
 
             while (! Q.is_empty)
@@ -451,9 +452,12 @@ namespace Netsukuku.Hooking
                                 new_conn_vir_pos,
                                 new_eldership,
                                 current);
+                            debug(@"HookingManager.find_shortest_mig: BFSearch: offer $(json_string_object(n))");
                             Q.offer(n_step);
                         }
+                        else debug(@"HookingManager.find_shortest_mig: BFSearch: refusing to offer $(json_string_object(n)) because in previous step");
                     }
+                    else debug(@"HookingManager.find_shortest_mig: BFSearch: refusing to offer $(json_string_object(n)) because already been there");
                 }
             }
             return solutions;
