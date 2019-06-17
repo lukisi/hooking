@@ -246,7 +246,7 @@ namespace Netsukuku.Hooking.MessageRouting
                     p1.final_host_lvl = p1_final_host_lvl;
                     p1.real_new_pos = p1_real_new_pos;
                     p1.real_new_eldership = p1_real_new_eldership;
-                    p1.set_adjacent = p1_set_adjacent;
+                    if (p1_set_adjacent != null) p1.set_adjacent = p1_set_adjacent;
                     p1.new_conn_vir_pos = p1_new_conn_vir_pos;
                     p1.new_eldership = p1_new_eldership;
                     // send response
