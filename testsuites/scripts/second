@@ -35,9 +35,19 @@
 # 1.4. Node 2122 prepares the adjacent set, which is {(2,1)+1,(2,3)+1} since we have host_level=2. Then replies.
 # 2. Node 3312 refuses to query **12 because already been there
 # 3. Node 3312 queries **32: the packet arrives to 2232:
-# 1.1. Node 2232 will call coord_reserve with host_level=2, that is **32. We will simulate that the result is
-#      a good pos (3) with eldership of (1).
-#
+# 3.1. Node 2232 will call coord_reserve with host_level=2, that is **32. We will simulate that the result is
+#      a good pos (3) with eldership of (1). Hence does not collect more adjacent set.
+# 4. Node 3312 gets a solution and executes it:
+# 5. Node 3312 commands prepare_mig to *122: the packet arrives to 2122:
+# 5.1. Node 2122 propagates to *122 and does prepare_mig. Then replies.
+# 6. Node 3312 commands prepare_mig to *312: which is itself:
+# 6.1. Node 3312 propagates to *312 and does prepare_mig. Then replies.
+# 7. Node 3312 commands finish_mig to *122: the packet arrives to 2122:
+# 7.1. Node 2122 propagates to *122 and does finish_mig. Concurrently replies.
+# 8. Node 3312 commands finish_mig to *312: which is itself:
+# 8.1. Node 3312 propagates to *312 and does finish_mig. Concurrently replies.
+# 9. Node 3312 has found a place at host_lvl=2. So it replies to node 1333.
+# The node 1333 propagates to *333 (at level 1 it is alone though) and does prepare_enter and finish_enter.
 
 radio_domain -i 2232_wl0 -o 3122_wl0 -o 2322_wl0 &
 RADIO_2232_PID=$!
