@@ -36,6 +36,7 @@ AC_CONFIG_LINKS([first:testsuites/scripts/first])
 AC_CONFIG_LINKS([second:testsuites/scripts/second])
 AC_CONFIG_LINKS([two_nodes_meet:testsuites/scripts/two_nodes_meet])
 AC_CONFIG_LINKS([two_gnodes_meet:testsuites/scripts/two_gnodes_meet])
+AC_CONFIG_LINKS([graph1:testsuites/scripts/graph1])
 AC_CONFIG_FILES([Makefile])
 AC_OUTPUT
 

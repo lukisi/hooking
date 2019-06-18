@@ -350,6 +350,9 @@ namespace SystemPeer
                 foreach (IPairHCoordInt i in identity_data.adj[level_my_gnode])
                 if (i.get_hc_adjacent().lvl == level_adjacent_gnodes) ret.add(i);
             debug(@"HookingMapPaths: adjacent_to_my_gnode returning $(ret.size) elements.");
+            tester_events.add(@"HookingMapPaths:$(identity_data.local_identity_index):"
+                + @"adjacent_to_my_gnode(level_adjacent_gnodes=$(level_adjacent_gnodes),level_my_gnode=$(level_my_gnode)):"
+                + @"size[$(ret.size)]");
             return ret;
         }
 

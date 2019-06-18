@@ -10,9 +10,10 @@ TESTS = \
 	test_serializables \
 	two_nodes_meet \
 	two_gnodes_meet \
+	graph1 \
 	$(NULL)
 
-# manually check scripts: first, graph
+# manually check scripts: first, second
 
 check_PROGRAMS = \
 	test_serializables \
@@ -111,6 +112,7 @@ system_peer_SOURCES =  \
 	testsuites/system_peer/task_gateways.vala \
 	testsuites/system_peer/task_check_two_nodes_meet.vala \
 	testsuites/system_peer/task_check_two_gnodes_meet.vala \
+	testsuites/system_peer/task_check_graph1.vala \
 	hooking.vapi \
 	$(NULL)
 

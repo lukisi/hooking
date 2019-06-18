@@ -1,0 +1,574 @@
+#!/bin/bash
+
+# After 2 seconds the nets (**33 and ***2) are formed. Then (2100) nodes 1333 and 2312 meet.
+# Let's assume that node 2312 sees a very big network, so that node 1333 does not repeat the remote
+#  call to retrieve_network_data with ask_coord=true.
+# After few istants (2150) nodes 1333 and 3312 meet too, and nodes 1233 and 3312 meet too.
+# After few seconds (based on the number of nodes in **33 which is 5) the coordinator of **33
+#  (which is 1133) elects a link which is the one between 1333 and 3312 and tell to try at lvl=2.
+# The node 1333 tries with ask_lvl=2. Hence first_host_lvl=3.
+# Let's simulate things so that the node is forced to downgrade.
+# 0. Node 3312 queries itself:
+# 0.1. Node 3312 will call coord_reserve with host_level=3, that is ***2. We will simulate that the result is
+#      a virtual pos (5) with eldership of (3).
+#      The eldership won't be used, would be used if a migration path were found.
+# 0.2. Node 3312 will call coord_reserve with host_level=4, that is ****. We will simulate that the result is
+#      a virtual pos (5) with eldership of (1).
+# 0.3. Node 3312 prepares the adjacent set, which is empty since we have host_level=3. Then replies.
+# 1. Node 3312 has no more options. So it replies to node 1333.
+# The node 1333 downgrades and tries with ask_lvl=1. Hence first_host_lvl=2.
+# 0. Node 3312 queries itself:
+# 0.1. Node 3312 will call coord_reserve with host_level=2, that is **12. We will simulate that the result is
+#      a virtual pos (5) with eldership of (2).
+# 0.2. Node 3312 will call coord_reserve with host_level=3, that is ***2. We will simulate that the result is
+#      a virtual pos (6) with eldership of (4).
+# 0.3. Node 3312 will call coord_reserve with host_level=4, that is ****. We will simulate that the result is
+#      a virtual pos (6) with eldership of (2).
+# 0.4. Node 3312 prepares the adjacent set, which is {(2,2)+3} since we have host_level=2. Then replies.
+# 1. Node 3312 queries **22: the packet arrives to 2122:
+# 1.1. Node 2122 will call coord_reserve with host_level=2, that is **22. We will simulate that the result is
+#      a virtual pos (5) with eldership of (2).
+# 1.2. Node 2122 will call coord_reserve with host_level=3, that is ***2. We will simulate that the result is
+#      a virtual pos (7) with eldership of (5).
+# 1.3. Node 2122 will call coord_reserve with host_level=4, that is ****. We will simulate that the result is
+#      a virtual pos (7) with eldership of (3).
+# 1.4. Node 2122 prepares the adjacent set, which is {(2,1)+1,(2,3)+1} since we have host_level=2. Then replies.
+# 2. Node 3312 refuses to query **12 because already been there
+# 3. Node 3312 queries **32: the packet arrives to 2232:
+# 3.1. Node 2232 will call coord_reserve with host_level=2, that is **32. We will simulate that the result is
+#      a good pos (3) with eldership of (1). Hence does not collect more adjacent set.
+# 4. Node 3312 gets a solution and executes it:
+# 5. Node 3312 commands prepare_mig to *122: the packet arrives to 2122:
+# 5.1. Node 2122 propagates to *122 and does prepare_mig. Then replies.
+# 6. Node 3312 commands prepare_mig to *312: which is itself:
+# 6.1. Node 3312 propagates to *312 and does prepare_mig. Then replies.
+# 7. Node 3312 commands finish_mig to *122: the packet arrives to 2122:
+# 7.1. Node 2122 propagates to *122 and does finish_mig. Concurrently replies.
+# 8. Node 3312 commands finish_mig to *312: which is itself:
+# 8.1. Node 3312 propagates to *312 and does finish_mig. Concurrently replies.
+# 9. Node 3312 has found a place at host_lvl=2. So it replies to node 1333.
+# The node 1333 propagates to *333 (at level 1 it is alone though) and does prepare_enter and finish_enter.
+
+radio_domain -i 2232_wl0 -o 3122_wl0 -o 2322_wl0 &
+RADIO_2232_PID=$!
+radio_domain -i 3122_wl0 -o 2232_wl0 -o 2322_wl0 -o 1012_wl0 -o 2122_wl0 &
+RADIO_3122_PID=$!
+radio_domain -i 2322_wl0 -o 2232_wl0 -o 3122_wl0 -o 1012_wl0 &
+RADIO_2322_PID=$!
+radio_domain -i 1012_wl0 -o 2322_wl0 -o 3122_wl0 -o 2012_wl0 &
+RADIO_1012_PID=$!
+radio_domain -i 2122_wl0 -o 3122_wl0 -o 2312_wl0 &
+RADIO_2122_PID=$!
+radio_domain -i 2012_wl0 -o 1012_wl0 -o 3312_wl0 &
+RADIO_2012_PID=$!
+radio_domain -i 3312_wl0 -o 2012_wl0 -o 2312_wl0 &
+RADIO_3312_PID=$!
+radio_domain -i 2312_wl0 -o 3312_wl0 -o 2122_wl0 -o 1333_wl0 &
+RADIO_2312_PID=$!
+
+radio_domain -i 1333_wl0 -o 2233_wl0 -o 2312_wl0 -o 3312_wl0 &
+RADIO_1333_PID=$!
+radio_domain -i 2233_wl0 -o 1333_wl0 -o 1233_wl0 &
+RADIO_2233_PID=$!
+radio_domain -i 1233_wl0 -o 2233_wl0 -o 2133_wl0 -o 3312_wl0 &
+RADIO_1233_PID=$!
+radio_domain -i 2133_wl0 -o 1233_wl0 -o 1133_wl0 &
+RADIO_2133_PID=$!
+radio_domain -i 1133_wl0 -o 2133_wl0 &
+RADIO_1133_PID=$!
+
+sleep 0.3
+
+echo Starting launches at `date +%T.%N`
+
+./system_peer --topology 2,2,2,2 --firstaddr 2,2,3,2 \
+              \
+              -p 2232 -i wl0 \
+              -a wl0,3122,wl0,2000 \
+              -a wl0,2322,wl0,2000 \
+              --reserve-req 0,2,3,1 \
+              \
+              -t add_identityarc,200,0,0+1 \
+              \
+              -t add_identityarc,500,0,1+1 \
+              \
+              -t add_gateway,2000,0,0+1,2,2,1,-1 \
+              -t add_gateway,2000,0,0+1,2,1,2,-1 \
+              -t add_gateway,2002,0,1+1,2,2,1,-1 \
+              -t add_gateway,2002,0,1+1,2,1,2,-1 \
+              -t update_n_nodes,2000,0,8 \
+              -t update_coord_n_nodes,2000,0,8 \
+              -t update_proxy_endpoint,2000,0,4,1012_1 \
+              -t update_proxy_endpoint,2000,0,3,1012_1 \
+              -t update_proxy_endpoint,2000,0,2,2232_0 \
+              -t update_proxy_endpoint,2000,0,1,2232_0 \
+              -t update_propagation_endpoint,2000,0,4,2322_1+3122_1+2122_1+1012_1+2012_1+3312_1+2312_1 \
+              -t update_propagation_endpoint,2000,0,3,2322_1+3122_1+2122_1+1012_1+2012_1+3312_1+2312_1 \
+              -t update_propagation_endpoint,2000,0,2, \
+              -t update_propagation_endpoint,2000,0,1, \
+              \
+              -t check_graph1,7800 \
+              \
+              > test_graph1_pid2232_out.txt 2>&1 &
+PEER_2232_PID=$!
+
+./system_peer --topology 2,2,2,2 --firstaddr 3,1,2,2 \
+              \
+              -p 3122 -i wl0 \
+              -a wl0,2232,wl0,2000 \
+              -a wl0,2322,wl0,2000 \
+              -a wl0,1012,wl0,2000 \
+              -a wl0,2122,wl0,2000 \
+              \
+              -t add_identity,100,0,1,4,0+0 \
+              -t enter_net,300,0,1,0,2:2,1:0,2232:2232 \
+              \
+              -t add_identityarc,500,1,1+1 \
+              \
+              -t add_identityarc,800,1,2+1 \
+              \
+              -t add_identityarc,800,1,3+1 \
+              \
+              -t add_gateway,2000,1,3+1,0,2,1,-1 \
+              -t add_gateway,2000,1,1+1,1,3,1,-1 \
+              -t add_gateway,2000,1,0+0,2,3,0,-1 \
+              -t add_gateway,2000,1,2+1,2,1,2,-1 \
+              -t add_gateway,2002,1,1+1,2,1,2,-1 \
+              -t add_gateway,2004,1,3+1,2,1,2,-1 \
+              -t update_n_nodes,2000,1,8 \
+              -t update_coord_n_nodes,2000,1,8 \
+              -t update_proxy_endpoint,2000,1,4,1012_1 \
+              -t update_proxy_endpoint,2000,1,3,1012_1 \
+              -t update_proxy_endpoint,2000,1,2,2122_1 \
+              -t update_proxy_endpoint,2000,1,1,2122_1 \
+              -t update_propagation_endpoint,2000,1,4,2322_1+2122_1+1012_1+2012_1+3312_1+2312_1+2232_0 \
+              -t update_propagation_endpoint,2000,1,3,2322_1+2122_1+1012_1+2012_1+3312_1+2312_1+2232_0 \
+              -t update_propagation_endpoint,2000,1,2,2122_1+2322_1 \
+              -t update_propagation_endpoint,2000,1,1,2122_1 \
+              \
+              -t check_graph1,7800 \
+              \
+              > test_graph1_pid3122_out.txt 2>&1 &
+PEER_3122_PID=$!
+
+./system_peer --topology 2,2,2,2 --firstaddr 2,3,2,2 \
+              \
+              -p 2322 -i wl0 \
+              -a wl0,2232,wl0,2000 \
+              -a wl0,3122,wl0,2000 \
+              -a wl0,1012,wl0,2000 \
+              \
+              -t add_identity,400,0,1,4,0+0_1+1 \
+              -t enter_net,600,0,1,0,3:2:2,1:1:0,3122:2232:2232 \
+              \
+              -t add_identityarc,800,1,2+1 \
+              \
+              -t add_gateway,2000,1,1+1,1,1,0,-1 \
+              -t add_gateway,2000,1,0+0,2,3,0,-1 \
+              -t add_gateway,2002,1,1+1,2,3,0,-1 \
+              -t add_gateway,2000,1,2+1,2,1,2,-1 \
+              -t add_gateway,2002,1,1+1,2,1,2,-1 \
+              -t update_n_nodes,2000,1,8 \
+              -t update_coord_n_nodes,2000,1,8 \
+              -t update_proxy_endpoint,2000,1,4,1012_1 \
+              -t update_proxy_endpoint,2000,1,3,1012_1 \
+              -t update_proxy_endpoint,2000,1,2,2122_1 \
+              -t update_proxy_endpoint,2000,1,1,2322_1 \
+              -t update_propagation_endpoint,2000,1,4,3122_1+2122_1+1012_1+2012_1+3312_1+2312_1+2232_0 \
+              -t update_propagation_endpoint,2000,1,3,3122_1+2122_1+1012_1+2012_1+3312_1+2312_1+2232_0 \
+              -t update_propagation_endpoint,2000,1,2,3122_1+2122_1 \
+              -t update_propagation_endpoint,2000,1,1, \
+              \
+              -t check_graph1,7800 \
+              \
+              > test_graph1_pid2322_out.txt 2>&1 &
+PEER_2322_PID=$!
+
+./system_peer --topology 2,2,2,2 --firstaddr 1,0,1,2 \
+              \
+              -p 1012 -i wl0 \
+              -a wl0,2322,wl0,2000 \
+              -a wl0,3122,wl0,2000 \
+              -a wl0,2012,wl0,2000 \
+              \
+              -t add_identity,700,0,1,4,0+1_1+1 \
+              -t enter_net,900,0,1,0,1:2,2:0,2232:2232 \
+              \
+              -t add_identityarc,1100,1,2+1 \
+              \
+              -t add_gateway,2000,1,2+1,0,2,1,-1 \
+              -t add_gateway,2000,1,2+1,1,3,1,-1 \
+              -t add_gateway,2000,1,0+1,2,2,1,-1 \
+              -t add_gateway,2002,1,1+1,2,2,1,-1 \
+              -t add_gateway,2004,1,2+1,2,2,1,-1 \
+              -t add_gateway,2000,1,0+1,2,3,0,-1 \
+              -t add_gateway,2002,1,1+1,2,3,0,-1 \
+              -t add_gateway,2004,1,2+1,2,3,0,-1 \
+              -t update_n_nodes,2000,1,8 \
+              -t update_coord_n_nodes,2000,1,8 \
+              -t update_proxy_endpoint,2000,1,4,1012_1 \
+              -t update_proxy_endpoint,2000,1,3,1012_1 \
+              -t update_proxy_endpoint,2000,1,2,1012_1 \
+              -t update_proxy_endpoint,2000,1,1,1012_1 \
+              -t update_propagation_endpoint,2000,1,4,2012_1+3312_1+2312_1+3122_1+2122_1+2322_1+2232_0 \
+              -t update_propagation_endpoint,2000,1,3,2012_1+3312_1+2312_1+3122_1+2122_1+2322_1+2232_0 \
+              -t update_propagation_endpoint,2000,1,2,2012_1+3312_1+2312_1 \
+              -t update_propagation_endpoint,2000,1,1,2012_1 \
+              \
+              -t check_graph1,7800 \
+              \
+              > test_graph1_pid1012_out.txt 2>&1 &
+PEER_1012_PID=$!
+
+./system_peer --topology 2,2,2,2 --firstaddr 2,1,2,2 \
+              \
+              -p 2122 -i wl0 \
+              -a wl0,3122,wl0,2000 \
+              -a wl0,2312,wl0,2000 \
+              --reserve-req 1,2,5,2 \
+              --reserve-req 1,3,7,5 \
+              --reserve-req 1,4,7,3 \
+              \
+              -t add_identity,700,0,1,4,0+1 \
+              -t enter_net,900,0,1,0,2:1:2:2,1:0:1:0,3122:3122:2232:2232 \
+              \
+              -t add_identityarc,1700,1,1+1 \
+              \
+              -t add_gateway,2000,1,0+1,0,3,0,-1 \
+              -t add_gateway,2000,1,0+1,1,3,1,-1 \
+              -t add_gateway,2000,1,0+1,2,3,0,-1 \
+              -t add_gateway,2000,1,1+1,2,1,2,-1 \
+              -t add_gateway,2002,1,0+1,2,1,2,-1 \
+              -t update_n_nodes,2000,1,8 \
+              -t update_coord_n_nodes,2000,1,8 \
+              -t update_proxy_endpoint,2000,1,4,1012_1 \
+              -t update_proxy_endpoint,2000,1,3,1012_1 \
+              -t update_proxy_endpoint,2000,1,2,2122_1 \
+              -t update_proxy_endpoint,2000,1,1,2122_1 \
+              -t update_propagation_endpoint,2000,1,4,3122_1+2322_1+1012_1+2012_1+3312_1+2312_1+2232_0 \
+              -t update_propagation_endpoint,2000,1,3,3122_1+2322_1+1012_1+2012_1+3312_1+2312_1+2232_0 \
+              -t update_propagation_endpoint,2000,1,2,3122_1+2322_1 \
+              -t update_propagation_endpoint,2000,1,1,3122_1 \
+              -t add_adj,2000,1,1,2,1,2 \
+              -t add_adj,2001,1,1,2,3,2 \
+              \
+              -t check_graph1,7800 \
+              \
+              > test_graph1_pid2122_out.txt 2>&1 &
+PEER_2122_PID=$!
+
+./system_peer --topology 2,2,2,2 --firstaddr 2,0,1,2 \
+              \
+              -p 2012 -i wl0 \
+              -a wl0,1012,wl0,2000 \
+              -a wl0,3312,wl0,2000 \
+              \
+              -t add_identity,1000,0,1,4,0+1 \
+              -t enter_net,1200,0,1,0,2:0:1:2,1:0:2:0,1012:1012:2232:2232 \
+              \
+              -t add_identityarc,1400,1,1+1 \
+              \
+              -t add_gateway,2000,1,0+1,0,1,0,-1 \
+              -t add_gateway,2000,1,1+1,1,3,1,-1 \
+              -t add_gateway,2000,1,0+1,2,2,1,-1 \
+              -t add_gateway,2002,1,1+1,2,2,1,-1 \
+              -t add_gateway,2000,1,0+1,2,3,0,-1 \
+              -t add_gateway,2002,1,1+1,2,3,0,-1 \
+              -t update_n_nodes,2000,1,8 \
+              -t update_coord_n_nodes,2000,1,8 \
+              -t update_proxy_endpoint,2000,1,4,1012_1 \
+              -t update_proxy_endpoint,2000,1,3,1012_1 \
+              -t update_proxy_endpoint,2000,1,2,1012_1 \
+              -t update_proxy_endpoint,2000,1,1,1012_1 \
+              -t update_propagation_endpoint,2000,1,4,1012_1+3312_1+2312_1+3122_1+2122_1+2322_1+2232_0 \
+              -t update_propagation_endpoint,2000,1,3,1012_1+3312_1+2312_1+3122_1+2122_1+2322_1+2232_0 \
+              -t update_propagation_endpoint,2000,1,2,1012_1+3312_1+2312_1 \
+              -t update_propagation_endpoint,2000,1,1,1012_1 \
+              \
+              -t check_graph1,7800 \
+              \
+              > test_graph1_pid2012_out.txt 2>&1 &
+PEER_2012_PID=$!
+
+./system_peer --topology 2,2,2,2 --firstaddr 3,3,1,2 \
+              \
+              -p 3312 -i wl0 \
+              -a wl0,2012,wl0,2000 \
+              -a wl0,2312,wl0,2000 \
+              -a wl0,1333,wl0,2000 \
+              -a wl0,1233,wl0,2000 \
+              --reserve-req 1,3,5,3 \
+              --reserve-req 1,4,5,1 \
+              --reserve-req 1,2,5,2 \
+              --reserve-req 1,3,6,4 \
+              --reserve-req 1,4,6,2 \
+              \
+              -t add_identity,1300,0,1,4,0+1 \
+              -t enter_net,1500,0,1,0,3:1:2,1:2:0,1012:2232:2232 \
+              \
+              -t add_identityarc,1700,1,1+1 \
+              \
+              -t add_gateway,2000,1,1+1,0,2,1,-1 \
+              -t add_gateway,2000,1,0+1,1,0,0,-1 \
+              -t add_gateway,2000,1,1+1,2,2,1,-1 \
+              -t add_gateway,2002,1,0+1,2,2,1,-1 \
+              -t add_gateway,2000,1,1+1,2,3,0,-1 \
+              -t add_gateway,2002,1,0+1,2,3,0,-1 \
+              -t update_n_nodes,2000,1,800 \
+              -t update_coord_n_nodes,2000,1,8 \
+              -t update_proxy_endpoint,2000,1,4,1012_1 \
+              -t update_proxy_endpoint,2000,1,3,1012_1 \
+              -t update_proxy_endpoint,2000,1,2,1012_1 \
+              -t update_proxy_endpoint,2000,1,1,2312_1 \
+              -t update_propagation_endpoint,2000,1,4,2312_1+2012_1+1012_1+3122_1+2122_1+2322_1+2232_0 \
+              -t update_propagation_endpoint,2000,1,3,2312_1+2012_1+1012_1+3122_1+2122_1+2322_1+2232_0 \
+              -t update_propagation_endpoint,2000,1,2,2312_1+2012_1+1012_1 \
+              -t update_propagation_endpoint,2000,1,1,2312_1 \
+              -t add_adj,2000,1,3,2,2,2 \
+              \
+              -t add_identityarc,2150,1,2+0 \
+              -t add_identityarc,2150,1,3+1 \
+              \
+              -t check_graph1,7800 \
+              \
+              > test_graph1_pid3312_out.txt 2>&1 &
+PEER_3312_PID=$!
+#              -t add_adj,2000,1,border_real_pos,hc_lvl,hc_pos,lvl \
+
+./system_peer --topology 2,2,2,2 --firstaddr 2,3,1,2 \
+              \
+              -p 2312 -i wl0 \
+              -a wl0,3312,wl0,2000 \
+              -a wl0,2122,wl0,2000 \
+              -a wl0,1333,wl0,2000 \
+              \
+              -t add_identity,1600,0,1,4,0+1_1+1 \
+              -t enter_net,1800,0,1,0,2:3:1:2,1:1:2:0,3312:1012:2232:2232 \
+              \
+              -t add_gateway,2000,1,0+1,0,3,0,-1 \
+              -t add_gateway,2000,1,0+1,1,0,0,-1 \
+              -t add_gateway,2000,1,1+1,2,2,1,-1 \
+              -t add_gateway,2002,1,0+1,2,2,1,-1 \
+              -t add_gateway,2000,1,1+1,2,3,0,-1 \
+              -t add_gateway,2002,1,0+1,2,3,0,-1 \
+              -t update_n_nodes,2000,1,800 \
+              -t update_coord_n_nodes,2000,1,8 \
+              -t update_proxy_endpoint,2000,1,4,1012_1 \
+              -t update_proxy_endpoint,2000,1,3,1012_1 \
+              -t update_proxy_endpoint,2000,1,2,1012_1 \
+              -t update_proxy_endpoint,2000,1,1,2312_1 \
+              -t update_propagation_endpoint,2000,1,4,3312_1+2012_1+1012_1+3122_1+2122_1+2322_1+2232_0 \
+              -t update_propagation_endpoint,2000,1,3,3312_1+2012_1+1012_1+3122_1+2122_1+2322_1+2232_0 \
+              -t update_propagation_endpoint,2000,1,2,3312_1+2012_1+1012_1 \
+              -t update_propagation_endpoint,2000,1,1,3312_1 \
+              \
+              -t add_identityarc,2100,1,2+0 \
+              \
+              -t check_graph1,7800 \
+              \
+              > test_graph1_pid2312_out.txt 2>&1 &
+PEER_2312_PID=$!
+
+
+
+./system_peer --topology 2,2,2,2 --firstaddr 1,3,3,3 \
+              \
+              -p 1333 -i wl0 \
+              -a wl0,2233,wl0,2000 \
+              -a wl0,2312,wl0,2000 \
+              -a wl0,3312,wl0,2000 \
+              \
+              -t add_identityarc,200,0,0+1 \
+              \
+              -t add_gateway,2000,0,0+1,1,1,2,-1 \
+              -t add_gateway,2000,0,0+1,1,2,1,-1 \
+              -t update_n_nodes,2000,0,5 \
+              -t update_coord_n_nodes,2000,0,5 \
+              -t update_proxy_endpoint,2000,0,4,1133_1 \
+              -t update_proxy_endpoint,2000,0,3,1133_1 \
+              -t update_proxy_endpoint,2000,0,2,1133_1 \
+              -t update_proxy_endpoint,2000,0,1,1333_0 \
+              -t update_propagation_endpoint,2000,0,4,2233_1+1233_1+2133_1+1133_1 \
+              -t update_propagation_endpoint,2000,0,3,2233_1+1233_1+2133_1+1133_1 \
+              -t update_propagation_endpoint,2000,0,2,2233_1+1233_1+2133_1+1133_1 \
+              -t update_propagation_endpoint,2000,0,1, \
+              \
+              -t add_identityarc,2100,0,1+1 \
+              \
+              -t add_identityarc,2150,0,2+1 \
+              \
+              -t check_graph1,7800 \
+              \
+              > test_graph1_pid1333_out.txt 2>&1 &
+PEER_1333_PID=$!
+
+./system_peer --topology 2,2,2,2 --firstaddr 2,2,3,3 \
+              \
+              -p 2233 -i wl0 \
+              -a wl0,1333,wl0,2000 \
+              -a wl0,1233,wl0,2000 \
+              \
+              -t add_identity,100,0,1,4,0+0 \
+              -t enter_net,300,0,1,0,2:3:3,1:0:0,1333:1333:1333 \
+              \
+              -t add_identityarc,500,1,1+1 \
+              \
+              -t add_gateway,2000,1,1+1,0,1,1,-1 \
+              -t add_gateway,2000,1,1+1,1,1,2,-1 \
+              -t add_gateway,2000,1,0+0,1,3,0,-1 \
+              -t update_n_nodes,2000,1,5 \
+              -t update_coord_n_nodes,2000,1,5 \
+              -t update_proxy_endpoint,2000,1,4,1133_1 \
+              -t update_proxy_endpoint,2000,1,3,1133_1 \
+              -t update_proxy_endpoint,2000,1,2,1133_1 \
+              -t update_proxy_endpoint,2000,1,1,1233_1 \
+              -t update_propagation_endpoint,2000,1,4,1233_1+2133_1+1133_1+1333_0 \
+              -t update_propagation_endpoint,2000,1,3,1233_1+2133_1+1133_1+1333_0 \
+              -t update_propagation_endpoint,2000,1,2,1233_1+2133_1+1133_1+1333_0 \
+              -t update_propagation_endpoint,2000,1,1,1233_1 \
+              \
+              -t check_graph1,7800 \
+              \
+              > test_graph1_pid2233_out.txt 2>&1 &
+PEER_2233_PID=$!
+
+./system_peer --topology 2,2,2,2 --firstaddr 1,2,3,3 \
+              \
+              -p 1233 -i wl0 \
+              -a wl0,2233,wl0,2000 \
+              -a wl0,2133,wl0,2000 \
+              -a wl0,3312,wl0,2000 \
+              \
+              -t add_identity,400,0,1,4,0+1 \
+              -t enter_net,600,0,1,0,1:2:3:3,1:1:0:0,2233:1333:1333:1333 \
+              \
+              -t add_identityarc,800,1,1+1 \
+              \
+              -t add_gateway,2000,1,0+1,0,2,0,-1 \
+              -t add_gateway,2000,1,1+1,1,1,2,-1 \
+              -t add_gateway,2000,1,0+1,1,3,0,-1 \
+              -t update_n_nodes,2000,1,5 \
+              -t update_coord_n_nodes,2000,1,5 \
+              -t update_proxy_endpoint,2000,1,4,1133_1 \
+              -t update_proxy_endpoint,2000,1,3,1133_1 \
+              -t update_proxy_endpoint,2000,1,2,1133_1 \
+              -t update_proxy_endpoint,2000,1,1,1233_1 \
+              -t update_propagation_endpoint,2000,1,4,2233_1+2133_1+1133_1+1333_0 \
+              -t update_propagation_endpoint,2000,1,3,2233_1+2133_1+1133_1+1333_0 \
+              -t update_propagation_endpoint,2000,1,2,2233_1+2133_1+1133_1+1333_0 \
+              -t update_propagation_endpoint,2000,1,1,2233_1 \
+              \
+              -t add_identityarc,2150,1,2+1 \
+              \
+              -t check_graph1,7800 \
+              \
+              > test_graph1_pid1233_out.txt 2>&1 &
+PEER_1233_PID=$!
+
+./system_peer --topology 2,2,2,2 --firstaddr 2,1,3,3 \
+              \
+              -p 2133 -i wl0 \
+              -a wl0,1233,wl0,2000 \
+              -a wl0,1133,wl0,2000 \
+              \
+              -t add_identity,700,0,1,4,0+1 \
+              -t enter_net,900,0,1,0,1:3:3,2:0:0,1333:1333:1333 \
+              \
+              -t add_identityarc,1100,1,1+1 \
+              \
+              -t add_gateway,2000,1,1+1,0,1,1,-1 \
+              -t add_gateway,2000,1,0+1,1,2,1,-1 \
+              -t add_gateway,2000,1,0+1,1,3,0,-1 \
+              -t update_n_nodes,2000,1,5 \
+              -t update_coord_n_nodes,2000,1,5 \
+              -t update_proxy_endpoint,2000,1,4,1133_1 \
+              -t update_proxy_endpoint,2000,1,3,1133_1 \
+              -t update_proxy_endpoint,2000,1,2,1133_1 \
+              -t update_proxy_endpoint,2000,1,1,1133_1 \
+              -t update_propagation_endpoint,2000,1,4,1133_1+2233_1+1233_1+1333_0 \
+              -t update_propagation_endpoint,2000,1,3,1133_1+2233_1+1233_1+1333_0 \
+              -t update_propagation_endpoint,2000,1,2,1133_1+2233_1+1233_1+1333_0 \
+              -t update_propagation_endpoint,2000,1,1,1133_1 \
+              \
+              -t check_graph1,7800 \
+              \
+              > test_graph1_pid2133_out.txt 2>&1 &
+PEER_2133_PID=$!
+
+./system_peer --topology 2,2,2,2 --firstaddr 1,1,3,3 \
+              \
+              -p 1133 -i wl0 \
+              -a wl0,2133,wl0,2000 \
+              \
+              -t add_identity,1000,0,1,4,0+1 \
+              -t enter_net,1200,0,1,0,1:1:3:3,1:2:0:0,2133:1333:1333:1333 \
+              \
+              -t add_gateway,2000,1,0+1,0,2,0,-1 \
+              -t add_gateway,2000,1,0+1,1,2,1,-1 \
+              -t add_gateway,2000,1,0+1,1,3,0,-1 \
+              -t update_n_nodes,2000,1,5 \
+              -t update_coord_n_nodes,2000,1,5 \
+              -t update_proxy_endpoint,2000,1,4,1133_1 \
+              -t update_proxy_endpoint,2000,1,3,1133_1 \
+              -t update_proxy_endpoint,2000,1,2,1133_1 \
+              -t update_proxy_endpoint,2000,1,1,1133_1 \
+              -t update_propagation_endpoint,2000,1,4,2133_1+2233_1+1233_1+1333_0 \
+              -t update_propagation_endpoint,2000,1,3,2133_1+2233_1+1233_1+1333_0 \
+              -t update_propagation_endpoint,2000,1,2,2133_1+2233_1+1233_1+1333_0 \
+              -t update_propagation_endpoint,2000,1,1,2133_1 \
+              \
+              -t check_graph1,7800 \
+              \
+              > test_graph1_pid1133_out.txt 2>&1 &
+PEER_1133_PID=$!
+
+echo Done launches at `date +%T.%N`
+
+sleep 8
+
+echo checking status...
+PEER_ABORT=0
+kill -0 $PEER_2232_PID || { wait $PEER_2232_PID; echo system_peer 2232 prematurely exited with $?; PEER_ABORT=1; }
+kill -0 $PEER_3122_PID || { wait $PEER_3122_PID; echo system_peer 3122 prematurely exited with $?; PEER_ABORT=1; }
+kill -0 $PEER_2322_PID || { wait $PEER_2322_PID; echo system_peer 2322 prematurely exited with $?; PEER_ABORT=1; }
+kill -0 $PEER_1012_PID || { wait $PEER_1012_PID; echo system_peer 1012 prematurely exited with $?; PEER_ABORT=1; }
+kill -0 $PEER_2122_PID || { wait $PEER_2122_PID; echo system_peer 2122 prematurely exited with $?; PEER_ABORT=1; }
+kill -0 $PEER_2012_PID || { wait $PEER_2012_PID; echo system_peer 2012 prematurely exited with $?; PEER_ABORT=1; }
+kill -0 $PEER_3312_PID || { wait $PEER_3312_PID; echo system_peer 3312 prematurely exited with $?; PEER_ABORT=1; }
+kill -0 $PEER_2312_PID || { wait $PEER_2312_PID; echo system_peer 2312 prematurely exited with $?; PEER_ABORT=1; }
+#===
+kill -0 $PEER_1333_PID || { wait $PEER_1333_PID; echo system_peer 1333 prematurely exited with $?; PEER_ABORT=1; }
+kill -0 $PEER_2233_PID || { wait $PEER_2233_PID; echo system_peer 2233 prematurely exited with $?; PEER_ABORT=1; }
+kill -0 $PEER_1233_PID || { wait $PEER_1233_PID; echo system_peer 1233 prematurely exited with $?; PEER_ABORT=1; }
+kill -0 $PEER_2133_PID || { wait $PEER_2133_PID; echo system_peer 2133 prematurely exited with $?; PEER_ABORT=1; }
+kill -0 $PEER_1133_PID || { wait $PEER_1133_PID; echo system_peer 1133 prematurely exited with $?; PEER_ABORT=1; }
+
+echo killing...
+# interrupt peers
+kill $PEER_2232_PID $PEER_3122_PID $PEER_2322_PID $PEER_1012_PID $PEER_2122_PID $PEER_2012_PID \
+     $PEER_3312_PID $PEER_2312_PID
+kill $PEER_1333_PID $PEER_2233_PID $PEER_1233_PID $PEER_2133_PID $PEER_1133_PID
+
+wait $PEER_2232_PID $PEER_3122_PID $PEER_2322_PID $PEER_1012_PID $PEER_2122_PID $PEER_2012_PID \
+     $PEER_3312_PID $PEER_2312_PID
+wait $PEER_1333_PID $PEER_2233_PID $PEER_1233_PID $PEER_2133_PID $PEER_1133_PID
+
+# Ignore errors in this shutdown. Remove any remaining local socket.
+rm -f conn_169.254.*
+rm -f conn_????_?
+rm -f recv_????_wl0
+
+# kill proxy demons
+kill $RADIO_2232_PID $RADIO_3122_PID $RADIO_2322_PID $RADIO_1012_PID $RADIO_2122_PID $RADIO_2012_PID \
+     $RADIO_3312_PID $RADIO_2312_PID
+kill $RADIO_1333_PID $RADIO_2233_PID $RADIO_1233_PID $RADIO_2133_PID $RADIO_1133_PID
+
+wait $RADIO_2232_PID $RADIO_3122_PID $RADIO_2322_PID $RADIO_1012_PID $RADIO_2122_PID $RADIO_2012_PID \
+     $RADIO_3312_PID $RADIO_2312_PID
+wait $RADIO_1333_PID $RADIO_2233_PID $RADIO_1233_PID $RADIO_2133_PID $RADIO_1133_PID
+
+# delay for removal of local sockets (e.g. send_2232_wl0)
+sleep 0.3
+
+# check PEER_ABORT
+test $PEER_ABORT -eq 0 || exit 1
