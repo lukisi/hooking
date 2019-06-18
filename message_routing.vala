@@ -820,12 +820,12 @@ namespace Netsukuku.Hooking.MessageRouting
         (TupleGNode dest, RequestPacket p0)
         throws MigrationPathExecuteFailureError
         {
+            p0.dest = dest;
             if (i_am_inside(dest, map_paths))
             {
                 execute_mig(p0);
                 return;
             }
-            p0.dest = dest;
             // prepare to receive response
             p0.src = make_tuple_from_level(0, map_paths);
             p0.pkt_id = PRNGen.int_range(0, int.MAX);
