@@ -1,6 +1,7 @@
 #!/bin/bash
 
 # After 2 seconds the nets (**33 and ***2) are formed. Then (2100) nodes 1333 and 2312 meet.
+#  See file graph1.svg
 # Let's assume that node 2312 sees a very big network, so that node 1333 does not repeat the remote
 #  call to retrieve_network_data with ask_coord=true.
 # After few istants (2150) nodes 1333 and 3312 meet too, and nodes 1233 and 3312 meet too.
